@@ -1,0 +1,5 @@
+nai_category,count,empty_category_flag
+healthcare,10,False
+park,42,False
+retail,35,False
+school,19,False

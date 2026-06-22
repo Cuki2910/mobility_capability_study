@@ -1,0 +1,39 @@
+# Project Self-Audit
+
+## Snapshot
+
+- grid_cells: 462
+- mean_SMCI_A: 0.0053384435218508
+- mean_SMCI_B: 0.009181088401098
+- share_improved: 0.3181818181818182
+- gtfs_status: baseline_limited
+- poi_spot_checks: {'total': 20, 'completed': 0}
+- motorcycle_android_checks: {'rows': 10, 'android_completed': 0, 'has_android_column': True}
+- android_emulator: {'status_file': True, 'installed': True, 'motorcycle_mode_available': False}
+- population_resolution: {'resolution_m': 92.76666629760172, 'grid_size_m': 250.0, 'decision': 'allow_fine_grained_proxy', 'adequate_for_250m_pilot': True, 'resolution_source': 'raster_metadata', 'raster': 'data\\raw\\worldpop\\vnm_ppp_2020.tif'}
+- high_vif: False
+
+## Strengths
+
+- End-to-end pilot pipeline has real OSM graph/POI/grid inputs and processed metrics.
+- WorldPop raster is downloaded and resolution-verified against the 250m grid.
+- Current NAI/MAI/RAC VIF diagnostics are below threshold 5.
+
+## Blockers
+
+- Network B remains baseline-limited because current GTFS is missing or stale.
+- POI manual spot-check incomplete: 0/20 records checked.
+- Android motorcycle validation incomplete: 0/10 OD pairs measured.
+- Android emulator is installed, but Google Maps on the AVD does not expose Motorcycle/Two-wheeler mode.
+
+## Warnings
+
+- Population raster is verified but not yet integrated into MAI magnitude weighting.
+- Scenario A interpretation is weak until Network B is current or explicitly reframed as no-baseline-transit.
+
+## Next Actions
+
+- Fill 20 POI spot-check rows using OSM/Google Maps links.
+- Measure 10 Android motorcycle OD times and add google_maps_android_minutes.
+- Either obtain current GTFS or reframe Scenario A as baseline-limited/no-current-GTFS.
+- Integrate WorldPop raster into MAI magnitude weighting only if the paper needs population-weighted opportunity magnitudes.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mobility Capability Study"
+  short_description: "Work on the Ocean Park mobility capability research pipeline."
+  default_prompt: "Use the Mobility Capability Study skill to continue the Ocean Park accessibility pipeline."

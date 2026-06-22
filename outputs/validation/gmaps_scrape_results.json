@@ -1,0 +1,72 @@
+[
+  {
+    "sample_id": 0,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 8,
+    "raw_text": "8 min",
+    "error": null
+  },
+  {
+    "sample_id": 1,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 6,
+    "raw_text": "6 min",
+    "error": null
+  },
+  {
+    "sample_id": 2,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 3,
+    "raw_text": "3 min",
+    "error": null
+  },
+  {
+    "sample_id": 3,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 6,
+    "raw_text": "6 min",
+    "error": null
+  },
+  {
+    "sample_id": 4,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 8,
+    "raw_text": "8 min",
+    "error": null
+  },
+  {
+    "sample_id": 5,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 10,
+    "raw_text": "10 min",
+    "error": null
+  },
+  {
+    "sample_id": 6,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 9,
+    "raw_text": "9 min",
+    "error": null
+  },
+  {
+    "sample_id": 7,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 12,
+    "raw_text": "12 min",
+    "error": null
+  },
+  {
+    "sample_id": 8,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 5,
+    "raw_text": "5 min",
+    "error": null
+  },
+  {
+    "sample_id": 9,
+    "mode_used": "car (motorcycle button not found)",
+    "minutes": 8,
+    "raw_text": "8 min",
+    "error": null
+  }
+]
