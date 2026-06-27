@@ -311,3 +311,23 @@ so settled debates don't get silently re-opened.
     Note the two population uses are now distinct and both retained: **supply-side** (this
     decision, baked into MAI, affects SMCI/typology) vs **demand-side** (`MAI_B_popweighted` /
     `compute_population_weighted_smci.py`, residents at origin, equity aggregate, sensitivity only).
+
+20. **RAC_time is opportunity-weighted and auditable (2026-06-27).**
+    To remove ambiguity, `RAC_time_raw_i` is now defined as:
+
+    ```text
+    motorcycle opportunity-weighted mean travel time /
+    walk-transit opportunity-weighted mean travel time
+    ```
+
+    The time mean uses the same metropolitan opportunity set, domain weights, POI opportunity
+    weights, and 60-minute cutoff as MAI. Unreachable origins receive the cutoff. The pipeline
+    writes `moto_mean_opp_time_min`, `wt_A_mean_opp_time_min`, and `wt_B_mean_opp_time_min`
+    for auditability. Network B timing remains a 2018 GTFS stop-proxy; Network C timing uses
+    pseudo-GTFS stop routing.
+
+    Effect on current pilot metrics: mean SMCI_A=0.0322, mean SMCI_B=0.0435, 298/462 cells
+    improved, 88 unchanged, and 76 declined slightly because time competitiveness can fall
+    when added walk-transit reachable opportunities are slower than motorcycle-weighted access.
+    This is more conservative than the earlier simple reachable-time mean and should be used
+    for JTG submission.

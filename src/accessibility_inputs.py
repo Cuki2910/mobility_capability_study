@@ -15,6 +15,7 @@ try:
         gtfs_stops_from_zip,
         load_timed_graph,
         nearest_graph_nodes,
+        opportunity_weighted_mean_time,
         reachable_counts_and_mean_time,
         stop_accessibility,
         vinbus_stop_accessibility,
@@ -29,6 +30,7 @@ except ImportError:  # pragma: no cover
         gtfs_stops_from_zip,
         load_timed_graph,
         nearest_graph_nodes,
+        opportunity_weighted_mean_time,
         reachable_counts_and_mean_time,
         stop_accessibility,
         vinbus_stop_accessibility,
@@ -529,6 +531,17 @@ def build_network_accessibility_inputs(
             pop_mult = np.ones(len(pois), dtype=float)
     poi_opp_weights_eff = [w * float(m) for w, m in zip(poi_opp_weights, pop_mult)]
 
+    moto_mean_opp_time = opportunity_weighted_mean_time(
+        drive_graph,
+        grid_drive_nodes,
+        poi_drive_nodes,
+        poi_domains,
+        poi_opp_weights_eff,
+        drive_weight,
+        domain_weights=domain_weights,
+        t_zero_min=t_zero_min,
+    )
+
     # MAI_motorcycle: what can motorcycle reach (Network D baseline denominator for RAC_opp)
     mai_moto = composite_mai_from_graph(
         drive_graph, grid_drive_nodes, poi_drive_nodes,
@@ -556,6 +569,16 @@ def build_network_accessibility_inputs(
             poi_domains, poi_opp_weights_eff, walk_weight,
             t_full_min=t_full_min, t_zero_min=t_zero_min,
             domain_weights=domain_weights,
+        )
+        wt_a_mean_opp_time = opportunity_weighted_mean_time(
+            walk_graph,
+            grid_walk_nodes,
+            poi_walk_nodes,
+            poi_domains,
+            poi_opp_weights_eff,
+            walk_weight,
+            domain_weights=domain_weights,
+            t_zero_min=t_zero_min,
         )
 
     if vinbus_mode not in {"stops", "corridor"}:
@@ -663,8 +686,11 @@ def build_network_accessibility_inputs(
         "NAI": nai,
         "MAI_A": mai_a,
         "MAI_B": mai_b,
-        "RAC_time_A_raw": _safe_ratio(moto_mean_time, wt_a_time),
-        "RAC_time_B_raw": _safe_ratio(moto_mean_time, wt_b_time),
+        "moto_mean_opp_time_min": moto_mean_opp_time / 60.0,
+        "wt_A_mean_opp_time_min": (wt_a_mean_opp_time if not gtfs_missing else wt_a_time) / 60.0,
+        "wt_B_mean_opp_time_min": wt_b_time / 60.0,
+        "RAC_time_A_raw": _safe_ratio(moto_mean_opp_time, wt_a_mean_opp_time if not gtfs_missing else wt_a_time),
+        "RAC_time_B_raw": _safe_ratio(moto_mean_opp_time, wt_b_time),
         # RAC_opp v8: ratio of composite MAI scores (Decision #12).
         "RAC_opp_A_raw": _safe_ratio(mai_a, np.maximum(mai_moto, _moto_floor)),
         "RAC_opp_B_raw": _safe_ratio(mai_b, np.maximum(mai_moto, _moto_floor)),
@@ -683,6 +709,9 @@ def build_network_accessibility_inputs(
             f"Supply-side pop-weighting={'on' if pop_weighting else 'off'} "
             f"bounds={pop_mult_bounds} (Decision #19). "
             "RAC_opp = MAI_transit / MAI_motorcycle. "
+            "RAC_time_raw = motorcycle opportunity-weighted mean time / walk-transit "
+            "opportunity-weighted mean time over the MAI opportunity set with 60-min cutoff; "
+            "Network B time uses walk/GTFS stop-proxy timing; Network C uses pseudo-GTFS stop routing. "
             "Network B GTFS is 2018 vintage (pre-VinBus baseline per Decision #10): "
             "stop geometry valid; timetable used for relative magnitude only."
             if baseline_limited
@@ -690,7 +719,10 @@ def build_network_accessibility_inputs(
                  "composite Metropolitan Opportunity Accessibility (Decision #12). "
                  f"Supply-side pop-weighting={'on' if pop_weighting else 'off'} "
                  f"bounds={pop_mult_bounds} (Decision #19). "
-                 "RAC_opp = MAI_transit / MAI_motorcycle."
+                 "RAC_opp = MAI_transit / MAI_motorcycle. "
+                 "RAC_time_raw = motorcycle opportunity-weighted mean time / walk-transit "
+                 "opportunity-weighted mean time over the MAI opportunity set with 60-min cutoff; "
+                 "Network B time uses walk/GTFS stop-proxy timing; Network C uses pseudo-GTFS stop routing."
         ),
     })
     return validate_accessibility_inputs(out)

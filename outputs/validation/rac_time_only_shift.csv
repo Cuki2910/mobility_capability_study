@@ -1,9 +1,9 @@
 from_primary,to_timonly,n_cells
-Integrated Capability,Integrated Capability,159
-Integrated Capability,Fragmented Capability,1
-Fragmented Capability,Integrated Capability,15
+Integrated Capability,Integrated Capability,164
+Integrated Capability,Fragmented Capability,2
+Fragmented Capability,Integrated Capability,9
 Fragmented Capability,Fragmented Capability,56
 Transit-Dependent,Transit-Dependent,51
-Transit-Dependent,Motorcycle Lock-in,20
-Motorcycle Lock-in,Transit-Dependent,6
-Motorcycle Lock-in,Motorcycle Lock-in,154
+Transit-Dependent,Motorcycle Lock-in,14
+Motorcycle Lock-in,Transit-Dependent,7
+Motorcycle Lock-in,Motorcycle Lock-in,159

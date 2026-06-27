@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from networks import add_walking_travel_times
-from routing import vinbus_stop_accessibility, vinbus_stops_from_overpass
+from routing import opportunity_weighted_mean_time, vinbus_stop_accessibility, vinbus_stops_from_overpass
 from scripts.evaluate_overture_gate import evaluate_gate
 from scripts.typology_robustness import run_robustness
 
@@ -85,6 +85,26 @@ def test_vinbus_stop_accessibility_on_tiny_graph_is_finite(tmp_path):
     assert np.isfinite(times).all()
     assert mai[0] > 0
     assert times[0] < 3600.0
+
+def test_opportunity_weighted_mean_time_uses_domain_and_poi_weights():
+    graph = nx.MultiDiGraph()
+    graph.add_edge(1, 2, travel_time_s=600.0)
+    graph.add_edge(1, 3, travel_time_s=1800.0)
+    graph.add_edge(4, 5, travel_time_s=600.0)
+
+    out = opportunity_weighted_mean_time(
+        graph,
+        origin_nodes=[1, 4],
+        destination_nodes=[2, 3],
+        poi_domains=["economic", "healthcare"],
+        poi_opp_weights=[2.0, 1.0],
+        weight_attr="travel_time_s",
+        domain_weights={"economic": 0.5, "healthcare": 0.5},
+        t_zero_min=60.0,
+    )
+
+    assert np.isclose(out[0], (600.0 + 900.0) / 1.5)
+    assert out[1] == 3600.0
 
 
 def test_overture_gate_requires_all_rows_checked():

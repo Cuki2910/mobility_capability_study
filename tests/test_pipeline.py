@@ -681,6 +681,53 @@ def test_built_population_zero_access_classification():
     assert classify_land_use(pd.Series({"building_count": 0, "pop_sum": 0.2})) == "unbuilt_or_open_space"
     assert classify_land_use(pd.Series({"building_count": 0, "pop_sum": 3.0})) == "suspect_under_mapped"
 
+def test_motorcycle_speed_scenarios_change_target_road_classes():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from motorcycle_speed_sensitivity import adjust_motorcycle_calibration
+
+    calibration = pd.DataFrame({
+        "highway": ["primary", "secondary", "service"],
+        "base_speed_kph": [40.0, 30.0, 10.0],
+        "multiplier": [1.0, 1.2, 1.0],
+        "motorcycle_speed_kph": [40.0, 36.0, 10.0],
+    })
+
+    slow = adjust_motorcycle_calibration(calibration, "slow_congestion")
+    fast = adjust_motorcycle_calibration(calibration, "fast_lane_splitting")
+
+    assert slow.loc[slow["highway"] == "primary", "motorcycle_speed_kph"].iloc[0] == 32.0
+    assert slow.loc[slow["highway"] == "service", "motorcycle_speed_kph"].iloc[0] == 10.0
+    assert fast.loc[fast["highway"] == "secondary", "motorcycle_speed_kph"].iloc[0] > 36.0
+    assert fast.loc[fast["highway"] == "primary", "motorcycle_speed_kph"].iloc[0] == 40.0
+
+def test_transit_impedance_penalizes_time_only():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from transit_impedance_sensitivity import apply_transit_impedance
+
+    inputs = pd.DataFrame({
+        "cell_id": [1, 2],
+        "NAI": [1.0, 2.0],
+        "MAI_A": [0.5, 0.6],
+        "MAI_B": [0.7, 0.8],
+        "RAC_time_A_raw": [0.4, 0.5],
+        "RAC_time_B_raw": [0.5, 0.6],
+        "RAC_opp_A_raw": [0.6, 0.7],
+        "RAC_opp_B_raw": [0.8, 0.9],
+        "moto_mean_opp_time_min": [12.0, 18.0],
+        "wt_B_mean_opp_time_min": [24.0, 30.0],
+        "transit_walk_access_min": [4.0, 0.0],
+        "transit_wait_min": [6.0, 0.0],
+        "transit_linehaul_min": [10.0, 0.0],
+        "transit_egress_min": [4.0, 0.0],
+    })
+
+    out = apply_transit_impedance(inputs, "conservative")
+
+    assert out.loc[0, "wt_B_mean_opp_time_min"] > inputs.loc[0, "wt_B_mean_opp_time_min"]
+    assert out.loc[1, "wt_B_mean_opp_time_min"] == inputs.loc[1, "wt_B_mean_opp_time_min"] + 5.0
+    assert out.loc[0, "RAC_time_B_raw"] < inputs.loc[0, "RAC_time_B_raw"]
+    assert out["MAI_B"].equals(inputs["MAI_B"])
+
 def test_numeric_bins_separate_zero_from_positive_quantiles():
     """Map quantiles keep zero-access cells out of the positive color ramp."""
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))

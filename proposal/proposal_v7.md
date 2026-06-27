@@ -10,7 +10,7 @@ This study examines whether a green-branded megaproject can produce sustainable 
 
 The proposal develops a dual-scale and mode-competitive accessibility framework. It separates neighborhood walking access from metropolitan opportunity access, then evaluates whether walking and transit are competitive with motorcycle access. The central metric is the Sustainable Mobility Capability Index (SMCI), defined as the joint presence of local access, metropolitan access, and relative competitiveness against motorcycles.
 
-The current implementation is a pilot, not a full final study. It covers 462 grid cells around Vinhomes Ocean Park and uses real OSM walking and driving networks, Hanoi GTFS as a pre-VinBus transit baseline, VinBus pseudo-GTFS for the intervention scenario, OSM plus Overture POIs, OSM landuse/office enrichment for economic opportunities, WorldPop, VIDA building footprints, and manual Android Google Maps motorcycle checks. The pipeline runs end to end and passes 66 tests.
+The current implementation is a pilot, not a full final study. It covers 462 grid cells around Vinhomes Ocean Park and uses real OSM walking and driving networks, Hanoi GTFS as a pre-VinBus transit baseline, VinBus pseudo-GTFS for the intervention scenario, OSM plus Overture POIs, OSM landuse/office enrichment for economic opportunities, WorldPop, VIDA building footprints, and manual Android Google Maps motorcycle checks. The pipeline runs end to end and passes 70 tests.
 
 ## 2. Research Problem
 
@@ -149,6 +149,8 @@ RAC_time_raw_i = motorcycle_travel_time_i / walk_transit_travel_time_i
 RAC_opp_raw_i  = MAI_transit_i / MAI_motorcycle_i
 ```
 
+`RAC_time_raw_i` is operationalized as motorcycle opportunity-weighted mean travel time divided by walk-transit opportunity-weighted mean travel time. It uses the same metropolitan opportunity set, domain weights, POI opportunity weights, and 60-minute cutoff as MAI. Cells with no reachable weighted destination receive the cutoff. Network B uses the 2018 GTFS stop-proximity timing proxy; Network C uses pseudo-GTFS stop routing with access, wait, line-haul, and egress components. The input table reports `moto_mean_opp_time_min`, `wt_A_mean_opp_time_min`, and `wt_B_mean_opp_time_min` for auditability.
+
 Both `MAI_transit` and `MAI_motorcycle` use the same opportunity domains, weights, and decay function. The ratios are normalized, then combined:
 
 ```text
@@ -206,19 +208,19 @@ Third, multicollinearity is reported because MAI and RAC_opp share the MAI_trans
 
 | Variable | VIF | Status |
 | --- | ---: | --- |
-| NAI | 2.13 | OK |
-| MAI | 15.58 | High |
-| RAC | 15.67 | High |
+| NAI | 2.67 | OK |
+| MAI | 8.21 | High |
+| RAC | 7.90 | High |
 
 The RAC_time-only contingency reduces collinearity:
 
 | Variable | VIF | Status |
 | --- | ---: | --- |
-| NAI | 2.12 | OK |
-| MAI | 4.53 | OK |
-| RAC_time | 3.86 | OK |
+| NAI | 2.59 | OK |
+| MAI | 3.25 | OK |
+| RAC_time | 1.86 | OK |
 
-Primary versus RAC_time-only typology agreement is strong: Cohen's kappa = 0.8711, Spearman rho(SMCI rank) = 0.9941, and 42/462 cells change label. The primary full-RAC specification is retained, with RAC_time-only reported as robustness.
+Primary versus RAC_time-only typology agreement is strong: Cohen's kappa = 0.9004, Spearman rho(SMCI rank) = 0.9875, and 32/462 cells change label. The primary full-RAC specification is retained, with RAC_time-only reported as robustness.
 
 Fourth, SMCI robustness uses an additive alternative:
 
@@ -237,30 +239,30 @@ The current pilot results are:
 | Metric | Value |
 | --- | ---: |
 | Grid cells | 462 |
-| Mean SMCI_A | 0.0497 |
-| Mean SMCI_B | 0.0881 |
-| Mean Delta SMCI | 0.0384 |
-| Improved cells | 310 / 462 (67.10%) |
-| Unchanged cells | 152 / 462 (32.90%) |
-| Declined cells | 0 / 462 (0.00%) |
+| Mean SMCI_A | 0.0322 |
+| Mean SMCI_B | 0.0435 |
+| Mean Delta SMCI | 0.0113 |
+| Improved cells | 298 / 462 (64.50%) |
+| Unchanged cells | 88 / 462 (19.05%) |
+| Declined cells | 76 / 462 (16.45%) |
 | Motorcycle validation MAE | 1.90 min |
 
-The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI rises from 0.0497 in Scenario A to 0.0881 in Scenario B, but this average is affected by zero-inflation in the weakest-link index. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI; the same 88 cells also have zero SMCI_B because any zero component collapses the multiplicative index. Cross-checking these zero-access cells against VIDA building footprints shows that 84 of them (95.5%) are built cells, so zero accessibility is not simply a lake, park, or open-space artifact.
+The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI rises from 0.0322 in Scenario A to 0.0435 in Scenario B, but this average is affected by zero-inflation in the weakest-link index. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI; the same 88 cells also have zero SMCI_B because any zero component collapses the multiplicative index. Cross-checking these zero-access cells against VIDA building footprints shows that 84 of them (95.5%) are built cells, so zero accessibility is not simply a lake, park, or open-space artifact.
 
-The VinBus scenario improves SMCI in 310 of 462 cells (67.1%), while 152 cells (32.9%) remain unchanged and no cells decline under the shared A+B normalization scheme. Among cells with positive SMCI, the median rises from 0.0267 in Scenario A to 0.0448 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells that have at least some sustainable mobility capability. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
+The VinBus scenario improves SMCI in 298 of 462 cells (64.5%), while 88 cells (19.0%) remain unchanged and 76 cells (16.5%) decline slightly under the opportunity-weighted time-competitiveness term. Among cells with positive SMCI, the median rises from 0.0197 in Scenario A to 0.0220 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells that have at least some sustainable mobility capability. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
 
 Scenario B typology counts are:
 
 | Typology | Count |
 | --- | ---: |
-| Integrated Capability | 160 |
-| Fragmented Capability | 71 |
-| Transit-Dependent | 71 |
-| Motorcycle Lock-in | 160 |
+| Integrated Capability | 166 |
+| Fragmented Capability | 65 |
+| Transit-Dependent | 65 |
+| Motorcycle Lock-in | 166 |
 
 The equal high/low structure is expected under a rank-median typology and should not be interpreted as a discovered natural cluster distribution. The substantive interpretation depends on where those cells are located and how stable they are under robustness checks.
 
-The population-weighted cross-check remains a useful caution. Total estimated population is about 78,816. Population-weighted mean SMCI_B is 0.0862, compared with an unweighted mean of 0.0881, a difference of -2.2%. Spearman rho between population and SMCI_B is -0.0182 (p = 0.697), so population is roughly evenly distributed across SMCI levels. Population shares by typology are: Integrated Capability 29.8%, Fragmented Capability 20.9%, Transit-Dependent 17.0%, and Motorcycle Lock-in 32.4%.
+The population-weighted cross-check remains a useful caution. Total estimated population is about 78,816. Population-weighted mean SMCI_B is 0.0423, compared with an unweighted mean of 0.0435, a difference of -2.7%. Spearman rho between population and SMCI_B is -0.0173 (p = 0.711), so population is roughly evenly distributed across SMCI levels. Population shares by typology are: Integrated Capability 31.1%, Fragmented Capability 19.6%, Transit-Dependent 16.0%, and Motorcycle Lock-in 33.4%.
 
 The built/population zero-access audit adds a second caution. The 84 built zero-NAI cells contain about 11,798 residents, or 15.0% of the pilot population. Zero accessibility is therefore not only a lake/park/open-space issue; it is a substantive access and mapping uncertainty issue that should be reported separately from low-but-positive accessibility.
 
@@ -270,7 +272,7 @@ The expected argument is not simply that VinBus improves accessibility. The stro
 
 Ocean Park may show high local amenity access in some cells, and VinBus may improve transit-based metropolitan access, but motorcycle competitiveness can still dominate in many locations. The key empirical question is whether cells move into Integrated Capability or remain in Fragmented Capability and Motorcycle Lock-in.
 
-The pilot already suggests this mixed pattern: mean SMCI improves, no cell declines, but 32.90% of cells remain unchanged, population-weighted SMCI_B is lower than the unweighted mean, and Motorcycle Lock-in contains the largest population share.
+The pilot already suggests this mixed pattern: mean SMCI improves and 64.5% of cells improve, but 19.0% remain unchanged, 16.5% decline slightly under the time-competitiveness term, population-weighted SMCI_B is lower than the unweighted mean, and Motorcycle Lock-in contains the largest population share.
 
 ## 13. Limitations
 
@@ -287,6 +289,10 @@ POI completeness remains uncertain despite OSM checks, Overture gating, and econ
 Motorcycle validation uses 10 manual OD pairs. It is a useful plausibility check, not a full calibration dataset.
 
 MAI/RAC collinearity is structurally high in the full-RAC specification. The RAC_time-only sensitivity reduces VIF and shows high typology agreement, so the issue is reported rather than hidden.
+
+Mode and impedance specifications omit fares, parking, explicit transfer penalties, access/egress discomfort, and schedule unreliability. Transit-impedance sensitivity now partially bounds this by testing conservative and pessimistic wait/access/egress/reliability penalties; it is not a replacement for observed mode-choice data.
+
+Motorcycle speed sensitivity tests slow-congestion and fast-lane-splitting scenarios. Typology is stable (kappa = 0.994; 2 cells relabelled), but the paper should still frame this as a bounded robustness check rather than full behavioral validation.
 
 ## 14. Work Plan
 
@@ -309,6 +315,8 @@ python scripts/run_pilot_metrics.py
 python scripts/compute_population_weighted_smci.py
 python scripts/built_population_zero_access_audit.py
 python scripts/rac_time_only_sensitivity.py
+python scripts/motorcycle_speed_sensitivity.py
+python scripts/transit_impedance_sensitivity.py
 python scripts/rac_scaling_sensitivity.py
 python scripts/make_validation_report.py
 python scripts/make_supervisor_memo.py
@@ -316,11 +324,13 @@ python scripts/make_pilot_maps.py
 pytest tests/ -q
 ```
 
-Current test baseline: 66 tests pass.
+Current test baseline: 70 tests pass.
 
 ## 16. Ethics and Data Statement
 
 The study uses open geospatial data, public transport feeds, and manually collected route-time checks from a consumer mapping application. It does not collect personal traces, survey responses, or identifiable human-subject data.
+
+VinBus does not publish official GTFS. The pseudo-GTFS is derived from publicly accessible web-app API responses; no private user data, authentication bypass, or personal data are used. Licensing and terms-of-service uncertainty remain, so the derived route tables should be used for academic reproducibility only and replaced by official GTFS if one becomes available. OSM VinBus route relations remain a non-API sensitivity source.
 
 All data limitations are reported explicitly, including OSM and Overture completeness, GTFS vintage, VinBus pseudo-GTFS construction, motorcycle validation scale, and proxy-based MAI construction.
 

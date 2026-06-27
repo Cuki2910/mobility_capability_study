@@ -340,7 +340,22 @@ def vinbus_stop_accessibility_pseudo_gtfs(
             score += domain_weights.get(domain, 0.0) * poi_opp_weights[i] * decay
             reachable_times.append(total_s)
         scores.append(score)
-        mean_times.append(float(np.mean(reachable_times)) if reachable_times else float(t_zero_min * 60.0))
+        weighted_time_sum = 0.0
+        weighted_time_weight = 0.0
+        for i, poi_node in enumerate(poi_nodes):
+            total_s = best_by_poi.get(poi_node)
+            if total_s is None:
+                continue
+            weight = domain_weights.get(poi_domains[i], 0.0) * poi_opp_weights[i]
+            if weight <= 0:
+                continue
+            weighted_time_sum += weight * total_s
+            weighted_time_weight += weight
+        mean_times.append(
+            float(weighted_time_sum / weighted_time_weight)
+            if weighted_time_weight > 0
+            else float(t_zero_min * 60.0)
+        )
         if best_components:
             comps = list(best_components.values())
             comp_walk_access.append(float(np.mean([c[0] for c in comps])) / 60.0)
@@ -575,7 +590,22 @@ def vinbus_stop_accessibility(
             score += domain_weights.get(domain, 0.0) * poi_opp_weights[i] * decay
             reachable_times.append(total_s)
         scores.append(score)
-        mean_times.append(float(np.mean(reachable_times)) if reachable_times else float(t_zero_min * 60.0))
+        weighted_time_sum = 0.0
+        weighted_time_weight = 0.0
+        for i, poi_node in enumerate(poi_nodes):
+            total_s = best_by_poi.get(poi_node)
+            if total_s is None:
+                continue
+            weight = domain_weights.get(poi_domains[i], 0.0) * poi_opp_weights[i]
+            if weight <= 0:
+                continue
+            weighted_time_sum += weight * total_s
+            weighted_time_weight += weight
+        mean_times.append(
+            float(weighted_time_sum / weighted_time_weight)
+            if weighted_time_weight > 0
+            else float(t_zero_min * 60.0)
+        )
     return np.asarray(scores, dtype=float), np.asarray(mean_times, dtype=float)
 
 
@@ -660,6 +690,50 @@ def weighted_decay_sum(
                 total += dest_weight[node] * float(time_decay_linear(np.array([t_s / 60.0]), t_full_min, t_zero_min)[0])
         scores.append(total)
     return np.asarray(scores, dtype=float)
+
+def opportunity_weighted_mean_time(
+    graph: nx.MultiDiGraph,
+    origin_nodes: list[int],
+    destination_nodes: list[int],
+    poi_domains: list[str],
+    poi_opp_weights: list[float],
+    weight_attr: str,
+    domain_weights: dict[str, float] | None = None,
+    t_zero_min: float = 60.0,
+) -> np.ndarray:
+    """
+    Opportunity-weighted mean travel time to the same destination set used by MAI.
+
+    For each origin, average times to reachable POIs within ``t_zero_min`` using
+    ``domain_weight * opportunity_weight``. Unreachable origins receive the cutoff.
+    Returned values are seconds.
+    """
+    if domain_weights is None:
+        domain_weights = MAI_DOMAIN_WEIGHTS["default"]
+    dest_meta = {
+        node: (domain, float(weight))
+        for node, domain, weight in zip(destination_nodes, poi_domains, poi_opp_weights)
+    }
+    cutoff_s = t_zero_min * 60.0
+    means: list[float] = []
+    for origin in origin_nodes:
+        lengths = nx.single_source_dijkstra_path_length(
+            graph, origin, cutoff=cutoff_s, weight=weight_attr
+        )
+        weighted_sum = 0.0
+        weight_sum = 0.0
+        for node, t_s in lengths.items():
+            meta = dest_meta.get(node)
+            if meta is None:
+                continue
+            domain, opp_weight = meta
+            weight = float(domain_weights.get(domain, 0.0)) * opp_weight
+            if weight <= 0:
+                continue
+            weighted_sum += weight * float(t_s)
+            weight_sum += weight
+        means.append(weighted_sum / weight_sum if weight_sum > 0 else cutoff_s)
+    return np.asarray(means, dtype=float)
 
 
 def composite_mai_from_graph(

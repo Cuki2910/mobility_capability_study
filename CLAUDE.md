@@ -241,5 +241,17 @@ pytest tests/ -v   # must be 61 passed
   VIF unchanged (MAI≈20.2, RAC≈22.8) — pop scales numerator+MAI proportionally; RAC_time-only
   remains the VIF remedy. Demand-side `MAI_B_popweighted` retained as separate equity sensitivity.
   Toggle via `--no-pop-weighting`. Report: `outputs/validation/population_supply_weighting_sensitivity.md`.
-  Pytest: 66 tests pass.
+  Superseded headline numbers after RAC_time audit fix in Decision #20 below. Pytest: 70 tests pass.
+- [x] **RAC_time reproducibility fix + reviewer-risk sensitivity checks (2026-06-27, Decision #20):**
+  `RAC_time_raw_i` now uses motorcycle opportunity-weighted mean travel time divided by
+  walk-transit opportunity-weighted mean travel time over the same MAI opportunity set, domain
+  weights, POI weights, and 60-min cutoff. Audit columns are written:
+  `moto_mean_opp_time_min`, `wt_A_mean_opp_time_min`, `wt_B_mean_opp_time_min`.
+  New primary metrics: SMCI_A=0.0322, SMCI_B=0.0435, 298/462 improved (64.5%),
+  88 unchanged, 76 declined slightly, zero-NAI=88. RAC_time-only sensitivity:
+  kappa=0.900, 32/462 relabelled, VIF(MAI)=3.25 and VIF(RAC_time)=1.86. Motorcycle
+  speed sensitivity is stable (kappa=0.994, 2 relabelled); transit impedance sensitivity
+  remains acceptable but shows expected SMCI decline under conservative/pessimistic penalties.
+  Reports: `outputs/validation/motorcycle_speed_sensitivity.md`,
+  `outputs/validation/transit_impedance_sensitivity.md`. Pytest: 70 tests pass.
 - [ ] Full study area data collection and analysis.
