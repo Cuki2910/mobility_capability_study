@@ -16,8 +16,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from accessibility import (
-    norm01, compute_rac, compute_smci, compute_smci_additive,
-    metropolitan_competitiveness_score, theory_first_typology,
+    MAI_DOMAIN_WEIGHTS,
+    compute_rac,
+    compute_smci,
+    compute_smci_additive,
+    metropolitan_competitiveness_score,
+    norm01,
+    theory_first_typology,
+    time_decay_linear,
 )
 
 
@@ -68,3 +74,37 @@ def test_theory_first_typology_has_four_labels_by_construction():
         "Integrated Capability", "Fragmented Capability",
         "Transit-Dependent", "Motorcycle Lock-in",
     }
+
+
+def test_time_decay_linear_boundary_values():
+    t = np.array([0.0, 30.0, 45.0, 60.0, 90.0])
+    d = time_decay_linear(t, t_full=30.0, t_zero=60.0)
+    assert d[0] == 1.0
+    assert d[1] == 1.0
+    assert np.isclose(d[2], 0.5)
+    assert d[3] == 0.0
+    assert d[4] == 0.0
+
+
+def test_time_decay_linear_monotone_decreasing():
+    t = np.linspace(0, 70, 200)
+    d = time_decay_linear(t)
+    assert np.all(np.diff(d) <= 0)
+
+
+def test_time_decay_linear_output_bounded():
+    t = np.linspace(-10, 120, 500)
+    d = time_decay_linear(t)
+    assert d.min() >= 0.0 and d.max() <= 1.0
+
+
+def test_mai_domain_weights_sum_to_one():
+    for scheme, weights in MAI_DOMAIN_WEIGHTS.items():
+        total = sum(weights.values())
+        assert abs(total - 1.0) < 1e-9, f"scheme '{scheme}' sums to {total}"
+
+
+def test_mai_domain_weights_keys_consistent():
+    expected_domains = {"economic", "higher_education", "tertiary_healthcare", "metro_commercial"}
+    for scheme, weights in MAI_DOMAIN_WEIGHTS.items():
+        assert set(weights.keys()) == expected_domains, f"scheme '{scheme}' has unexpected keys"

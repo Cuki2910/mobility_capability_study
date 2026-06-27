@@ -11,6 +11,7 @@
 
 Duplicate rows: 0
 
-## Caveat
+## Spot-Check Status
 
-Manual spot-check remains required until at least 20 records are reviewed.
+Completed rows: 20/20
+Breakdown: {'confirmed': 14, 'misclassified': 2, 'duplicate': 2, 'missing_in_osm': 2}

@@ -1,55 +1,46 @@
-# Hướng dẫn đo tay — Google Maps Android Motorcycle Mode
+# Huong dan do tay - Google Maps Android Motorcycle Mode
 
-**Thời gian cần**: ~15 phút  
-**Thiết bị**: Android, Google Maps đã cài, kết nối internet  
-**Thời điểm đo**: buổi trưa ngày thường (11h–14h) để khớp với GTFS midday
+**Muc tieu**: do thoi gian xe may Google Maps cho 10 cap OD la **20 dia danh khac nhau**, khong dung centroid/diem khong ten.  
+**Thiet bi**: Android co Google Maps va hien mode **Xe mo to hai banh**.  
+**Thoi diem do**: uu tien ngay thuong 11h-14h de gan voi GTFS midday.  
 
----
+## Cach do moi pair
 
-## Cách đo mỗi pair
+1. Mo Google Maps -> Chi duong.
+2. Nhap diem di va diem den bang **ten dia danh** trong bang duoi.
+3. Neu Maps chon sai dia diem, dung toa do trong ngoac de doi chieu.
+4. Chon mode **Xe mo to hai banh**.
+5. Chup man hinh thay ro: origin, destination, mode xe may, so phut, gio do.
+6. Gui anh theo so pair: `Pair 1`, `Pair 2`, ... Pair 0 da xong.
 
-1. Mở Google Maps → nhấn **Chỉ đường**
-2. Ô "Điểm xuất phát": nhập tọa độ gốc (copy từ cột origin_lat, origin_lon)
-3. Ô "Điểm đến": nhập tọa độ đích
-4. Chọn mode **Xe máy** 🏍 (icon giữa xe hơi và xe buýt)
-   - Nếu không thấy icon xe máy → vuốt ngang thanh mode
-   - Nếu vẫn không thấy → ghi "N/A" vào cột gmaps_motorcycle_minutes
-5. Ghi lại **thời gian hiển thị** (số phút, route đầu tiên)
-6. Điền vào cột `gmaps_motorcycle_minutes` trong file CSV
+## Nguyen tac mau
 
----
+- 10 OD pairs khac nhau.
+- 20 dia danh distinct, moi dia danh chi xuat hien 1 lan.
+- Mix healthcare / school / retail / park.
+- Phu nhieu huong trong pilot area, khong lap VOP lam origin qua nhieu lan.
 
-## 10 OD Pairs cần đo
+## 10 OD pairs can do
 
-| # | Từ | Đến | Tọa độ gốc | Tọa độ đích | Model (min) | GMaps car | **Motorcycle (cần đo)** |
-|---|---|---|---|---|---|---|---|
-| 0 | VOP Gate | BV Sông Hồng | 20.9929, 105.9451 | 20.9832, 105.9232 | 7.6 | 8 | _____ |
-| 1 | VOP Gate | THCS Đa Tốn | 20.9929, 105.9451 | 20.9874, 105.9327 | 6.2 | 6 | _____ |
-| 2 | VOP Gate | Brighton College | 20.9929, 105.9451 | 20.9932, 105.9391 | 1.8 | 3 | _____ |
-| 3 | VOP Gate | Trạm yt Kiêu Kỵ | 20.9929, 105.9451 | 20.9803, 105.9587 | 5.3 | 6 | _____ |
-| 4 | VOP Gate | BV Gia Lâm | 20.9929, 105.9451 | 21.0094, 105.9440 | 5.6 | 8 | _____ |
-| 5 | Đa Tốn SE | BV Sông Hồng | 20.9705, 105.9503 | 20.9832, 105.9232 | 10.2 | 10 | _____ |
-| 6 | Đa Tốn SE | TH Nông nghiệp | 20.9705, 105.9503 | 21.0045, 105.9386 | 9.2 | 9 | _____ |
-| 7 | Kiêu Kỵ NE | Brighton College | 21.0100, 105.9510 | 20.9932, 105.9391 | 5.9 | 12 | _____ |
-| 8 | Trâu Quỳ W | Circle K | 21.0046, 105.9226 | 21.0015, 105.9432 | 5.0 | 5 | _____ |
-| 9 | Trâu Quỳ W | BV Gia Lâm | 21.0046, 105.9226 | 21.0094, 105.9440 | 7.5 | 8 | _____ |
+| # | Diem di | Diem den | Toa do diem di | Toa do diem den | Model motorcycle min | Google Maps motorcycle |
+|---:|---|---|---|---|---:|---|
+| 0 | Vinhomes Ocean Park | Tram y te xa Kieu Ky | 20.9929, 105.9451 | 20.9803277, 105.9586930 | 5.3 | 7 done |
+| 1 | Benh vien Da khoa Gia Lam | Truong THPT Nguyen Van Cu | 21.0093912, 105.9440029 | 20.9816965, 105.9216683 | 9.4 | ____ |
+| 2 | Brighton College Vietnam | The gioi di dong Da Ton | 20.9932061, 105.9390586 | 20.9861648, 105.9305191 | 5.4 | ____ |
+| 3 | Vincom Mega Mall Ocean Park | Truong THCS Da Ton | 20.9939128, 105.9595355 | 20.9873768, 105.9326785 | 9.6 | ____ |
+| 4 | Tram Y te xa Da Ton | Circle K Ocean Park | 20.9857635, 105.9312696 | 21.0014664, 105.9432461 | 6.2 | ____ |
+| 5 | Greenfield School | Truong Tieu hoc Nong nghiep | 20.9749933, 105.9235567 | 21.0045269, 105.9385739 | 10.7 | ____ |
+| 6 | Truong Tieu hoc Da Ton | AEON MaxValu Ocean Park | 20.9847081, 105.9377224 | 20.9932694, 105.9442984 | 3.7 | ____ |
+| 7 | Gom Su Quang Minh | Tram y te thi tran Trau Quy | 20.9771711, 105.9237395 | 21.0079563, 105.9390378 | 11.6 | ____ |
+| 8 | VinFast Ocean Park | Cong vien mua Ha | 20.9933776, 105.9601111 | 20.9713542, 105.9293674 | 13.0 | ____ |
+| 9 | Trung tam iTplus | Zmart Ocean Park | 21.0088695, 105.93683 | 21.0011668, 105.9438902 | 4.8 | ____ |
 
----
+## Neu Google Maps khong tim dung dia danh
 
-## Sau khi đo xong
+- Thu bo dau tieng Viet.
+- Neu co nhieu ket qua, chon ket qua gan toa do trong bang.
+- Chi dung toa do khi named lookup sai/ambiguous; ghi note `searched by coordinate because named lookup ambiguous`.
 
-Gửi kết quả (10 con số phút) — tôi sẽ tính toán và cập nhật toàn bộ:
-- `manual_motorcycle_validation_template.csv` (abs_error, pct_error)
-- `outputs/supervisor_memo.md`
-- `docs/data_sources.md`
-- MAE/RMSE final cho paper
+## Sau khi ban gui anh
 
----
-
-## Lưu ý pair đặc biệt
-
-**Pair 2** (VOP Gate → Brighton, ~1km): Nếu Google Maps gợi ý đi bộ thay xe máy, chọn override sang xe máy. Thời gian sẽ rất ngắn.
-
-**Pair 7** (Kiêu Kỵ → Brighton): Car = 12 min, model = 5.9 min — chênh lệch lớn nhất. Cần xem Google Maps motorcycle route đi theo đường nào (trong Vinhomes hay vòng ngoài)?
-
-**Pair 4** (VOP Gate → BV Gia Lâm): Car = 8 min, model = 5.6 min. Kiểm tra route có qua cổng Vinhomes không.
+Toi se dien `google_maps_android_minutes`, lookup time, device notes, status; sau do tinh sai so model.

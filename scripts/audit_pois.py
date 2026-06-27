@@ -1,4 +1,4 @@
-"""Audit OSM POIs used for NAI and create a spot-check template."""
+﻿"""Audit OSM POIs used for NAI and create a spot-check template."""
 from __future__ import annotations
 
 import argparse
@@ -6,7 +6,6 @@ from urllib.parse import quote_plus
 from pathlib import Path
 
 import pandas as pd
-
 
 NAI_CATEGORIES = {
     "school": ("amenity", "school"),
@@ -24,7 +23,7 @@ def repair_mojibake(value):
         repaired = value.encode("latin1").decode("utf-8")
     except UnicodeError:
         return value
-    return repaired if any(marker in value for marker in ("Ã", "áº", "á»", "Ä")) else value
+    return repaired if any(marker in value for marker in ("Ãƒ", "Ã¡Âº", "Ã¡Â»", "Ã„")) else value
 
 
 def poi_category(row) -> str:
@@ -78,10 +77,36 @@ def audit_pois(pois_path: Path, sample_per_category: int = 5):
     return counts.sort_values("nai_category"), duplicates, spot_check
 
 
-def write_markdown(counts: pd.DataFrame, duplicates: pd.DataFrame, output: Path) -> None:
+def merge_existing_spot_checks(spot_check: pd.DataFrame, existing_path: Path) -> pd.DataFrame:
+    """Preserve manual/web spot-check statuses when regenerating the sample."""
+    if not existing_path.exists():
+        return spot_check
+    existing = pd.read_csv(existing_path)
+    if "osm_url" not in existing.columns or "osm_url" not in spot_check.columns:
+        return spot_check
+    keep = ["osm_url", "spot_check_status", "spot_check_notes"]
+    existing = existing[[c for c in keep if c in existing.columns]].drop_duplicates("osm_url")
+    merged = spot_check.drop(columns=["spot_check_status", "spot_check_notes"], errors="ignore").merge(existing, on="osm_url", how="left")
+    merged["spot_check_status"] = merged["spot_check_status"].fillna("unchecked")
+    merged["spot_check_notes"] = merged["spot_check_notes"].fillna("")
+    if "spot_check_options" not in merged.columns:
+        merged["spot_check_options"] = "confirmed|missing_in_osm|misclassified|duplicate"
+    return merged
+
+
+def write_markdown(counts: pd.DataFrame, duplicates: pd.DataFrame, spot_check: pd.DataFrame, output: Path) -> None:
+    completed = 0
+    breakdown = {}
+    if "spot_check_status" in spot_check.columns:
+        status = spot_check["spot_check_status"].fillna("unchecked")
+        completed = int((status != "unchecked").sum())
+        breakdown = status.value_counts().to_dict()
     lines = ["# POI Audit", "", "## Category Counts", ""]
     lines += [f"- {row.nai_category}: {row.count} (empty={row.empty_category_flag})" for row in counts.itertuples(index=False)]
-    lines += ["", "## Duplicate Name/Geometry", "", f"Duplicate rows: {len(duplicates)}", "", "## Caveat", "", "Manual spot-check remains required until at least 20 records are reviewed."]
+    lines += ["", "## Duplicate Name/Geometry", "", f"Duplicate rows: {len(duplicates)}"]
+    lines += ["", "## Spot-Check Status", "", f"Completed rows: {completed}/{len(spot_check)}", f"Breakdown: {breakdown}"]
+    if completed < 20:
+        lines += ["", "## Caveat", "", "Manual/web spot-check remains required until at least 20 records are reviewed."]
     output.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -99,8 +124,9 @@ def main() -> int:
     counts, duplicates, spot_check = audit_pois(args.pois, args.sample_per_category)
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
     args.spot_check.parent.mkdir(parents=True, exist_ok=True)
+    spot_check = merge_existing_spot_checks(spot_check, args.spot_check)
     counts.to_csv(args.output_csv, index=False)
-    write_markdown(counts, duplicates, args.output_md)
+    write_markdown(counts, duplicates, spot_check, args.output_md)
     spot_check.drop(columns="geometry", errors="ignore").to_csv(args.spot_check, index=False)
     print(f"Wrote {args.output_csv}, {args.output_md}, {args.spot_check}")
     return 0

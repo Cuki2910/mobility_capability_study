@@ -5,7 +5,7 @@ Research proposal and analysis pipeline examining whether Vinhomes Ocean Park
 motorcycles at the metropolitan scale, using a dual-scale, mode-competitive
 accessibility framework.
 
-- Proposal: `proposal/proposal_v6.docx`
+- Proposal: `proposal/proposal_v7.md`
 - Working context: read `CLAUDE.md` first
 - Data status: `docs/data_sources.md`
 - Methodology decisions: `docs/decisions.md`
@@ -20,11 +20,10 @@ pytest tests/ -v
 
 ## Current Next Step
 
-VinBus OSM relations, Ocean Park-facing geometry, OSM graphs, POIs, grid,
-network-v1 accessibility inputs, pilot metrics, validation tables, and the
-supervisor memo are generated. Current blockers: TUMI GTFS download timed out
-locally, WorldPop raster is downloaded/resolution-verified, and POIs need
-manual spot-check records.
+VinBus OSM relations, Ocean Park-facing stop geometry, OSM graphs, POIs, grid,
+stop-routing network-v1 accessibility inputs, pilot metrics, validation tables,
+maps, and the supervisor memo are generated. Overture-only POIs are confirmed and
+the merged OSM+Overture POI layer is now primary.
 
 ## Phase Commands
 
@@ -40,6 +39,8 @@ python scripts/prepare_manual_checks.py
 python scripts/build_accessibility_inputs.py --mode network --gtfs-status baseline_limited
 python scripts/run_pilot_metrics.py
 python scripts/make_validation_report.py
+python scripts/evaluate_overture_gate.py
+python scripts/vinbus_routing_comparison.py
 python scripts/make_supervisor_memo.py
 python scripts/project_self_audit.py
 ```

@@ -11,6 +11,7 @@ High neighborhood accessibility alone is insufficient for integrated sustainable
 - `RAC`: Relative Accessibility Competitiveness, geometric mean of normalized `RAC_time` and `RAC_opp`.
 - `MCS`: Metropolitan Competitiveness Score, geometric mean of normalized `MAI` and `RAC`; classification only.
 - `SMCI`: Sustainable Mobility Capability Index, `NAI_norm * MAI_norm * RAC_norm`.
+- Scenario A/B deltas must use shared A+B normalization bounds for MAI, RAC subcomponents, RAC composite, and SMCI components. Do not compare separately normalized scenario scores.
 
 ## Networks And Scenarios
 

@@ -1,0 +1,9 @@
+check,count
+NAI high,231
+NAI low,231
+MCS high,231
+MCS low,231
+high NAI / high MCS,169
+high NAI / low MCS,62
+low NAI / high MCS,62
+low NAI / low MCS,169

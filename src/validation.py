@@ -73,3 +73,43 @@ def network_validation_sample(n_pairs: int = 10) -> pd.DataFrame:
 def external_validation_proxies() -> pd.DataFrame:
     """Empty template for property-value and population-density proxy tracking."""
     return pd.DataFrame(columns=["proxy", "source", "status", "notes"])
+
+
+def compute_external_correlations(metrics_df: pd.DataFrame, external_df: pd.DataFrame, merge_col: str = "cell_id") -> pd.DataFrame:
+    """
+    Compute correlations between accessibility indices (MAI, SMCI) and external validation proxies
+    (e.g., population density, property values).
+    """
+    from scipy.stats import spearmanr, pearsonr
+
+    df = metrics_df.merge(external_df, on=merge_col, how="inner")
+    
+    # Identify numeric columns in external_df that are not index columns
+    external_cols = [c for c in external_df.columns if c != merge_col and c not in metrics_df.columns]
+    
+    results = []
+    for ext_col in external_cols:
+        if not pd.api.types.is_numeric_dtype(df[ext_col]):
+            continue
+        for idx_col in ["MAI_B", "SMCI_B", "RAC_B"]:
+            if idx_col not in df.columns:
+                continue
+            # Drop NaNs
+            valid = df[[idx_col, ext_col]].dropna()
+            if len(valid) < 2:
+                continue
+            try:
+                pears_r, pears_p = pearsonr(valid[idx_col], valid[ext_col])
+                spear_r, spear_p = spearmanr(valid[idx_col], valid[ext_col])
+                results.append({
+                    "index_variable": idx_col,
+                    "external_proxy": ext_col,
+                    "pearson_r": float(pears_r),
+                    "pearson_p": float(pears_p),
+                    "spearman_rho": float(spear_r),
+                    "spearman_p": float(spear_p),
+                    "n_samples": len(valid),
+                })
+            except Exception:
+                continue
+    return pd.DataFrame(results)

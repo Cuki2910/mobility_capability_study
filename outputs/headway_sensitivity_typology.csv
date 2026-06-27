@@ -1,0 +1,13 @@
+typology,count,scenario
+Motorcycle Lock-in,162,optimistic_10min
+Integrated Capability,162,optimistic_10min
+Fragmented Capability,69,optimistic_10min
+Transit-Dependent,69,optimistic_10min
+Motorcycle Lock-in,162,baseline_15min
+Integrated Capability,162,baseline_15min
+Fragmented Capability,69,baseline_15min
+Transit-Dependent,69,baseline_15min
+Motorcycle Lock-in,162,pessimistic_30min
+Integrated Capability,162,pessimistic_30min
+Fragmented Capability,69,pessimistic_30min
+Transit-Dependent,69,pessimistic_30min

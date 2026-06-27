@@ -1,4 +1,4 @@
-"""Download Hanoi GTFS with real-time progress output (MB + %)."""
+﻿"""Download Hanoi GTFS with real-time progress output (MB + %)."""
 from __future__ import annotations
 
 import json
@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-# World Bank Data Catalog (CC-BY 4.0, Jun 2020 — midday peak period)
+# World Bank Data Catalog (CC-BY 4.0, Jun 2020 â€” midday peak period)
 # Fallback order: midday -> morning -> afternoon
 CANDIDATES = [
     {
@@ -15,21 +15,21 @@ CANDIDATES = [
         "label": "World Bank midday (MD)",
         "dataset_page": "https://datacatalog.worldbank.org/dataset/hanoi-vietnam-general-transit-feed-specification-gtfs",
         "license": "CC-BY 4.0",
-        "source_caveat": "Data collected Jun 2020; treat Network B as baseline-limited until currency confirmed.",
+        "source_caveat": "Data collected Jun 2020; treat as baseline-limited/pre-VinBus unless a newer feed is intentionally used for sensitivity.",
     },
     {
         "url": "https://datacatalogfiles.worldbank.org/ddh-published/0038236/1/DR0046582/hanoi_gtfs_am.zip",
         "label": "World Bank morning (AM)",
         "dataset_page": "https://datacatalog.worldbank.org/dataset/hanoi-vietnam-general-transit-feed-specification-gtfs",
         "license": "CC-BY 4.0",
-        "source_caveat": "Data collected Jun 2020; AM period; treat Network B as baseline-limited until currency confirmed.",
+        "source_caveat": "Data collected Jun 2020; AM period; treat as baseline-limited/pre-VinBus unless a newer feed is intentionally used for sensitivity.",
     },
     {
         "url": "https://datacatalogfiles.worldbank.org/ddh-published/0038236/1/DR0046584/hanoi_gtfs_pm.zip",
         "label": "World Bank afternoon (PM)",
         "dataset_page": "https://datacatalog.worldbank.org/dataset/hanoi-vietnam-general-transit-feed-specification-gtfs",
         "license": "CC-BY 4.0",
-        "source_caveat": "Data collected Jun 2020; PM period; treat Network B as baseline-limited until currency confirmed.",
+        "source_caveat": "Data collected Jun 2020; PM period; treat as baseline-limited/pre-VinBus unless a newer feed is intentionally used for sensitivity.",
     },
 ]
 OUTPUT = Path("data/raw/hanoi_gtfs.zip")
@@ -55,7 +55,7 @@ def try_download(candidate: dict) -> bool:
             total = resp.headers.get("Content-Length")
             total_bytes = int(total) if total else None
             total_str = fmt_mb(total_bytes) if total_bytes else "unknown size"
-            print(f"CONNECT OK — {total_str}", flush=True)
+            print(f"CONNECT OK â€” {total_str}", flush=True)
 
             downloaded = 0
             t0 = time.time()
@@ -86,7 +86,7 @@ def try_download(candidate: dict) -> bool:
         print(f"DONE    {fmt_mb(final_size)} in {elapsed_total:.1f}s", flush=True)
 
         meta = {
-            "source_name": f"Hanoi GTFS — {candidate['label']}",
+            "source_name": f"Hanoi GTFS â€” {candidate['label']}",
             "source_url": url,
             "dataset_page": candidate["dataset_page"],
             "license": candidate.get("license", "unspecified"),
@@ -143,3 +143,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

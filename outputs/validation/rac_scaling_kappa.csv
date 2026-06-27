@@ -1,0 +1,4 @@
+comparison,cohens_kappa
+minmax vs log_minmax,1.0
+minmax vs sqrt_minmax,0.9817
+log_minmax vs sqrt_minmax,0.9817

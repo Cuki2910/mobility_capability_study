@@ -6,7 +6,7 @@ For each row, open OSM and Google Maps links. Set status to confirmed, missing_i
 - Coordinates: 20.9803277, 105.95869299999998
 - OSM: https://www.openstreetmap.org/node/13818137495
 - Google Maps: https://www.google.com/maps/search/?api=1&query=Tr%E1%BA%A1m+y+t%E1%BA%BF+x%C3%A3+Ki%C3%AAu+K%E1%BB%B5+20.9803277%2C105.95869299999998
-- Current status: unchecked
+- Current status: confirmed
 
 ## healthcare: Trạm Y tế xã Đa Tốn
 - Coordinates: 20.985763465043064, 105.93126955704494

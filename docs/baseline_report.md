@@ -1,6 +1,6 @@
-# Baseline Report
+﻿# Baseline Report
 
-Last updated: 2026-06-21.
+Last updated: 2026-06-22.
 
 ## Phase 0 Results
 
@@ -16,7 +16,7 @@ Last updated: 2026-06-21.
 - `docs/decisions.md`: methodology decision log.
 - `tests/test_accessibility.py`: formula regression tests.
 
-## Data Not Yet Present
+## Data Present / Verified
 
 - OSM pilot networks verified in `data/raw/`: walk graph has 6,846 nodes / 20,024 edges; drive graph has 1,401 nodes / 3,408 edges.
 - Pilot POIs and grid verified in `data/interim/`: 106 POIs and 462 grid cells.
@@ -24,11 +24,13 @@ Last updated: 2026-06-21.
 - VinBus route geometry verified in `data/raw/vinbus_overpass_relations_geom.json`: 10 Ocean Park-facing relations with member geometry.
 - Accessibility-ready pilot input table exists at `data/interim/pilot_accessibility_inputs.csv` with 462 rows, rebuilt in `network` mode using graph shortest paths plus VinBus corridor proxy.
 - Processed pilot metrics exist at `data/processed/pilot_metrics.csv`; supervisor memo exists at `outputs/supervisor_memo.md`.
-- POI audit exists at `outputs/poi_audit.md`; category counts are healthcare 10, park 42, retail 35, school 19, duplicate rows 0.
+- POI audit exists at `outputs/poi_audit.md`; category counts are healthcare 10, park 42, retail 35, school 19, duplicate rows 0. Manual/web spot-check sample is complete: 20/20 reviewed.
 
-## Current Blockers
+## Current Caveats
 
-1. Network-v1 still uses transit corridor/stop proxies; replace with full stop/timetable metrics after GTFS validates.
-2. TUMI GTFS candidate download timed out locally; Network B remains baseline-limited until `data/raw/hanoi_gtfs.zip` exists.
+1. Network-v1 still uses transit corridor/stop proxies; replace with full stop/timetable metrics when current GTFS/VinBus feeds are available.
+2. Hanoi GTFS exists locally (`data/raw/hanoi_gtfs.zip`) and is documented as a 2018 pre-VinBus baseline, not missing data; do not present it as current service.
 3. WorldPop raster is downloaded and resolution-verified from metadata (~92.77m), but integration into MAI magnitude weighting is not implemented yet.
-4. POI audit is automated and spot-check CSV is ready with map links; complete at least 20 manual spot-check records.
+4. Android motorcycle validation is complete (10/10 named OD pairs, MAE ~1.90 min), with model bias slightly optimistic.
+
+

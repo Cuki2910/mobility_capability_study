@@ -77,6 +77,11 @@ def inspect_gtfs(zip_path: Path, today: date | None = None, stale_years: int = 2
 
     age_days = (today - max_date).days
     status = "current" if age_days <= stale_years * 365 else "baseline_limited"
+    # VinBus launched commercially in September 2021. A feed with service dates
+    # entirely before that date represents the pre-VinBus transit baseline, which
+    # is methodologically valid as Scenario A's Network B comparison point.
+    vinbus_launch = date(2021, 9, 1)
+    pre_vinbus = max_date < vinbus_launch
     return {
         "status": status,
         "path": str(zip_path),
@@ -87,6 +92,14 @@ def inspect_gtfs(zip_path: Path, today: date | None = None, stale_years: int = 2
         "stop_count": stop_count,
         "trip_count": trip_count,
         "network_b_baseline_limited": status != "current",
+        "gtfs_vintage": max_date.year,
+        "pre_vinbus_baseline": pre_vinbus,
+        "network_b_interpretation": (
+            "pre-VinBus conventional transit baseline (stop geometry valid; "
+            "timetable reflects 2018 service, before VinBus commercial launch Sep 2021)"
+            if pre_vinbus
+            else "post-VinBus-launch transit snapshot"
+        ),
     }
 
 

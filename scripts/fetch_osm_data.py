@@ -92,9 +92,17 @@ def main() -> int:
 
     print("Step 3: downloading POIs for NAI...", flush=True)
     tags = {
-        "amenity": ["school", "hospital", "clinic", "pharmacy"],
+        "amenity": [
+            "school", "hospital", "clinic", "pharmacy",
+            # Economic domain (hướng C): formal employment and financial services
+            "bank", "atm", "marketplace", "post_office",
+        ],
         "shop": True,
         "leisure": ["park"],
+        # Economic domain (hướng C): office buildings and business parks
+        "office": True,
+        # Landuse polygons for economic area proxy (hướng B)
+        "landuse": ["commercial", "retail", "industrial", "office"],
     }
     pois = ox.features_from_bbox(bbox=(west, south, east, north), tags=tags)
     print(f"  POIs found: {len(pois)}", flush=True)

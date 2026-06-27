@@ -1,18 +1,27 @@
 {
   "snapshot": {
     "grid_cells": 462,
-    "mean_SMCI_A": 0.0053384435218508,
-    "mean_SMCI_B": 0.009181088401098,
-    "share_improved": 0.3181818181818182,
+    "mean_SMCI_A": 0.0497468898151758,
+    "mean_SMCI_B": 0.0881339994829384,
+    "share_improved": 0.670995670995671,
     "gtfs_status": "baseline_limited",
+    "pre_vinbus_baseline": true,
     "poi_spot_checks": {
       "total": 20,
-      "completed": 0
+      "completed": 20,
+      "breakdown": {
+        "confirmed": 14,
+        "misclassified": 2,
+        "duplicate": 2,
+        "missing_in_osm": 2
+      }
     },
     "motorcycle_android_checks": {
       "rows": 10,
-      "android_completed": 0,
-      "has_android_column": true
+      "android_completed": 10,
+      "has_android_column": true,
+      "mae_minutes": 1.9,
+      "bias_minutes": -1.0399999999999998
     },
     "android_emulator": {
       "status_file": true,
@@ -27,27 +36,44 @@
       "resolution_source": "raster_metadata",
       "raster": "data\\raw\\worldpop\\vnm_ppp_2020.tif"
     },
-    "high_vif": false
+    "distribution_diagnostics": {
+      "NAI_zero_share": 0.2510822510822511,
+      "SMCI_B_zero_share": 0.2510822510822511,
+      "improved_share": 0.5194805194805194,
+      "unchanged_share": 0.4805194805194805,
+      "declined_share": 0.0
+    },
+    "high_vif": true,
+    "built_population_zero_access_audit": true,
+    "merged_poi_sensitivity": true,
+    "gtfs_catalog_check": true
   },
   "strengths": [
     "End-to-end pilot pipeline has real OSM graph/POI/grid inputs and processed metrics.",
     "WorldPop raster is downloaded and resolution-verified against the 250m grid.",
-    "Current NAI/MAI/RAC VIF diagnostics are below threshold 5."
+    "2018 Hanoi GTFS is documented as a deliberate pre-VinBus Network B baseline, not missing data.",
+    "POI spot-check completed: 20/20 records reviewed ({'confirmed': 14, 'misclassified': 2, 'duplicate': 2, 'missing_in_osm': 2}).",
+    "Android motorcycle validation completed: 10/10 OD pairs; MAE=1.90 minutes.",
+    "Building footprints are fetched and aggregated by grid cell for built-cell masking and WorldPop cross-checks.",
+    "Overture Places are fetched and merged with OSM POIs using source-agreement labels.",
+    "Built/population zero-access audit is complete; zero inflation is checked against building footprints and WorldPop.",
+    "Overture POI gate passed; merged OSM+Overture POI layer is primary.",
+    "GTFS catalog check documents MobilityDatabase and TUMI/Datahub candidates without replacing the 2018 pre-VinBus baseline.",
+    "Quick-look maps and GIS layers are generated for supervisor review.",
+    "Supervisor review package index is available."
   ],
-  "blockers": [
-    "Network B remains baseline-limited because current GTFS is missing or stale.",
-    "POI manual spot-check incomplete: 0/20 records checked.",
-    "Android motorcycle validation incomplete: 0/10 OD pairs measured.",
-    "Android emulator is installed, but Google Maps on the AVD does not expose Motorcycle/Two-wheeler mode."
-  ],
+  "blockers": [],
   "warnings": [
+    "MAI/RAC VIF diagnostics exceed threshold 5; report RAC_time-only sensitivity before trusting final typology claims.",
     "Population raster is verified but not yet integrated into MAI magnitude weighting.",
-    "Scenario A interpretation is weak until Network B is current or explicitly reframed as no-baseline-transit."
+    "Network B uses a 2018 pre-VinBus GTFS vintage; report as baseline and sensitivity limitation, not current service.",
+    "Android emulator lacks motorcycle mode; physical Android measurements are used instead.",
+    "SMCI_B is zero-inflated (25.11% zero cells); report percentile/rank maps and delta groups, not only absolute means."
   ],
   "next_actions": [
-    "Fill 20 POI spot-check rows using OSM/Google Maps links.",
-    "Measure 10 Android motorcycle OD times and add google_maps_android_minutes.",
-    "Either obtain current GTFS or reframe Scenario A as baseline-limited/no-current-GTFS.",
-    "Integrate WorldPop raster into MAI magnitude weighting only if the paper needs population-weighted opportunity magnitudes."
+    "Preserve Overture gate audit trail and monitor merged POI layer for systematic errors.",
+    "Integrate building/WorldPop/nighttime-light/employment proxy into MAI magnitude weighting or downgrade the claim to proxy-level MAI.",
+    "Report Network B as a 2018 pre-VinBus baseline and keep post-2021 GTFS as a sensitivity target if found.",
+    "Proceed to supervisor review with pilot results and explicit proxy limitations."
   ]
 }
