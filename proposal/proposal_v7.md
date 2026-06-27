@@ -245,7 +245,9 @@ The current pilot results are:
 | Declined cells | 0 / 462 (0.00%) |
 | Motorcycle validation MAE | 1.90 min |
 
-Scenario B improves mean SMCI relative to Scenario A, but improvement is spatially uneven. No cells decline because Scenario A and B are evaluated on shared normalization bounds and the VinBus layer can only add reachable transit opportunities under the current implementation.
+The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI rises from 0.0497 in Scenario A to 0.0881 in Scenario B, but this average is affected by zero-inflation in the weakest-link index. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI; the same 88 cells also have zero SMCI_B because any zero component collapses the multiplicative index. Cross-checking these zero-access cells against VIDA building footprints shows that 84 of them (95.5%) are built cells, so zero accessibility is not simply a lake, park, or open-space artifact.
+
+The VinBus scenario improves SMCI in 310 of 462 cells (67.1%), while 152 cells (32.9%) remain unchanged and no cells decline under the shared A+B normalization scheme. Among cells with positive SMCI, the median rises from 0.0267 in Scenario A to 0.0448 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells that have at least some sustainable mobility capability. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
 
 Scenario B typology counts are:
 
@@ -260,7 +262,7 @@ The equal high/low structure is expected under a rank-median typology and should
 
 The population-weighted cross-check remains a useful caution. Total estimated population is about 78,816. Population-weighted mean SMCI_B is 0.0862, compared with an unweighted mean of 0.0881, a difference of -2.2%. Spearman rho between population and SMCI_B is -0.0182 (p = 0.697), so population is roughly evenly distributed across SMCI levels. Population shares by typology are: Integrated Capability 29.8%, Fragmented Capability 20.9%, Transit-Dependent 17.0%, and Motorcycle Lock-in 32.4%.
 
-The built/population zero-access audit is also important. The pilot has 88 zero-NAI cells and 88 zero-SMCI_B cells. Of the zero-NAI cells, 84 are built and contain about 11,798 residents, or 15.0% of the pilot population. Zero accessibility is therefore not only a lake/park/open-space issue; it is a substantive access and mapping uncertainty issue.
+The built/population zero-access audit adds a second caution. The 84 built zero-NAI cells contain about 11,798 residents, or 15.0% of the pilot population. Zero accessibility is therefore not only a lake/park/open-space issue; it is a substantive access and mapping uncertainty issue that should be reported separately from low-but-positive accessibility.
 
 ## 12. Expected Argument
 
