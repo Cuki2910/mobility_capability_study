@@ -46,6 +46,13 @@ def main() -> int:
         default=Path("data/interim/grid_worldpop.csv"),
         help="Per-cell WorldPop density used for supply-side MAI weighting (Decision #19).",
     )
+    parser.add_argument(
+        "--opportunity-basis",
+        choices=["proxy", "observed"],
+        default="proxy",
+        help="MAI opportunity weights: proxy reproduces current baseline; observed uses "
+        "Decision #21 observed-where-available hierarchy.",
+    )
     parser.add_argument("--output", type=Path, default=Path("data/interim/pilot_accessibility_inputs.csv"))
     args = parser.parse_args()
 
@@ -82,6 +89,7 @@ def main() -> int:
             buildings_path=args.buildings,
             pop_weighting=not args.no_pop_weighting,
             worldpop_csv=args.worldpop_csv if args.worldpop_csv.exists() else None,
+            opportunity_basis=args.opportunity_basis,
         )
     else:
         inputs = build_spatial_accessibility_inputs(

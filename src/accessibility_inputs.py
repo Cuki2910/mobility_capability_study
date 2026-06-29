@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
@@ -106,6 +107,36 @@ _EDU_NAME_KEYWORDS = (
     "giảng đường", "university", "đại học", "học viện",
     "campus", "viện nghiên cứu", "trung tâm nghiên cứu",
 )
+
+
+OBSERVED_OPPORTUNITY_REFS = {
+    # ref = typical mid-size facility → weight ≈ 1.0.
+    # Caps match the proxy area-scaling caps from classify_poi_opportunity_domain()
+    # (Decision #18 discipline: no single POI can dominate the domain).
+    #
+    # tertiary_healthcare: 50-bed district clinic = ref; 288-bed hospital → 5.76 (< cap 30)
+    "tertiary_healthcare": {"column": "obs_beds", "unit": "beds", "ref": 50.0, "lo": 0.4, "hi": 30.0},
+    # higher_education: 1000-student secondary school = ref; large campus → ≤20
+    "higher_education": {"column": "obs_enrollment", "unit": "students", "ref": 1000.0, "lo": 0.5, "hi": 20.0},
+    # economic: ref=500 jobs (small industrial cluster); cap=5 mirrors Decision #18 landuse cap.
+    # Without this, a 30,000-worker KCN would hit cap=30 and dominate the full MAI domain.
+    # 500-job reference keeps a typical SME-office-park (50-500 jobs) in [0.1, 1.0] range.
+    "economic": {"column": "obs_jobs", "unit": "jobs", "ref": 500.0, "lo": 0.1, "hi": 5.0},
+    # metro_commercial: 1000 m² GLA = ref; Vincom mall (~13,000 m²) → ≤25
+    "metro_commercial": {"column": "obs_retail_gla_m2", "unit": "m2_gla", "ref": 1000.0, "lo": 0.1, "hi": 25.0},
+}
+OBSERVED_SOURCE_VALUES = {"observed_point", "observed_derived", "observed_dasymetric"}
+
+
+@dataclass(frozen=True)
+class PoiOpportunity:
+    domain: str
+    weight: float
+    opportunity_source: str
+    observed_value: float | None = None
+    observed_unit: str | None = None
+    source_id: str | None = None
+    source_url: str | None = None
 
 
 def _tag(row, key: str) -> str:
@@ -232,6 +263,85 @@ def classify_poi_opportunity_domain(row) -> tuple[str, float]:
     if has_area:
         return "metro_commercial", float(np.clip(area / 1000.0, 0.1, 25.0))
     return "metro_commercial", 0.2
+
+
+def _positive_number(row, key: str) -> float | None:
+    val = pd.to_numeric(row.get(key), errors="coerce")
+    if val is None or pd.isna(val) or float(val) <= 0:
+        return None
+    return float(val)
+
+
+def _source_text(row, key: str) -> str | None:
+    val = row.get(key)
+    if val is None or (isinstance(val, float) and pd.isna(val)):
+        return None
+    text = str(val).strip()
+    return text or None
+
+
+def _observed_source_tier(domain: str, source_id: str | None) -> str:
+    sid = (source_id or "").lower()
+    if "dasymetric" in sid or "ward" in sid or "commune" in sid:
+        return "observed_dasymetric"
+    if domain == "metro_commercial" or "derived" in sid or "floor" in sid or "gla" in sid:
+        return "observed_derived"
+    return "observed_point"
+
+
+def _proxy_source(row, domain: str) -> str:
+    area = pd.to_numeric(row.get("building_area_m2"), errors="coerce")
+    has_area = area is not None and not pd.isna(area) and area > 0
+    if not has_area:
+        return "proxy_tag"
+    if domain in {"tertiary_healthcare", "higher_education", "metro_commercial"}:
+        return "proxy_area"
+    if _tag(row, "landuse") in _OFFICE_DOMAIN or _tag(row, "office"):
+        return "proxy_area"
+    return "proxy_tag"
+
+
+def _observed_opportunity(row, domain: str) -> PoiOpportunity | None:
+    spec = OBSERVED_OPPORTUNITY_REFS.get(domain)
+    if spec is None:
+        return None
+    value = _positive_number(row, spec["column"])
+    if value is None:
+        return None
+    source_id = _source_text(row, "obs_source")
+    return PoiOpportunity(
+        domain=domain,
+        weight=float(np.clip(value / spec["ref"], spec["lo"], spec["hi"])),
+        opportunity_source=_observed_source_tier(domain, source_id),
+        observed_value=value,
+        observed_unit=spec["unit"],
+        source_id=source_id,
+        source_url=_source_text(row, "obs_source_url"),
+    )
+
+
+def classify_poi_opportunity(row, opportunity_basis: str = "observed") -> PoiOpportunity:
+    """
+    Classify one POI into a MAI domain, weight, and provenance.
+
+    Decision #21: observed magnitudes win when available; otherwise the existing
+    area/tag proxy classifier is used. ``opportunity_basis="proxy"`` reproduces
+    the pre-observed classifier for sensitivity and regression baselines.
+    """
+    if opportunity_basis not in {"observed", "proxy"}:
+        raise ValueError("opportunity_basis must be 'observed' or 'proxy'")
+    domain, weight = classify_poi_opportunity_domain(row)
+    if opportunity_basis == "observed":
+        observed = _observed_opportunity(row, domain)
+        if observed is not None:
+            return observed
+    return PoiOpportunity(
+        domain=domain,
+        weight=float(weight),
+        opportunity_source=_proxy_source(row, domain),
+        source_id=_source_text(row, "obs_source"),
+        source_url=_source_text(row, "obs_source_url"),
+    )
 
 
 REQUIRED_INPUT_COLUMNS = {
@@ -404,6 +514,7 @@ def build_network_accessibility_inputs(
     pop_weighting: bool = True,
     worldpop_csv: str | Path | None = "data/interim/grid_worldpop.csv",
     pop_mult_bounds: tuple[float, float] = (0.5, 2.0),
+    opportunity_basis: str = "proxy",
 ) -> pd.DataFrame:
     """
     Build pilot inputs using MAI v8: composite Metropolitan Opportunity Accessibility
@@ -479,10 +590,15 @@ def build_network_accessibility_inputs(
         drive_graph, grid_drive_nodes, poi_drive_nodes, motorcycle_cutoff_min * 60, drive_weight
     )
 
-    # MAI v8: classify each POI into domain + opportunity weight
-    poi_classifications = [classify_poi_opportunity_domain(row) for _, row in pois.iterrows()]
-    poi_domains = [d for d, _ in poi_classifications]
-    poi_opp_weights = [w for _, w in poi_classifications]
+    # MAI v8/v9: classify each POI into domain + opportunity weight.
+    # opportunity_basis="proxy" reproduces the pre-Decision #21 classifier.
+    poi_classifications = [
+        classify_poi_opportunity(row, opportunity_basis=opportunity_basis)
+        for _, row in pois.iterrows()
+    ]
+    poi_domains = [opp.domain for opp in poi_classifications]
+    poi_opp_weights = [opp.weight for opp in poi_classifications]
+    poi_opp_sources = [opp.opportunity_source for opp in poi_classifications]
 
     # Supply-side population weighting (Decision #19): scale each POI's opportunity
     # weight by residential density of the grid cell that contains it. Applied to ALL
@@ -530,6 +646,20 @@ def build_network_accessibility_inputs(
             print(f"Warning: pop-weighting failed, using unweighted MAI: {e}")
             pop_mult = np.ones(len(pois), dtype=float)
     poi_opp_weights_eff = [w * float(m) for w, m in zip(poi_opp_weights, pop_mult)]
+    observed_flags = np.array([src in OBSERVED_SOURCE_VALUES for src in poi_opp_sources], dtype=bool)
+    poi_weight_arr = np.asarray(poi_opp_weights_eff, dtype=float)
+    coverage_cols: dict[str, float] = {}
+    total_weight = float(np.sum(poi_weight_arr))
+    coverage_cols["obs_coverage_total"] = (
+        float(np.sum(poi_weight_arr[observed_flags]) / total_weight) if total_weight > 0 else 0.0
+    )
+    for domain in OBSERVED_OPPORTUNITY_REFS:
+        mask = np.array([d == domain for d in poi_domains], dtype=bool)
+        domain_weight = float(np.sum(poi_weight_arr[mask]))
+        coverage_cols[f"obs_coverage_{domain}"] = (
+            float(np.sum(poi_weight_arr[mask & observed_flags]) / domain_weight)
+            if domain_weight > 0 else 0.0
+        )
 
     moto_mean_opp_time = opportunity_weighted_mean_time(
         drive_graph,
@@ -698,6 +828,9 @@ def build_network_accessibility_inputs(
         # Population demand weighting sensitivity (Task 2b).
         "pop_density_norm": pop_density_norm,
         "MAI_B_popweighted": mai_b_popweighted,
+        # Decision #21 observed-opportunity provenance coverage. These are
+        # destination-weight coverage shares repeated per cell for audit/reporting.
+        **{name: np.full(len(grid), value, dtype=float) for name, value in coverage_cols.items()},
         # Transit component decomposition (Task 3b): mean minutes per component per cell.
         "transit_walk_access_min": transit_components["mean_walk_access_min"] if transit_components else np.zeros(len(grid)),
         "transit_wait_min": transit_components["mean_wait_min"] if transit_components else np.zeros(len(grid)),
@@ -708,6 +841,7 @@ def build_network_accessibility_inputs(
             "composite Metropolitan Opportunity Accessibility (Decision #12). "
             f"Supply-side pop-weighting={'on' if pop_weighting else 'off'} "
             f"bounds={pop_mult_bounds} (Decision #19). "
+            f"Opportunity basis={opportunity_basis} (Decision #21 observed/proxy hierarchy). "
             "RAC_opp = MAI_transit / MAI_motorcycle. "
             "RAC_time_raw = motorcycle opportunity-weighted mean time / walk-transit "
             "opportunity-weighted mean time over the MAI opportunity set with 60-min cutoff; "
@@ -719,6 +853,7 @@ def build_network_accessibility_inputs(
                  "composite Metropolitan Opportunity Accessibility (Decision #12). "
                  f"Supply-side pop-weighting={'on' if pop_weighting else 'off'} "
                  f"bounds={pop_mult_bounds} (Decision #19). "
+                 f"Opportunity basis={opportunity_basis} (Decision #21 observed/proxy hierarchy). "
                  "RAC_opp = MAI_transit / MAI_motorcycle. "
                  "RAC_time_raw = motorcycle opportunity-weighted mean time / walk-transit "
                  "opportunity-weighted mean time over the MAI opportunity set with 60-min cutoff; "

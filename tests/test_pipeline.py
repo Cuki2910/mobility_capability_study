@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from accessibility_inputs import (
     build_proxy_accessibility_inputs,
+    classify_poi_opportunity,
     classify_poi_opportunity_domain,
     population_supply_multiplier,
     validate_accessibility_inputs,
@@ -399,6 +400,54 @@ def test_classify_poi_opportunity_domain_unchanged_by_pop_weighting():
     assert classify_poi_opportunity_domain({"amenity": "hospital"}) == ("tertiary_healthcare", 1.0)
     assert classify_poi_opportunity_domain({"shop": "mall"}) == ("metro_commercial", 1.0)
     assert classify_poi_opportunity_domain({"office": "company"}) == ("economic", 1.0)
+
+
+def test_classify_poi_opportunity_observed_values_win_over_proxy():
+    health = classify_poi_opportunity({"amenity": "hospital", "obs_beds": 100, "building_area_m2": 1000})
+    edu = classify_poi_opportunity({"amenity": "university", "obs_enrollment": 2500})
+    # economic ref=500 → 200 jobs → weight = clip(200/500, 0.1, 5.0) = 0.4
+    econ = classify_poi_opportunity({"office": "company", "obs_jobs": 200})
+    retail = classify_poi_opportunity({"shop": "mall", "obs_retail_gla_m2": 3500})
+
+    assert health.domain == "tertiary_healthcare"
+    assert health.weight == 2.0
+    assert health.opportunity_source == "observed_point"
+    assert health.observed_unit == "beds"
+    assert edu.weight == 2.5
+    # ref=500: 200/500=0.4 (within cap=5.0)
+    assert abs(econ.weight - 0.4) < 1e-6
+    assert retail.weight == 3.5
+    assert retail.opportunity_source == "observed_derived"
+
+
+def test_classify_poi_opportunity_proxy_basis_reproduces_legacy_tuple():
+    row = {"landuse": "commercial", "building_area_m2": 8000.0, "obs_jobs": 5000}
+    legacy = classify_poi_opportunity_domain(row)
+    proxy = classify_poi_opportunity(row, opportunity_basis="proxy")
+
+    assert (proxy.domain, proxy.weight) == legacy
+    assert proxy.opportunity_source == "proxy_area"
+
+
+def test_classify_poi_opportunity_falls_back_area_then_tag():
+    area = classify_poi_opportunity({"amenity": "hospital", "building_area_m2": 1000.0})
+    tag = classify_poi_opportunity({"amenity": "hospital"})
+
+    assert area.opportunity_source == "proxy_area"
+    assert area.weight == 2.0
+    assert tag.opportunity_source == "proxy_tag"
+    assert tag.weight == 1.0
+
+
+def test_classify_poi_opportunity_observed_caps_and_dasymetric_source():
+    # economic ref=500, cap=5.0 — a very large industrial park hits the cap
+    capped = classify_poi_opportunity({"office": "company", "obs_jobs": 100000})
+    dasymetric = classify_poi_opportunity(
+        {"office": "company", "obs_jobs": 100, "obs_source": "GSO_ward_dasymetric"}
+    )
+
+    assert capped.weight == 5.0  # cap=5.0 (Decision #18 discipline, ref=500)
+    assert dasymetric.opportunity_source == "observed_dasymetric"
 
 
 def test_weighted_decay_sum_zero_when_all_out_of_range():

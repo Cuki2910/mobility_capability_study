@@ -1,0 +1,2 @@
+name,lat,lon,obs_beds,obs_source,obs_source_url,notes
+Bệnh viện Đa khoa Gia Lâm,21.009391183063904,105.94400289265305,288,congnghiepmoitruong_2019_actual_beds,https://congnghiepmoitruong.vn/benh-vien-da-khoa-gia-lam-dat-muc-tieu-phat-trien-ky-thuat-chuyen-mon-sau-de-phuc-vu-nhan-dan-4423.html,Reported 288 actual beds; used as observed_point for tertiary healthcare. Other clinics/commune health stations left blank until citable bed counts are found.

@@ -331,3 +331,43 @@ so settled debates don't get silently re-opened.
     when added walk-transit reachable opportunities are slower than motorcycle-weighted access.
     This is more conservative than the earlier simple reachable-time mean and should be used
     for JTG submission.
+
+21. **MAI uses an observed-where-available opportunity hierarchy (2026-06-28; extended 2026-06-29).**
+    MAI remains a four-domain Metropolitan Opportunity Accessibility measure, but destination
+    weights now support direct observed magnitudes before falling back to proxies. The hierarchy is:
+    observed facility magnitude → building/area-derived proxy → tag base proxy. Provenance is
+    carried per POI (`opportunity_source`) and summarized per cell as observed-coverage shares.
+
+    Observed transforms are within-domain and capped to avoid re-triggering Decision #18
+    over-domination:
+
+    ```text
+    healthcare: weight = clip(obs_beds / 50,        0.4, 30.0)
+    higher_ed:  weight = clip(obs_enrollment / 1000, 0.5, 20.0)
+    economic:   weight = clip(obs_jobs / 500,        0.1,  5.0)   ← ref=500 to prevent KCN domination
+    commercial: weight = clip(obs_retail_gla_m2 / 1000, 0.1, 25.0)
+    ```
+
+    The economic `ref=500` and `cap=5.0` are calibrated so that a typical SME cluster
+    (50–500 jobs) lands in [0.1, 1.0] and a large industrial park (30,000 jobs) hits the cap
+    rather than flooding the domain (lesson from #18). This keeps the economic domain total weight
+    ratio at ~1.7x proxy, comparable to healthcare (~2.1x) and education (~1.1x).
+
+    Source tiers: `observed_point` (named citable source), `observed_derived` (area/level
+    derivation), `observed_dasymetric` (ward-level disaggregation — must be disclosed in Methods
+    as interpolation, not point truth), `proxy_area`, `proxy_tag`.
+
+    `--opportunity-basis proxy` reproduces the pre-#21 baseline exactly.
+    `--opportunity-basis observed` applies the hybrid hierarchy.
+
+    **Full four-domain coverage achieved 2026-06-29 (`scripts/derive_all_observed.py`):**
+    - tertiary_healthcare: **18/18 = 100%** (1 named hospital, commune-station MOH standard, area-derived)
+    - higher_education: **70/70 = 100%** (MOET class-size standards by school type)
+    - economic: **32/32 = 100%** (employment density × area by sector; point estimates for banks/markets)
+    - metro_commercial: **37/88 = 42%** (GLA from footprints; 51 parks/transport/leisure left as proxy — correct)
+
+    Observed-vs-proxy sensitivity (2026-06-29): SMCI_B 0.0435 → 0.0502 (+15.5%), κ=0.864,
+    44/462 cells relabelled, Spearman ρ=0.988. VIF(MAI)=10.9, VIF(RAC)=11.7 — slightly higher
+    than proxy (8.9/8.9) because the richer healthcare/economic domain increases MAI/RAC
+    covariance; RAC_time-only contingency (#3) remains the VIF remedy. Report:
+    `outputs/validation/observed_vs_proxy_sensitivity.md`.

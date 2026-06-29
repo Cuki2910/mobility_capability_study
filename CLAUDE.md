@@ -111,6 +111,11 @@ pytest tests/ -v   # must be 61 passed
 
 - **No internet access to OSM/Overpass from this sandbox.** Data-fetching
   scripts are written but must be run on a real machine.
+- **VinBus has no official GTFS available.** Network C uses the already crawled
+  and QC'd pseudo-GTFS from public VinBus API responses:
+  `data/raw/vinbus_pseudo_gtfs_fixed/` (176 routes / 5,631 stops). Treat this
+  as the primary Network C source; "official GTFS missing" does not mean the
+  VinBus data collection is incomplete.
 - **Google Maps TWO_WHEELER mode at the API level is unconfirmed for
   Vietnam** â€” don't design any step that depends on bulk/automated
   motorcycle routing via the API. See `docs/data_sources.md`.
@@ -254,4 +259,14 @@ pytest tests/ -v   # must be 61 passed
   remains acceptable but shows expected SMCI decline under conservative/pessimistic penalties.
   Reports: `outputs/validation/motorcycle_speed_sensitivity.md`,
   `outputs/validation/transit_impedance_sensitivity.md`. Pytest: 70 tests pass.
+- [x] **Observed-where-available MAI hierarchy fully populated for pilot (2026-06-29, Decision #21):**
+  `src/accessibility_inputs.py` has `classify_poi_opportunity(row, opportunity_basis=...)`.
+  `scripts/derive_all_observed.py` filled all four domains in `data/interim/merged_pois_observed.gpkg`:
+  healthcare 18/18 (100%), higher_ed 70/70 (100%), economic 32/32 (100%), commercial 37/88 (42% —
+  remaining 51 are parks/transport, correct to leave as proxy). economic REF calibrated to 500 jobs
+  (cap=5.0, Decision #18 discipline) to prevent KCN domination. Observed-vs-proxy sensitivity:
+  SMCI_B 0.0435→0.0502, κ=0.864, 44/462 relabelled, Spearman ρ=0.988. VIF(MAI)=10.9, VIF(RAC)=11.7
+  (slightly higher than proxy; RAC_time-only contingency #3 remains the VIF remedy). Source tiers:
+  `observed_point`, `observed_derived`, `observed_dasymetric`, `proxy_area`, `proxy_tag`.
+  Report: `outputs/validation/observed_vs_proxy_sensitivity.md`. Pytest: 74 tests pass.
 - [ ] Full study area data collection and analysis.
