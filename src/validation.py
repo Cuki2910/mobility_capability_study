@@ -10,8 +10,8 @@ def collinearity_check(df: pd.DataFrame, cols=("NAI", "MAI", "RAC")) -> pd.Serie
     """
     Section 3.9: VIF among NAI, MAI, RAC.
 
-    If VIF > 5 for MAI or RAC, the proposal contingency is to report RAC using
-    RAC_time only. This function reports the diagnostic; it does not change the
+    If VIF > 5 for MAI or RAC, the promoted primary is RAC_time only and
+    full-RAC should be reported as robustness. This function reports the diagnostic; it does not change the
     primary formula.
     """
     X = df[list(cols)].astype(float).values

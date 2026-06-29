@@ -416,8 +416,8 @@ METRIC_META = {
               "long": "<b>MAI_B</b>: metropolitan opportunity access after VinBus. It measures how many weighted opportunities can be reached by walking plus transit within the 60-minute impedance window. Destination weights use the strict source-backed MAI audit.",
               "how": "Cold blue = fewer/weaker metropolitan opportunities reachable by walk+transit; warm red = more/stronger reachable opportunities.",
               "hist": mai_hist,   "lo": mai_lo,   "hi": mai_hi},
-    "rac":   {"label": "RAC_B",      "unit": "ratio",    "desc": "Relative Accessibility Competitiveness = geom. mean(RAC_time, RAC_opp); higher = transit more competitive vs motorcycle",
-              "long": "<b>RAC_B</b>: how competitive walking plus transit is against motorcycle access after VinBus. It combines relative travel-time competitiveness and relative opportunity competitiveness. Higher values mean transit narrows the gap with motorcycles.",
+    "rac":   {"label": "RAC_B",      "unit": "ratio",    "desc": "Relative Accessibility Competitiveness = RAC_time primary; higher = transit travel time closer to motorcycle",
+              "long": "<b>RAC_B</b>: promoted reviewer-safe time competitiveness of walking plus transit against motorcycle access after VinBus. Higher values mean transit narrows the travel-time gap with motorcycles. The previous full RAC with opportunity ratio is retained as robustness, not the primary map.",
               "how": "Cold blue = walk+transit is less competitive against motorcycle; warm red = walk+transit is more competitive.",
               "hist": rac_hist,   "lo": rac_lo,   "hi": rac_hi},
     "delta": {"label": "Delta_SMCI", "unit": "index",    "desc": "SMCI change from adding VinBus (Scenario B minus A); positive = VinBus improves capability",
@@ -656,6 +656,7 @@ const HSTOPS   = {js(hanoi_stops_geojson)};
 
 // ── Metric metadata (for continuous legend) ────────────────────────────────
 const METRIC_META = {js(METRIC_META)};
+let selectedCellFeature = GRID.features[Math.floor(GRID.features.length / 2)] || null;
 
 // ── Map init ──────────────────────────────────────────────────────────────
 const map = L.map('map', {{
@@ -714,6 +715,7 @@ function norm(v,lo,hi){{ return hi===lo ? 0.5 : clamp((v-lo)/(hi-lo),0,1); }}
 
 // ── Study area boundary ────────────────────────────────────────────────────
 const boundaryLayer = L.geoJSON(BOUNDARY, {{
+  interactive: false,
   style: {{
     color: '#f39c12', weight: 2.5, dashArray: '6 4',
     fillColor: 'transparent', fillOpacity: 0,
@@ -726,6 +728,7 @@ document.getElementById('chk-boundary').addEventListener('change', e => {{
 }});
 
 const zoneLayer = L.geoJSON(ZONES, {{
+  interactive: false,
   style: f => {{
     const isOcean = f.properties.zone === 'Ocean Park';
     return {{
@@ -736,9 +739,6 @@ const zoneLayer = L.geoJSON(ZONES, {{
       fillOpacity: isOcean ? 0.07 : 0.025,
       opacity: isOcean ? 0.98 : 0.72,
     }};
-  }},
-  onEachFeature: (f, layer) => {{
-    layer.bindTooltip(`<b>${{f.properties.zone}}</b><br>${{f.properties.name}}`, {{sticky:true}});
   }},
 }});
 zoneLayer.addTo(map);
@@ -819,11 +819,14 @@ function heatPosition(mode, value) {{
 }}
 
 function setDefaultInfo() {{
-  document.getElementById('info-panel').innerHTML = modeHelp(gridMode);
+  if (selectedCellFeature) {{
+    renderSelectedCell(selectedCellFeature);
+  }} else {{
+    document.getElementById('info-panel').innerHTML = modeHelp(gridMode);
+  }}
 }}
 
-function onEachCell(f, layer) {{
-  layer.on('click', () => {{
+function renderSelectedCell(f) {{
     const p = f.properties;
     const [bg,fg] = BADGE_COLORS[p.typology_B] || ['#555','#fff'];
     const activeKey = METRIC_KEYS[gridMode];
@@ -859,9 +862,18 @@ function onEachCell(f, layer) {{
           <div class="lbl">&Delta;SMCI &mdash; VinBus effect (Scenario B &minus; A)</div>
         </div>
       </div>`;
+}}
+
+function onEachCell(f, layer) {{
+  layer.on('click', () => {{
+    selectedCellFeature = f;
+    renderSelectedCell(f);
   }});
   layer.on('mouseover', () => layer.setStyle({{weight:1.5, color:'#fff', opacity:0.9}}));
-  layer.on('mouseout',  () => gridLayer.resetStyle(layer));
+  layer.on('mouseout',  () => {{
+    if (gridLayer.hasLayer(layer)) gridLayer.resetStyle(layer);
+    else zeroNaiLayer.resetStyle(layer);
+  }});
 }}
 
 const gridLayer = L.geoJSON(GRID, {{style:gridStyle, onEachFeature:onEachCell}});
@@ -878,12 +890,7 @@ const zeroNaiLayer = L.geoJSON(ZERO_NAI, {{
     fillOpacity: 0.09,
     opacity: 0.95,
   }},
-  onEachFeature: (f, layer) => {{
-    layer.bindTooltip(
-      `<b>Zero NAI cell #${{f.properties.cell_id}}</b><br>No mapped walkable POIs within threshold.<br>SMCI_B = ${{f.properties.SMCI_B}}`,
-      {{sticky:true}}
-    );
-  }},
+  onEachFeature: onEachCell,
 }});
 
 document.getElementById('chk-zero-nai').addEventListener('change', e => {{

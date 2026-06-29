@@ -138,7 +138,7 @@ def build_audit() -> dict:
     if moto.get("android_completed", 0) < 10:
         blockers.append(f"Android motorcycle validation incomplete: {moto.get('android_completed', 0)}/10 OD pairs measured.")
     if pop.get("resolution_source") == "raster_metadata":
-        warnings.append("Population raster is verified but not yet integrated into MAI magnitude weighting.")
+        strengths.append("Population raster is verified and supply-side WorldPop weighting is integrated into MAI.")
     if pre_vinbus:
         warnings.append("Network B uses a 2018 pre-VinBus GTFS vintage; report as baseline and sensitivity limitation, not current service.")
     if emulator.get("installed") and emulator.get("motorcycle_mode_available") is False:
@@ -151,9 +151,9 @@ def build_audit() -> dict:
         warnings.append("Building footprints are not yet aggregated; zero-access cells may include unbuilt lake/park/open-space cells and under-mapped built cells.")
 
     next_actions = [
-        "Integrate building/WorldPop/nighttime-light/employment proxy into MAI magnitude weighting or downgrade the claim to proxy-level MAI.",
+        "Preserve strict observed MAI audit trail and upgrade weak derived tiers with named facility sources where possible.",
         "Report Network B as a 2018 pre-VinBus baseline and keep post-2021 GTFS as a sensitivity target if found.",
-        "Proceed to supervisor review with pilot results and explicit proxy limitations.",
+        "Proceed to supervisor review with promoted RAC_time primary, full-RAC robustness, and explicit source-tier limitations.",
     ]
     if not building_ready:
         next_actions.insert(0, "Fetch and aggregate building footprints by grid cell; use them as built-cell mask and WorldPop cross-check.")

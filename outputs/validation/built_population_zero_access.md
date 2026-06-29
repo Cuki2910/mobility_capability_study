@@ -22,10 +22,10 @@ Primary metrics use the current promoted POI layer. This audit checks whether ze
 
 | Typology B | Cells | Share |
 |---|---:|---:|
-| Motorcycle Lock-in | 166 | 35.9% |
-| Integrated Capability | 166 | 35.9% |
-| Fragmented Capability | 65 | 14.1% |
-| Transit-Dependent | 65 | 14.1% |
+| Motorcycle Lock-in | 173 | 37.4% |
+| Integrated Capability | 173 | 37.4% |
+| Fragmented Capability | 58 | 12.6% |
+| Transit-Dependent | 58 | 12.6% |
 
 ## Interpretation
 

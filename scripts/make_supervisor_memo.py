@@ -152,7 +152,7 @@ def build_memo(metrics_path: Path, summary_path: Path, output_path: Path) -> str
         high = vif[vif.get("flag_high_vif", False) == True]
         if not high.empty:
             parts = [f"{row['variable']}={float(row['VIF']):.2f}" for _, row in high.iterrows()]
-            caveats.append("High VIF detected (" + ", ".join(parts) + "); report RAC_time-only sensitivity as robustness evidence.")
+            caveats.append("High VIF detected (" + ", ".join(parts) + "); use promoted RAC_time primary and report full-RAC as robustness.")
 
     lines = [
         "# Supervisor Memo: Ocean Park Pilot",

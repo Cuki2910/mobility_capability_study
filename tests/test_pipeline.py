@@ -536,6 +536,9 @@ def test_pilot_metrics_includes_rac_time_only_columns():
     metrics = compute_pilot_metrics(_pilot_inputs_6())
     assert "SMCI_B_time_only" in metrics.columns
     assert "typology_B_time_only" in metrics.columns
+    assert "RAC_full_B" in metrics.columns
+    assert np.allclose(metrics["RAC_B"], metrics["RAC_time_B"])
+    assert not np.allclose(metrics["RAC_full_B"], metrics["RAC_time_B"])
     valid = {"Integrated Capability", "Fragmented Capability",
              "Transit-Dependent", "Motorcycle Lock-in"}
     assert set(metrics["typology_B_time_only"]) <= valid

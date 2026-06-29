@@ -16,6 +16,8 @@ MAI_DOMAIN_WEIGHTS = {
     "default":   {"economic": 0.40, "higher_education": 0.20, "tertiary_healthcare": 0.20, "metro_commercial": 0.20},
     "equal":     {"economic": 0.25, "higher_education": 0.25, "tertiary_healthcare": 0.25, "metro_commercial": 0.25},
     "job_heavy": {"economic": 0.50, "higher_education": 0.15, "tertiary_healthcare": 0.15, "metro_commercial": 0.20},
+    "econ_light": {"economic": 0.20, "higher_education": 0.30, "tertiary_healthcare": 0.30, "metro_commercial": 0.20},
+    "service_health_heavy": {"economic": 0.25, "higher_education": 0.25, "tertiary_healthcare": 0.30, "metro_commercial": 0.20},
 }
 
 
@@ -34,6 +36,18 @@ def time_decay_linear(t_min: np.ndarray, t_full: float = 30.0, t_zero: float = 6
         t <= t_full, 1.0,
         np.where(t <= t_zero, (t_zero - t) / (t_zero - t_full), 0.0),
     )
+
+def time_decay_exponential(t_min: np.ndarray, half_life_min: float = 30.0, t_zero: float = 60.0) -> np.ndarray:
+    """
+    Exponential MAI decay robustness variant.
+
+    Uses a half-life so access decays smoothly instead of breaking at t_full,
+    while still truncating beyond t_zero to preserve the metropolitan catchment.
+    """
+    t = np.asarray(t_min, dtype=float)
+    half_life = max(float(half_life_min), 1e-9)
+    decay = np.exp(-np.log(2.0) * t / half_life)
+    return np.where(t <= t_zero, decay, 0.0)
 
 
 def norm01(x: np.ndarray) -> np.ndarray:

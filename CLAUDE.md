@@ -25,7 +25,7 @@ of the proposal before touching the analysis code.
 |---|---|
 | **NAI** | Neighborhood Accessibility Index â€” count-based, walking threshold |
 | **MAI** | Metropolitan Accessibility Index â€” magnitude-weighted, walk+transit threshold |
-| **RAC** | Relative Accessibility Competitiveness â€” geometric mean of RAC_time and RAC_opp |
+| **RAC** | Relative Accessibility Competitiveness - primary uses RAC_time; legacy full-RAC = geometric mean of RAC_time and RAC_opp retained as robustness |
 | **MCS** | Metropolitan Competitiveness Score â€” geometric mean of normalized MAI and RAC; used for classification only |
 | **SMCI** | Sustainable Mobility Capability Index = NAI_norm Ã— MAI_norm Ã— RAC_norm |
 | **Network A/B/C/D** | Walking / Walking+existing transit / Walking+existing transit+VinBus / Motorcycle |
@@ -39,6 +39,23 @@ proposal in the same commit.
 
 Scenario A/B comparisons use shared A+B normalization bounds in `src/pilot.py`.
 Do not compute Delta_SMCI from separately normalized scenario scores.
+
+## Number-consistency rule (IMPORTANT)
+
+When any headline metric changes (SMCI_A/B, Delta_SMCI, improved/unchanged/declined
+shares, typology counts, VIF, kappa/rho, zero-NAI counts, pytest count, POI counts),
+update **every** place it appears in the same change — do not leave stale copies:
+
+1. Re-run the generators, don't hand-edit outputs:
+   `run_pilot_metrics.py` → `make_validation_report.py` → `make_supervisor_memo.py`
+   → `project_self_audit.py` (memo/audit read CSVs; if you forget, they silently keep
+   old numbers). For test count, run `pytest tests/` and use the actual pass count.
+2. Update the prose copies by hand: CLAUDE.md "Current status" section + Known
+   constraints, `proposal/proposal_v7.md` results, `docs/decisions.md`, and the
+   relevant memory file(s) under the auto-memory dir (`pilot-current-numbers.md`).
+3. Dated history lines (e.g. "Decision #19 ... Pytest: 70 tests pass") record what was
+   true *then* — leave them; only fix current-facing/forward-looking numbers.
+4. After editing, grep for the OLD value across the repo to confirm no stragglers.
 
 ## Repo structure
 
@@ -104,7 +121,7 @@ python scripts/fetch_overture_pois.py
 python scripts/merge_poi_sources.py   # after fetch_overture_pois.py
 
 # Anywhere:
-pytest tests/ -v   # must be 61 passed
+pytest tests/ -v   # must be 77 passed
 ```
 
 ## Known constraints / gotchas
@@ -132,6 +149,10 @@ pytest tests/ -v   # must be 61 passed
   (`scripts/rac_time_only_sensitivity.py`): κ=0.871, 42/462 cells
   relabelled — findings robust. In RAC_time-only spec: VIF(MAI)=4.53 (OK),
   VIF(RAC_time)=3.86 (OK). See decisions.md #3.
+- **Current RAC primary (2026-06-29, Decision #22):** RAC_time is promoted to
+  primary. Legacy full-RAC is retained as `RAC_full_A/B` and
+  `SMCI_B_full_rac_legacy`. Metric audit: max VIF 10.06 -> 2.88, kappa=0.9125,
+  rho=0.9889, 28/462 relabelled.
 - **Delta_SMCI must be shared-scale.** Scenario A/B normalization uses common
   A+B bounds for MAI, RAC subcomponents, and RAC composite before MCS/SMCI.
   Separate per-scenario min-max scaling produces artificial declines.
@@ -148,7 +169,7 @@ pytest tests/ -v   # must be 61 passed
 - [x] Proposal text finalized at v7 (`proposal/proposal_v7.md`): theory-RAC consistency,
   classification logic, collinearity check, VIF contingency executed, RAC scaling sensitivity,
   additive robustness robustness (ρ=0.803), Section 3.8 additive fix, validation hierarchy resolved.
-- [x] Analysis formulas (`src/accessibility.py`) implemented and tested. 61 pytest tests pass.
+- [x] Analysis formulas (`src/accessibility.py`) implemented and tested. 77 pytest tests pass.
 - [x] OSM check for existing VinBus route relations (39 found 2026-06-21;
   `data/raw/vinbus_overpass_relations.json`).
 - [x] VinBus Overpass geometry dump for Ocean Park-facing refs (`E01,E02,E03,E10,OCP1,OCP2`);
@@ -177,7 +198,7 @@ pytest tests/ -v   # must be 61 passed
 - [x] RAC scaling sensitivity (`scripts/rac_scaling_sensitivity.py`): κ=1.0 (minmax vs log), ρ=0.9999.
   `outputs/validation/rac_scaling_summary.md`.
 - [x] RAC_time-only VIF contingency (`scripts/rac_time_only_sensitivity.py`): κ=0.871, 42/462 relabelled.
-  `outputs/validation/rac_time_only_summary.md`. Primary full-RAC spec retained.
+  `outputs/validation/rac_time_only_summary.md`. Superseded by Decision #22: RAC_time primary retained; full-RAC robustness kept.
 - [x] WorldPop aggregation by grid cell (`scripts/aggregate_worldpop_by_grid.py`) →
   `data/interim/grid_worldpop.csv` (462 cells, total pop ~78,816, all cells non-zero).
   Population-weighted SMCI_B = 0.0825 vs unweighted 0.0920 (bias −10.3%, ρ = −0.0496).
@@ -209,9 +230,10 @@ pytest tests/ -v   # must be 61 passed
   false positive). MAI/RAC VIF dropped to 16.0/15.8 (from 19.7/21.6). mean SMCI_B 0.0968→0.0845
   (commercial proxy had inflated it). Spot-check sheet: `outputs/validation/economic_poi_spot_check.csv`.
 - [x] Built/population zero-access audit: `outputs/validation/built_population_zero_access.md`.
-  Building footprints are present in 455/462 cells; **116 zero-NAI cells** (112 built, down from 166 OSM-only)
-  contain ~16,758 residents (21.3% of pilot population) — zero inflation is not simply lake/park/open-space.
-  Merged POI promotion resolved 50 zero-NAI cells (−30.1%).
+  Building footprints are present in 455/462 cells; **88 zero-NAI cells** (19.0%, current strict
+  observed MAI spec; was 116 under merged-POI proxy, 166 under OSM-only) contain ~11,798 residents
+  (15.0% of pilot population) — zero inflation is not simply lake/park/open-space.
+  Merged POI promotion + strict observed MAI progressively reduced the zero-NAI mass.
 - [x] Merged-POI sensitivity: `outputs/validation/merged_poi_sensitivity.md`.
   Overture gate PASS. Merged POIs reduce zero-NAI cells to 116/462 (vs 166 OSM-only).
   Build default is still OSM-only (106 POIs); merged layer is sensitivity only until promoted.
@@ -232,7 +254,7 @@ pytest tests/ -v   # must be 61 passed
   VIF contingency executed, RAC scaling sensitivity, Section 3.8 fix, current pilot caveats.
   Updated 2026-06-25: MAI proxy-escaped using building footprint matching (150/161 POIs, 93% matched).
   Current numbers: SMCI_A=0.0438, SMCI_B=0.0862, 61.9% improved, pop-weighted SMCI_B=0.0794 (bias −7.9%),
-  34.0% population in Motorcycle Lock-in. Pytest: 61 tests pass.
+  34.0% population in Motorcycle Lock-in. Pytest: 77 tests pass.
 - [x] Travel time validation and sensitivity analysis scripts implemented and reports generated:
   - Travel time MAE is 1.90 minutes against Google Maps checks (PASS < 3.0 min).
   - Parameter sensitivity typology classification is highly stable (weights Kappa >= 0.98, decay thresholds Kappa >= 0.83).
@@ -269,8 +291,21 @@ pytest tests/ -v   # must be 61 passed
   `data/interim/poi_observed_audit.csv`. economic REF calibrated to 500 jobs (cap=5.0, Decision #18
   discipline) to prevent KCN domination. Strict observed-vs-proxy sensitivity: SMCI_B
   0.0435→0.0500, κ=0.876, 40/462 relabelled, Spearman ρ=0.991. VIF(MAI)=10.23, VIF(RAC)=11.12
-  (slightly higher than proxy; RAC_time-only contingency #3 remains the VIF remedy). Source tiers:
+  (slightly higher than proxy; RAC_time-only contingency #3 remains the VIF remedy).
+  **Current after Decision #22:** promoted RAC_time primary gives SMCI_B 0.0129 -> 0.0125,
+  kappa=0.9245, 24/462 relabelled, Spearman rho=0.9966, VIF(MAI)=2.93, VIF(RAC)=2.02.
+  Source tiers:
   `official_source`, `facility_source`, `geometry_measured`, `observed_point`,
   `observed_derived`, `observed_dasymetric_weak`, `excluded_not_destination`.
   Report: `outputs/validation/observed_vs_proxy_sensitivity.md`.
+- [x] **Reviewer-risk metric audit + primary RAC promotion (2026-06-29, Decision #22):**
+  `scripts/metric_variant_audit.py` tested NAI diversity/capped NAI, RAC_time-only,
+  RAC_opp-only, winsor/log normalization, additive SMCI, absolute-threshold typology,
+  MAI weight/decay sensitivity, exponential decay, top-1/top-5 opportunity leverage,
+  and strict-excluded-POI spatial missingness. Winner: RAC_time primary because max VIF
+  drops 10.06 -> 2.88 while preserving legacy full-RAC labels (kappa=0.9125,
+  rho=0.9889, 28/462 relabelled). Current promoted strict metrics: SMCI_A=0.0064,
+  SMCI_B=0.0125, mean Delta=0.0061, 286/462 improved, 88 unchanged, 88 declined;
+  typology_B counts 173/58/58/173. Legacy full-RAC retained as `RAC_full_A/B` and
+  `SMCI_B_full_rac_legacy`.
 - [ ] Full study area data collection and analysis.

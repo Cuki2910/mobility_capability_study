@@ -160,7 +160,7 @@ A supply-side population multiplier `m_j = clip(sqrt(pop_density_j / median), 0.
 
 **Provenance honesty.** Full coverage means every included destination has a source-backed magnitude, not that every value is an official facility census. Economic remains the weakest domain: 23 of its values are area-disaggregated employment-density estimates (`observed_dasymetric_weak`) and must be read as areal interpolation, not point truth. National-standard tiers (MOET class sizes, MOH commune-station beds) are citable but apply a class-of-facility figure rather than a school-by-school or clinic-by-clinic count. These tiers are flagged so that the final paper can upgrade them with named facility sources where possible.
 
-**Sensitivity against the proxy baseline.** The pre-observed proxy specification (`--opportunity-basis proxy`) is retained as a regression baseline, and the strict specification is compared against it. Moving from proxy to strict observed magnitudes raises mean SMCI_B from 0.0435 to 0.0500, relabels 40 of 462 cells (Cohen's kappa = 0.876), and preserves the cell ranking almost exactly (Spearman rho = 0.991). Variance inflation rises modestly (VIF_MAI 8.96 to 10.23, VIF_RAC 8.85 to 11.12) because the richer healthcare and economic magnitudes increase the covariance between MAI and RAC; this is handled by the RAC_time-only contingency in Section 10.
+**Sensitivity against the proxy baseline.** The pre-observed proxy specification (`--opportunity-basis proxy`) is retained as a regression baseline, and the strict specification is compared against it. Under the promoted RAC_time primary specification, moving from proxy to strict observed magnitudes changes mean SMCI_B from 0.0129 to 0.0125, relabels 24 of 462 cells (Cohen's kappa = 0.9245), and preserves the cell ranking almost exactly (Spearman rho = 0.9966). Variance inflation remains below the conventional threshold (strict observed VIF_MAI = 2.93, VIF_RAC = 2.02).
 
 ### 8.3 Relative Accessibility Competitiveness
 
@@ -173,13 +173,19 @@ RAC_opp_raw_i  = MAI_transit_i / MAI_motorcycle_i
 
 `RAC_time_raw_i` is operationalized as motorcycle opportunity-weighted mean travel time divided by walk-transit opportunity-weighted mean travel time. It uses the same metropolitan opportunity set, domain weights, opportunity weights, and 60-minute cutoff as MAI. Cells with no reachable weighted destination receive the cutoff. Network B uses the 2018 GTFS stop-proximity timing proxy; Network C uses pseudo-GTFS stop routing with access, wait, line-haul, and egress components. The input table reports `moto_mean_opp_time_min`, `wt_A_mean_opp_time_min`, and `wt_B_mean_opp_time_min` for auditability.
 
-Both `MAI_transit` and `MAI_motorcycle` use the same opportunity domains, weights, and decay function. The ratios are normalized, then combined:
+Both `MAI_transit` and `MAI_motorcycle` use the same opportunity domains, weights, and decay function. The opportunity ratio is retained as a diagnostic:
 
 ```text
-RAC_i = sqrt(RAC_time_i * RAC_opp_i)
+RAC_opp_raw_i = MAI_transit_i / MAI_motorcycle_i
 ```
 
-The geometric mean is intentional. A mode is not competitive if it is fast but reaches few opportunities, or reaches many opportunities but is too slow.
+The primary RAC specification uses `RAC_time` only:
+
+```text
+RAC_i = RAC_time_i
+```
+
+This reviewer-safe specification is promoted because the previous full-RAC composite, `sqrt(RAC_time_i * RAC_opp_i)`, structurally reintroduced MAI through `RAC_opp` and produced high MAI/RAC collinearity. The full-RAC composite is retained as a construct-rich robustness check rather than the primary SMCI input.
 
 ### 8.4 Sustainable Mobility Capability Index
 
@@ -226,23 +232,23 @@ First, POI validation combines a manual OSM spot check and an Overture gate. The
 
 Second, motorcycle routing is checked against 10 Android Google Maps motorcycle OD pairs. The current mean absolute error is about 1.90 minutes, with model bias about -1.04 minutes.
 
-Third, multicollinearity is reported because MAI and RAC_opp share the MAI_transit component. In the strict observed specification, VIF is high in the primary full-RAC formula:
+Third, multicollinearity is reported because MAI and RAC_opp share the MAI_transit component. In the strict observed specification, VIF is high in the legacy full-RAC formula:
 
 | Variable | VIF | Status |
 | --- | ---: | --- |
 | NAI | 2.42 | OK |
-| MAI | 10.23 | High |
-| RAC | 11.12 | High |
+| MAI | 9.48 | High |
+| RAC | 10.06 | High |
 
-The RAC_time-only contingency reduces collinearity below the conventional threshold:
+The promoted RAC_time-only primary specification reduces collinearity below the conventional threshold:
 
 | Variable | VIF | Status |
 | --- | ---: | --- |
-| NAI | 2.26 | OK |
-| MAI | 2.93 | OK |
-| RAC_time | 2.02 | OK |
+| NAI | 2.33 | OK |
+| MAI | 2.88 | OK |
+| RAC_time | 1.94 | OK |
 
-Primary versus RAC_time-only typology agreement is strong: Cohen's kappa = 0.9125, Spearman rho(SMCI rank) = 0.9889, and 28/462 cells change label. The primary full-RAC specification is retained, with RAC_time-only reported as robustness.
+Legacy full-RAC versus promoted RAC_time-only typology agreement is strong: Cohen's kappa = 0.9125, Spearman rho(SMCI rank) = 0.9889, and 28/462 cells change label. The promoted primary is RAC_time-only; full RAC is reported as robustness.
 
 Fourth, SMCI robustness uses an additive alternative:
 
@@ -261,15 +267,15 @@ The current pilot results, under the strict observed-magnitude specification, ar
 | Metric | Value |
 | --- | ---: |
 | Grid cells | 462 |
-| Mean SMCI_A | 0.0357 |
-| Mean SMCI_B | 0.0500 |
-| Mean Delta SMCI | 0.0143 |
+| Mean SMCI_A | 0.0064 |
+| Mean SMCI_B | 0.0125 |
+| Mean Delta SMCI | 0.0061 |
 | Improved cells | 286 / 462 (61.90%) |
 | Unchanged cells | 88 / 462 (19.05%) |
 | Declined cells | 88 / 462 (19.05%) |
 | Motorcycle validation MAE | 1.90 min |
 
-The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI rises from 0.0357 in Scenario A to 0.0500 in Scenario B, but this average is affected by zero-inflation in the weakest-link index. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI; the same 88 cells also have zero SMCI_B because any zero component collapses the multiplicative index. Cross-checking these zero-access cells against VIDA building footprints shows that the large majority are built cells, so zero accessibility is not simply a lake, park, or open-space artifact.
+The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI rises from 0.0064 in Scenario A to 0.0125 in Scenario B under the promoted RAC_time specification, but this average is affected by zero-inflation in the weakest-link index. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI; the same 88 cells also have zero SMCI_B because any zero component collapses the multiplicative index. Cross-checking these zero-access cells against VIDA building footprints shows that the large majority are built cells, so zero accessibility is not simply a lake, park, or open-space artifact.
 
 The VinBus scenario improves SMCI in 286 of 462 cells (61.9%), while 88 cells (19.0%) remain unchanged and 88 cells (19.0%) decline slightly under the opportunity-weighted time-competitiveness term. Among cells with positive SMCI, the median rises from 0.0251 in Scenario A to 0.0296 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells that have at least some sustainable mobility capability. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
 
@@ -277,16 +283,16 @@ Scenario B typology counts are:
 
 | Typology | Count |
 | --- | ---: |
-| Integrated Capability | 169 |
-| Fragmented Capability | 62 |
-| Transit-Dependent | 62 |
-| Motorcycle Lock-in | 169 |
+| Integrated Capability | 173 |
+| Fragmented Capability | 58 |
+| Transit-Dependent | 58 |
+| Motorcycle Lock-in | 173 |
 
 The equal high/low structure is expected under a rank-median typology and should not be interpreted as a discovered natural cluster distribution. The substantive interpretation depends on where those cells are located and how stable they are under robustness checks.
 
-The population-weighted cross-check remains a useful caution. Total estimated population is about 78,816. Population shares by typology are: Integrated Capability 33.0%, Fragmented Capability 17.7%, Transit-Dependent 14.9%, and Motorcycle Lock-in 34.4%. The largest single population share is in Motorcycle Lock-in, which reinforces the core argument that aggregate improvement coexists with persistent fragmentation.
+The population-weighted cross-check remains a useful caution. Total estimated population is about 78,816. Population shares by typology are: Integrated Capability 34.9%, Fragmented Capability 15.8%, Transit-Dependent 14.9%, and Motorcycle Lock-in 34.5%. Integrated Capability and Motorcycle Lock-in contain similarly large population shares, reinforcing the core argument that aggregate improvement coexists with persistent fragmentation.
 
-The built/population zero-access audit adds a second caution. The built zero-NAI cells contain about 12,267 residents, or 15.6% of the pilot population. Zero accessibility is therefore not only a lake/park/open-space issue; it is a substantive access and mapping uncertainty issue that should be reported separately from low-but-positive accessibility.
+The built/population zero-access audit adds a second caution. The built zero-NAI cells contain about 11,798 residents, or 15.0% of the pilot population. Zero accessibility is therefore not only a lake/park/open-space issue; it is a substantive access and mapping uncertainty issue that should be reported separately from low-but-positive accessibility.
 
 ## 12. Expected Argument
 
@@ -310,7 +316,7 @@ POI completeness remains uncertain despite OSM checks, Overture gating, and econ
 
 Motorcycle validation uses 10 manual OD pairs. It is a useful plausibility check, not a full calibration dataset.
 
-MAI/RAC collinearity is structurally high in the full-RAC specification. The RAC_time-only sensitivity reduces VIF and shows high typology agreement, so the issue is reported rather than hidden.
+MAI/RAC collinearity is structurally high in the legacy full-RAC specification. The promoted RAC_time-only primary reduces VIF below 5 and keeps high agreement with the full-RAC typology, so the issue is handled directly rather than hidden.
 
 Mode and impedance specifications omit fares, parking, explicit transfer penalties, access/egress discomfort, and schedule unreliability. Transit-impedance sensitivity now partially bounds this by testing conservative and pessimistic wait/access/egress/reliability penalties; it is not a replacement for observed mode-choice data.
 

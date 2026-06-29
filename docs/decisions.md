@@ -376,8 +376,27 @@ so settled debates don't get silently re-opened.
       from MAI with audit reasons)
 
     Strict observed gate (2026-06-29): `needs_source=0`, `proxy_source_tiers=0`; audit table:
-    `data/interim/poi_observed_audit.csv`. Observed-vs-proxy sensitivity: SMCI_B 0.0435 → 0.0500
-    (+14.9%), κ=0.876, 40/462 cells relabelled, Spearman ρ=0.991. VIF(MAI)=10.23,
-    VIF(RAC)=11.12 — slightly higher than proxy (8.96/8.85) because richer magnitude data increases
-    MAI/RAC covariance; RAC_time-only contingency (#3) remains the VIF remedy. Report:
+    `data/interim/poi_observed_audit.csv`. After Decision #22 promoted RAC_time as primary,
+    observed-vs-proxy sensitivity gives SMCI_B 0.0129 → 0.0125, κ=0.9245, 24/462 cells
+    relabelled, Spearman ρ=0.9966, VIF(MAI)=2.93, and VIF(RAC)=2.02. Report:
     `outputs/validation/observed_vs_proxy_sensitivity.md`.
+
+22. **RAC_time promoted to primary after reviewer-risk metric audit (2026-06-29).**
+    A red-team metric audit tested NAI diversity, category-capped NAI, RAC_time-only,
+    RAC_opp-only, winsorized/log normalization, additive SMCI, absolute-threshold
+    typology, alternative MAI weights, alternative decay windows including exponential
+    decay, top-1%/top-5% opportunity leverage, and strict-excluded-POI spatial missingness.
+    Output: `outputs/validation/metric_variant_audit.md`.
+
+    The audit selected `rac_time_only` for promotion because it directly fixes the
+    MAI/RAC_opp double-counting risk: max VIF drops from 10.06 under the legacy full-RAC
+    composite to 2.88, while preserving the prior classification well (κ=0.9125,
+    Spearman ρ=0.9889, 28/462 cells relabelled, zero-SMCI cells unchanged at 88).
+
+    Implementation: `src/pilot.py` now sets primary `RAC_A/B = RAC_time_A/B`. The
+    previous full composite is retained as `RAC_full_A/B` and
+    `SMCI_B_full_rac_legacy` for robustness reporting. The promoted primary strict
+    observed headline is SMCI_A=0.0064, SMCI_B=0.0125, mean Delta_SMCI=0.0061,
+    286/462 cells improved, 88 unchanged, 88 declined, and Scenario B typology counts
+    are 173 Integrated Capability, 58 Fragmented Capability, 58 Transit-Dependent,
+    and 173 Motorcycle Lock-in.

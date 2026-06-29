@@ -3,17 +3,17 @@
 ## Snapshot
 
 - grid_cells: 462
-- mean_SMCI_A: 0.0497468898151758
-- mean_SMCI_B: 0.0881339994829384
-- share_improved: 0.670995670995671
+- mean_SMCI_A: 0.00642940851603
+- mean_SMCI_B: 0.0125305498661878
+- share_improved: 0.6190476190476191
 - gtfs_status: baseline_limited
 - pre_vinbus_baseline: True
 - poi_spot_checks: {'total': 20, 'completed': 20, 'breakdown': {'confirmed': 14, 'misclassified': 2, 'duplicate': 2, 'missing_in_osm': 2}}
 - motorcycle_android_checks: {'rows': 10, 'android_completed': 10, 'has_android_column': True, 'mae_minutes': 1.9, 'bias_minutes': -1.0399999999999998}
 - android_emulator: {'status_file': True, 'installed': True, 'motorcycle_mode_available': False}
 - population_resolution: {'resolution_m': 92.76666629760172, 'grid_size_m': 250.0, 'decision': 'allow_fine_grained_proxy', 'adequate_for_250m_pilot': True, 'resolution_source': 'raster_metadata', 'raster': 'data\\raw\\worldpop\\vnm_ppp_2020.tif'}
-- distribution_diagnostics: {'NAI_zero_share': 0.2510822510822511, 'SMCI_B_zero_share': 0.2510822510822511, 'improved_share': 0.5194805194805194, 'unchanged_share': 0.4805194805194805, 'declined_share': 0.0}
-- high_vif: True
+- distribution_diagnostics: {'NAI_zero_share': 0.1904761904761904, 'SMCI_B_zero_share': 0.1904761904761904, 'improved_share': 0.6190476190476191, 'unchanged_share': 0.1904761904761904, 'declined_share': 0.1904761904761904}
+- high_vif: False
 - built_population_zero_access_audit: True
 - merged_poi_sensitivity: True
 - gtfs_catalog_check: True
@@ -22,6 +22,7 @@
 
 - End-to-end pilot pipeline has real OSM graph/POI/grid inputs and processed metrics.
 - WorldPop raster is downloaded and resolution-verified against the 250m grid.
+- Current NAI/MAI/RAC VIF diagnostics are below threshold 5.
 - 2018 Hanoi GTFS is documented as a deliberate pre-VinBus Network B baseline, not missing data.
 - POI spot-check completed: 20/20 records reviewed ({'confirmed': 14, 'misclassified': 2, 'duplicate': 2, 'missing_in_osm': 2}).
 - Android motorcycle validation completed: 10/10 OD pairs; MAE=1.90 minutes.
@@ -32,6 +33,7 @@
 - GTFS catalog check documents MobilityDatabase and TUMI/Datahub candidates without replacing the 2018 pre-VinBus baseline.
 - Quick-look maps and GIS layers are generated for supervisor review.
 - Supervisor review package index is available.
+- Population raster is verified and supply-side WorldPop weighting is integrated into MAI.
 
 ## Blockers
 
@@ -39,15 +41,12 @@
 
 ## Warnings
 
-- MAI/RAC VIF diagnostics exceed threshold 5; report RAC_time-only sensitivity before trusting final typology claims.
-- Population raster is verified but not yet integrated into MAI magnitude weighting.
 - Network B uses a 2018 pre-VinBus GTFS vintage; report as baseline and sensitivity limitation, not current service.
 - Android emulator lacks motorcycle mode; physical Android measurements are used instead.
-- SMCI_B is zero-inflated (25.11% zero cells); report percentile/rank maps and delta groups, not only absolute means.
 
 ## Next Actions
 
 - Preserve Overture gate audit trail and monitor merged POI layer for systematic errors.
-- Integrate building/WorldPop/nighttime-light/employment proxy into MAI magnitude weighting or downgrade the claim to proxy-level MAI.
+- Preserve strict observed MAI audit trail and upgrade weak derived tiers with named facility sources where possible.
 - Report Network B as a 2018 pre-VinBus baseline and keep post-2021 GTFS as a sensitivity target if found.
-- Proceed to supervisor review with pilot results and explicit proxy limitations.
+- Proceed to supervisor review with promoted RAC_time primary, full-RAC robustness, and explicit source-tier limitations.
