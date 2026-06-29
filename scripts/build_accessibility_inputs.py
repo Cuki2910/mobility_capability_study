@@ -48,10 +48,11 @@ def main() -> int:
     )
     parser.add_argument(
         "--opportunity-basis",
-        choices=["proxy", "observed"],
+        choices=["proxy", "observed", "observed_strict"],
         default="proxy",
         help="MAI opportunity weights: proxy reproduces current baseline; observed uses "
-        "Decision #21 observed-where-available hierarchy.",
+        "Decision #21 hybrid hierarchy; observed_strict requires source-backed magnitudes "
+        "or explicit exclusion for every included POI.",
     )
     parser.add_argument("--output", type=Path, default=Path("data/interim/pilot_accessibility_inputs.csv"))
     args = parser.parse_args()

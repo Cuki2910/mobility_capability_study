@@ -332,11 +332,14 @@ so settled debates don't get silently re-opened.
     This is more conservative than the earlier simple reachable-time mean and should be used
     for JTG submission.
 
-21. **MAI uses an observed-where-available opportunity hierarchy (2026-06-28; extended 2026-06-29).**
+21. **MAI uses a strict source-backed opportunity hierarchy (2026-06-28; extended 2026-06-29).**
     MAI remains a four-domain Metropolitan Opportunity Accessibility measure, but destination
-    weights now support direct observed magnitudes before falling back to proxies. The hierarchy is:
-    observed facility magnitude → building/area-derived proxy → tag base proxy. Provenance is
-    carried per POI (`opportunity_source`) and summarized per cell as observed-coverage shares.
+    weights now support direct observed/source-backed magnitudes before falling back to proxies.
+    The hybrid hierarchy is: observed facility magnitude → building/area-derived proxy → tag base
+    proxy. The strict hierarchy (`--opportunity-basis observed_strict`) uses only source-backed
+    magnitudes or explicit POI exclusions; it does not use tag-only proxy fallback. Provenance is
+    carried per POI (`opportunity_source`, `obs_source_tier`, `obs_audit_status`) and summarized per
+    cell as observed-coverage shares.
 
     Observed transforms are within-domain and capped to avoid re-triggering Decision #18
     over-domination:
@@ -354,20 +357,27 @@ so settled debates don't get silently re-opened.
     ratio at ~1.7x proxy, comparable to healthcare (~2.1x) and education (~1.1x).
 
     Source tiers: `observed_point` (named citable source), `observed_derived` (area/level
-    derivation), `observed_dasymetric` (ward-level disaggregation — must be disclosed in Methods
-    as interpolation, not point truth), `proxy_area`, `proxy_tag`.
+    derivation), `official_source`, `facility_source`, `geometry_measured`,
+    `observed_dasymetric_weak` (density/disaggregation — must be disclosed in Methods as
+    interpolation, not point truth), and `excluded_not_destination`. `proxy_area`/`proxy_tag`
+    remain only for the proxy and hybrid sensitivity baselines.
 
     `--opportunity-basis proxy` reproduces the pre-#21 baseline exactly.
-    `--opportunity-basis observed` applies the hybrid hierarchy.
+    `--opportunity-basis observed` applies the hybrid hierarchy. `--opportunity-basis
+    observed_strict` applies the source-backed hierarchy and raises if any included POI still lacks
+    a source-backed magnitude.
 
     **Full four-domain coverage achieved 2026-06-29 (`scripts/derive_all_observed.py`):**
     - tertiary_healthcare: **18/18 = 100%** (1 named hospital, commune-station MOH standard, area-derived)
     - higher_education: **70/70 = 100%** (MOET class-size standards by school type)
     - economic: **32/32 = 100%** (employment density × area by sector; point estimates for banks/markets)
-    - metro_commercial: **37/88 = 42%** (GLA from footprints; 51 parks/transport/leisure left as proxy — correct)
+    - metro_commercial: **80/80 included = 100%** (37 retail/GLA-derived plus measured
+      park/leisure/agrarian polygon magnitudes; 8 point-only service/transport listings excluded
+      from MAI with audit reasons)
 
-    Observed-vs-proxy sensitivity (2026-06-29): SMCI_B 0.0435 → 0.0502 (+15.5%), κ=0.864,
-    44/462 cells relabelled, Spearman ρ=0.988. VIF(MAI)=10.9, VIF(RAC)=11.7 — slightly higher
-    than proxy (8.9/8.9) because the richer healthcare/economic domain increases MAI/RAC
-    covariance; RAC_time-only contingency (#3) remains the VIF remedy. Report:
+    Strict observed gate (2026-06-29): `needs_source=0`, `proxy_source_tiers=0`; audit table:
+    `data/interim/poi_observed_audit.csv`. Observed-vs-proxy sensitivity: SMCI_B 0.0435 → 0.0500
+    (+14.9%), κ=0.876, 40/462 cells relabelled, Spearman ρ=0.991. VIF(MAI)=10.23,
+    VIF(RAC)=11.12 — slightly higher than proxy (8.96/8.85) because richer magnitude data increases
+    MAI/RAC covariance; RAC_time-only contingency (#3) remains the VIF remedy. Report:
     `outputs/validation/observed_vs_proxy_sensitivity.md`.

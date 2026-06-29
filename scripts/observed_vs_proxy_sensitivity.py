@@ -1,4 +1,4 @@
-"""Compare Decision #21 observed-opportunity MAI against proxy baseline."""
+"""Compare proxy, hybrid observed, and strict observed MAI specifications."""
 from __future__ import annotations
 
 import argparse
@@ -14,15 +14,13 @@ from src.accessibility_inputs import build_network_accessibility_inputs
 from src.pilot import compute_pilot_metrics, typology_kappa
 from src.validation import collinearity_check
 
-
 def _scenario_b_vif(metrics: pd.DataFrame) -> pd.Series:
     return collinearity_check(
         metrics.rename(columns={"MAI_B": "MAI", "RAC_B": "RAC"})[["NAI", "MAI", "RAC"]]
     )
 
-
-def run_comparison(args) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    common = dict(
+def _build_common(args) -> dict:
+    return dict(
         grid_path=args.grid,
         pois_path=args.pois,
         walk_graphml=args.walk_graph,
@@ -38,73 +36,92 @@ def run_comparison(args) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         pop_weighting=not args.no_pop_weighting,
         worldpop_csv=args.worldpop_csv if args.worldpop_csv.exists() else None,
     )
-    proxy_inputs = build_network_accessibility_inputs(**common, opportunity_basis="proxy")
-    observed_inputs = build_network_accessibility_inputs(**common, opportunity_basis="observed")
-    proxy_metrics = compute_pilot_metrics(proxy_inputs)
-    observed_metrics = compute_pilot_metrics(observed_inputs)
-    return proxy_inputs, proxy_metrics, observed_metrics
 
-
-def write_report(proxy_inputs: pd.DataFrame, proxy: pd.DataFrame, observed: pd.DataFrame, output: Path) -> pd.DataFrame:
-    rho, p_value = spearmanr(proxy["SMCI_B"], observed["SMCI_B"])
-    kappa = typology_kappa(proxy["typology_B"].to_numpy(), observed["typology_B"].to_numpy())
-    relabelled = int((proxy["typology_B"] != observed["typology_B"]).sum())
-    vif_proxy = _scenario_b_vif(proxy)
-    vif_observed = _scenario_b_vif(observed)
-
-    coverage_cols = [c for c in proxy_inputs.columns if c.startswith("obs_coverage_")]
-    coverage = {
-        col: float(observed[col].iloc[0]) if col in observed.columns else float(proxy_inputs[col].iloc[0])
-        for col in coverage_cols
+def run_comparison(args) -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
+    common = _build_common(args)
+    inputs = {
+        basis: build_network_accessibility_inputs(**common, opportunity_basis=basis)
+        for basis in ("proxy", "observed", "observed_strict")
     }
-    rows = [
-        {
-            "metric": "mean_SMCI_B",
-            "proxy": float(proxy["SMCI_B"].mean()),
-            "observed": float(observed["SMCI_B"].mean()),
-        },
-        {
-            "metric": "share_improved",
-            "proxy": float((proxy["Delta_SMCI"] > 0).mean()),
-            "observed": float((observed["Delta_SMCI"] > 0).mean()),
-        },
-        {"metric": "typology_kappa", "proxy": 1.0, "observed": float(kappa)},
-        {"metric": "cells_relabelled", "proxy": 0.0, "observed": float(relabelled)},
-        {"metric": "spearman_SMCI_B", "proxy": 1.0, "observed": float(rho)},
-        {"metric": "spearman_p_value", "proxy": 0.0, "observed": float(p_value)},
-        {"metric": "VIF_MAI", "proxy": float(vif_proxy["MAI"]), "observed": float(vif_observed["MAI"])},
-        {"metric": "VIF_RAC", "proxy": float(vif_proxy["RAC"]), "observed": float(vif_observed["RAC"])},
-    ]
+    metrics = {basis: compute_pilot_metrics(df) for basis, df in inputs.items()}
+    return inputs["observed_strict"], metrics
+
+def _rows(metrics: dict[str, pd.DataFrame]) -> list[dict]:
+    proxy = metrics["proxy"]
+    vif_proxy = _scenario_b_vif(proxy)
+    rows = []
+    for metric_name in [
+        "mean_SMCI_B",
+        "share_improved",
+        "typology_kappa",
+        "cells_relabelled",
+        "spearman_SMCI_B",
+        "spearman_p_value",
+        "VIF_MAI",
+        "VIF_RAC",
+    ]:
+        row = {"metric": metric_name}
+        for basis, candidate in metrics.items():
+            if metric_name == "mean_SMCI_B":
+                value = float(candidate["SMCI_B"].mean())
+            elif metric_name == "share_improved":
+                value = float((candidate["Delta_SMCI"] > 0).mean())
+            elif metric_name == "typology_kappa":
+                value = 1.0 if basis == "proxy" else float(
+                    typology_kappa(proxy["typology_B"].to_numpy(), candidate["typology_B"].to_numpy())
+                )
+            elif metric_name == "cells_relabelled":
+                value = 0.0 if basis == "proxy" else float((proxy["typology_B"] != candidate["typology_B"]).sum())
+            elif metric_name == "spearman_SMCI_B":
+                value = 1.0 if basis == "proxy" else float(spearmanr(proxy["SMCI_B"], candidate["SMCI_B"])[0])
+            elif metric_name == "spearman_p_value":
+                value = 0.0 if basis == "proxy" else float(spearmanr(proxy["SMCI_B"], candidate["SMCI_B"])[1])
+            else:
+                vif = vif_proxy if basis == "proxy" else _scenario_b_vif(candidate)
+                value = float(vif["MAI"] if metric_name == "VIF_MAI" else vif["RAC"])
+            row[basis] = value
+        rows.append(row)
+    return rows
+
+def write_report(strict_inputs: pd.DataFrame, metrics: dict[str, pd.DataFrame], output: Path) -> pd.DataFrame:
+    rows = _rows(metrics)
     summary = pd.DataFrame(rows)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     summary_csv = output.with_suffix(".csv")
     summary.to_csv(summary_csv, index=False)
 
+    coverage_cols = [c for c in strict_inputs.columns if c.startswith("obs_coverage_")]
+    coverage = {col: float(strict_inputs[col].iloc[0]) for col in coverage_cols}
+
     lines = [
         "# Observed-vs-Proxy MAI Sensitivity",
         "",
-        "Decision #21 compares the current proxy opportunity weights with the observed-where-available hierarchy.",
+        "Decision #21 compares proxy opportunity weights, the hybrid observed hierarchy, "
+        "and the strict source-backed observed magnitude specification.",
         "",
         "## Summary",
         "",
-        "| Metric | Proxy | Observed |",
-        "|---|---:|---:|",
+        "| Metric | Proxy | Hybrid observed | Strict observed |",
+        "|---|---:|---:|---:|",
     ]
     for row in rows:
-        lines.append(f"| {row['metric']} | {row['proxy']:.4f} | {row['observed']:.4f} |")
-    lines.extend(["", "## Observed Coverage", "", "| Coverage column | Share |", "|---|---:|"])
+        lines.append(
+            f"| {row['metric']} | {row['proxy']:.4f} | "
+            f"{row['observed']:.4f} | {row['observed_strict']:.4f} |"
+        )
+    lines.extend(["", "## Strict Observed Coverage", "", "| Coverage column | Share |", "|---|---:|"])
     for col, value in sorted(coverage.items()):
         lines.append(f"| {col} | {value:.1%} |")
     lines.extend([
         "",
         "## Interpretation",
         "",
-        "Observed mode is primary only after this report is reviewed. Proxy mode remains the regression baseline.",
+        "Strict observed mode has no tag-only proxy fallback. Excluded POIs carry explicit audit reasons; "
+        "proxy mode remains the regression baseline for sensitivity comparison.",
     ])
     output.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return summary
-
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -125,12 +142,11 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=Path("outputs/validation/observed_vs_proxy_sensitivity.md"))
     args = parser.parse_args()
 
-    proxy_inputs, proxy_metrics, observed_metrics = run_comparison(args)
-    summary = write_report(proxy_inputs, proxy_metrics, observed_metrics, args.output)
+    strict_inputs, metrics = run_comparison(args)
+    summary = write_report(strict_inputs, metrics, args.output)
     print(f"Wrote {args.output} and {args.output.with_suffix('.csv')}")
     print(summary.to_string(index=False))
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

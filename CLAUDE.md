@@ -259,14 +259,18 @@ pytest tests/ -v   # must be 61 passed
   remains acceptable but shows expected SMCI decline under conservative/pessimistic penalties.
   Reports: `outputs/validation/motorcycle_speed_sensitivity.md`,
   `outputs/validation/transit_impedance_sensitivity.md`. Pytest: 70 tests pass.
-- [x] **Observed-where-available MAI hierarchy fully populated for pilot (2026-06-29, Decision #21):**
+- [x] **Strict source-backed MAI hierarchy populated for pilot (2026-06-29, Decision #21):**
   `src/accessibility_inputs.py` has `classify_poi_opportunity(row, opportunity_basis=...)`.
   `scripts/derive_all_observed.py` filled all four domains in `data/interim/merged_pois_observed.gpkg`:
-  healthcare 18/18 (100%), higher_ed 70/70 (100%), economic 32/32 (100%), commercial 37/88 (42% —
-  remaining 51 are parks/transport, correct to leave as proxy). economic REF calibrated to 500 jobs
-  (cap=5.0, Decision #18 discipline) to prevent KCN domination. Observed-vs-proxy sensitivity:
-  SMCI_B 0.0435→0.0502, κ=0.864, 44/462 relabelled, Spearman ρ=0.988. VIF(MAI)=10.9, VIF(RAC)=11.7
+  healthcare 18/18 (100%), higher_ed 70/70 (100%), economic 32/32 (100%), commercial/services
+  80/80 included (100%) with 8 point-only service/transport listings explicitly excluded from MAI.
+  `--opportunity-basis observed_strict` now requires source-backed magnitudes or explicit exclusion;
+  current gate: `needs_source=0`, `proxy_source_tiers=0`. Audit:
+  `data/interim/poi_observed_audit.csv`. economic REF calibrated to 500 jobs (cap=5.0, Decision #18
+  discipline) to prevent KCN domination. Strict observed-vs-proxy sensitivity: SMCI_B
+  0.0435→0.0500, κ=0.876, 40/462 relabelled, Spearman ρ=0.991. VIF(MAI)=10.23, VIF(RAC)=11.12
   (slightly higher than proxy; RAC_time-only contingency #3 remains the VIF remedy). Source tiers:
-  `observed_point`, `observed_derived`, `observed_dasymetric`, `proxy_area`, `proxy_tag`.
-  Report: `outputs/validation/observed_vs_proxy_sensitivity.md`. Pytest: 74 tests pass.
+  `official_source`, `facility_source`, `geometry_measured`, `observed_point`,
+  `observed_derived`, `observed_dasymetric_weak`, `excluded_not_destination`.
+  Report: `outputs/validation/observed_vs_proxy_sensitivity.md`.
 - [ ] Full study area data collection and analysis.

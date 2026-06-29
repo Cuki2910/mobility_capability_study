@@ -125,7 +125,28 @@ OBSERVED_OPPORTUNITY_REFS = {
     # metro_commercial: 1000 m² GLA = ref; Vincom mall (~13,000 m²) → ≤25
     "metro_commercial": {"column": "obs_retail_gla_m2", "unit": "m2_gla", "ref": 1000.0, "lo": 0.1, "hi": 25.0},
 }
-OBSERVED_SOURCE_VALUES = {"observed_point", "observed_derived", "observed_dasymetric"}
+OBSERVED_UNIT_REFS = {
+    "beds": {"ref": 50.0, "lo": 0.4, "hi": 30.0},
+    "students": {"ref": 1000.0, "lo": 0.5, "hi": 20.0},
+    "seat_capacity_derived": {"ref": 1000.0, "lo": 0.5, "hi": 20.0},
+    "jobs": {"ref": 500.0, "lo": 0.1, "hi": 5.0},
+    "m2_gla": {"ref": 1000.0, "lo": 0.1, "hi": 25.0},
+    "m2_park_or_leisure_area": {"ref": 10000.0, "lo": 0.1, "hi": 25.0},
+    "m2_service_floor_area": {"ref": 1000.0, "lo": 0.1, "hi": 25.0},
+    "service_capacity": {"ref": 100.0, "lo": 0.1, "hi": 10.0},
+}
+OBSERVED_SOURCE_VALUES = {
+    "observed_point",
+    "observed_derived",
+    "observed_dasymetric",
+    "observed_dasymetric_weak",
+    "official_source",
+    "facility_source",
+    "geometry_measured",
+    "facility_geometry_measured",
+    "manual_checked",
+}
+EXCLUDED_SOURCE_VALUES = {"excluded_not_destination"}
 
 
 @dataclass(frozen=True)
@@ -137,6 +158,11 @@ class PoiOpportunity:
     observed_unit: str | None = None
     source_id: str | None = None
     source_url: str | None = None
+    source_tier: str | None = None
+    confidence: str | None = None
+    audit_status: str | None = None
+    include_in_mai: bool = True
+    exclusion_reason: str | None = None
 
 
 def _tag(row, key: str) -> str:
@@ -288,6 +314,25 @@ def _observed_source_tier(domain: str, source_id: str | None) -> str:
         return "observed_derived"
     return "observed_point"
 
+def _explicit_source_tier(row, domain: str, source_id: str | None) -> str:
+    tier = _source_text(row, "obs_source_tier")
+    if tier:
+        return tier
+    return _observed_source_tier(domain, source_id)
+
+def _bool_value(row, key: str, default: bool = True) -> bool:
+    val = row.get(key)
+    if val is None or (isinstance(val, float) and pd.isna(val)):
+        return default
+    if isinstance(val, (bool, np.bool_)):
+        return bool(val)
+    text = str(val).strip().lower()
+    if text in {"false", "0", "no", "n", "exclude", "excluded"}:
+        return False
+    if text in {"true", "1", "yes", "y", "include", "included"}:
+        return True
+    return default
+
 
 def _proxy_source(row, domain: str) -> str:
     area = pd.to_numeric(row.get("building_area_m2"), errors="coerce")
@@ -302,6 +347,41 @@ def _proxy_source(row, domain: str) -> str:
 
 
 def _observed_opportunity(row, domain: str) -> PoiOpportunity | None:
+    include_in_mai = _bool_value(row, "include_in_mai", True)
+    audit_status = _source_text(row, "obs_audit_status")
+    if not include_in_mai or audit_status == "exclude_not_destination":
+        return PoiOpportunity(
+            domain=domain,
+            weight=0.0,
+            opportunity_source="excluded_not_destination",
+            source_id=_source_text(row, "obs_source"),
+            source_url=_source_text(row, "obs_source_url"),
+            source_tier=_source_text(row, "obs_source_tier") or "excluded",
+            confidence=_source_text(row, "obs_confidence"),
+            audit_status=audit_status or "exclude_not_destination",
+            include_in_mai=False,
+            exclusion_reason=_source_text(row, "exclusion_reason"),
+        )
+
+    generic_value = _positive_number(row, "obs_magnitude")
+    generic_unit = _source_text(row, "obs_unit")
+    if generic_value is not None and generic_unit in OBSERVED_UNIT_REFS:
+        ref = OBSERVED_UNIT_REFS[generic_unit]
+        source_id = _source_text(row, "obs_source")
+        source_tier = _explicit_source_tier(row, domain, source_id)
+        return PoiOpportunity(
+            domain=domain,
+            weight=float(np.clip(generic_value / ref["ref"], ref["lo"], ref["hi"])),
+            opportunity_source=source_tier,
+            observed_value=generic_value,
+            observed_unit=generic_unit,
+            source_id=source_id,
+            source_url=_source_text(row, "obs_source_url"),
+            source_tier=source_tier,
+            confidence=_source_text(row, "obs_confidence"),
+            audit_status=audit_status,
+        )
+
     spec = OBSERVED_OPPORTUNITY_REFS.get(domain)
     if spec is None:
         return None
@@ -312,11 +392,14 @@ def _observed_opportunity(row, domain: str) -> PoiOpportunity | None:
     return PoiOpportunity(
         domain=domain,
         weight=float(np.clip(value / spec["ref"], spec["lo"], spec["hi"])),
-        opportunity_source=_observed_source_tier(domain, source_id),
+        opportunity_source=_explicit_source_tier(row, domain, source_id),
         observed_value=value,
-        observed_unit=spec["unit"],
+        observed_unit=_source_text(row, "obs_unit") or spec["unit"],
         source_id=source_id,
         source_url=_source_text(row, "obs_source_url"),
+        source_tier=_explicit_source_tier(row, domain, source_id),
+        confidence=_source_text(row, "obs_confidence"),
+        audit_status=audit_status,
     )
 
 
@@ -328,13 +411,25 @@ def classify_poi_opportunity(row, opportunity_basis: str = "observed") -> PoiOpp
     area/tag proxy classifier is used. ``opportunity_basis="proxy"`` reproduces
     the pre-observed classifier for sensitivity and regression baselines.
     """
-    if opportunity_basis not in {"observed", "proxy"}:
-        raise ValueError("opportunity_basis must be 'observed' or 'proxy'")
+    if opportunity_basis not in {"observed", "proxy", "observed_strict"}:
+        raise ValueError("opportunity_basis must be 'observed', 'observed_strict', or 'proxy'")
     domain, weight = classify_poi_opportunity_domain(row)
-    if opportunity_basis == "observed":
+    if opportunity_basis in {"observed", "observed_strict"}:
         observed = _observed_opportunity(row, domain)
         if observed is not None:
             return observed
+        if opportunity_basis == "observed_strict":
+            return PoiOpportunity(
+                domain=domain,
+                weight=0.0,
+                opportunity_source="needs_source",
+                source_id=_source_text(row, "obs_source"),
+                source_url=_source_text(row, "obs_source_url"),
+                source_tier=_source_text(row, "obs_source_tier"),
+                confidence=_source_text(row, "obs_confidence"),
+                audit_status="needs_source",
+                include_in_mai=True,
+            )
     return PoiOpportunity(
         domain=domain,
         weight=float(weight),
@@ -596,6 +691,18 @@ def build_network_accessibility_inputs(
         classify_poi_opportunity(row, opportunity_basis=opportunity_basis)
         for _, row in pois.iterrows()
     ]
+    if opportunity_basis == "observed_strict":
+        blockers = [
+            (idx, opp.opportunity_source)
+            for idx, opp in enumerate(poi_classifications)
+            if opp.include_in_mai and opp.opportunity_source not in OBSERVED_SOURCE_VALUES
+        ]
+        if blockers:
+            preview = ", ".join(f"{idx}:{src}" for idx, src in blockers[:10])
+            raise ValueError(
+                "observed_strict MAI requires source-backed magnitudes for every "
+                f"included POI; {len(blockers)} blockers ({preview})"
+            )
     poi_domains = [opp.domain for opp in poi_classifications]
     poi_opp_weights = [opp.weight for opp in poi_classifications]
     poi_opp_sources = [opp.opportunity_source for opp in poi_classifications]

@@ -429,6 +429,45 @@ def test_classify_poi_opportunity_proxy_basis_reproduces_legacy_tuple():
     assert proxy.opportunity_source == "proxy_area"
 
 
+def test_classify_poi_opportunity_strict_blocks_missing_observed():
+    strict = classify_poi_opportunity({"shop": "mall"}, opportunity_basis="observed_strict")
+
+    assert strict.opportunity_source == "needs_source"
+    assert strict.audit_status == "needs_source"
+    assert strict.weight == 0.0
+
+def test_classify_poi_opportunity_strict_uses_generic_observed_schema():
+    park = classify_poi_opportunity(
+        {
+            "leisure": "park",
+            "obs_magnitude": 12000,
+            "obs_unit": "m2_park_or_leisure_area",
+            "obs_source_tier": "geometry_measured",
+            "obs_audit_status": "geometry_measured",
+        },
+        opportunity_basis="observed_strict",
+    )
+
+    assert park.domain == "metro_commercial"
+    assert park.observed_unit == "m2_park_or_leisure_area"
+    assert park.opportunity_source == "geometry_measured"
+    assert np.isclose(park.weight, 1.2)
+
+def test_classify_poi_opportunity_strict_excludes_non_destination():
+    excluded = classify_poi_opportunity(
+        {
+            "category": "transportation",
+            "include_in_mai": False,
+            "obs_audit_status": "exclude_not_destination",
+            "exclusion_reason": "point-only service listing",
+        },
+        opportunity_basis="observed_strict",
+    )
+
+    assert excluded.opportunity_source == "excluded_not_destination"
+    assert excluded.include_in_mai is False
+    assert excluded.weight == 0.0
+
 def test_classify_poi_opportunity_falls_back_area_then_tag():
     area = classify_poi_opportunity({"amenity": "hospital", "building_area_m2": 1000.0})
     tag = classify_poi_opportunity({"amenity": "hospital"})

@@ -91,7 +91,7 @@ VinBus (Network C) data are sourced from the publicly accessible VinBus route-qu
 
 The opportunity layer merges OpenStreetMap and Overture Maps, then adds OSM landuse and office-tag enrichment for metropolitan opportunity domains. A source-agreement audit was applied: 55 Overture-only POIs were spot-checked and all 55 were confirmed, passing the promotion gate. Economic enrichment adds landuse=commercial/retail/industrial/office polygons, office tags, financial amenities, and marketplace features. The primary opportunity layer therefore contains 208 POIs/features across economic, higher-education, healthcare, and metropolitan commercial/service domains.
 
-WorldPop is used in two distinct ways. First, it enters MAI as a supply-side opportunity multiplier: `m_j = clip(sqrt(pop_density_j / median), 0.5, 2.0)`, applied to all opportunity domains so that opportunities in denser catchments receive larger effective weights. Second, it is used as a post-hoc population-exposure cross-check at origin cells. These two uses are reported separately: the first affects MAI/SMCI, while the second evaluates who is exposed to each capability level.
+WorldPop is used in two distinct ways. First, it enters MAI as a supply-side opportunity multiplier: `m_j = clip(sqrt(pop_density_j / median), 0.5, 2.0)`, applied to all opportunity domains so that opportunities in denser catchments receive larger effective weights. Second, it is used as a post-hoc population-exposure cross-check at origin cells. These two uses are reported separately: the first affects MAI/SMCI, while the second evaluates who is exposed to each capability level. MAI destination weights now also support an observed-where-available hierarchy: observed jobs, enrollment, beds, or commercial floorspace are used where present, otherwise the pipeline falls back to area and tag proxies with provenance.
 
 ### 4.1 Data Ethics and Replicability
 
@@ -128,7 +128,7 @@ A simple count is used deliberately: at the neighborhood scale, the presence of 
 
 ### 5.3 Metropolitan Accessibility Index (MAI)
 
-MAI is a composite Metropolitan Opportunity Accessibility score across four domains, by walking plus transit. It is framed as opportunity accessibility rather than employment accessibility because building-resolution employment data are unavailable for Hanoi.
+MAI is a composite Metropolitan Opportunity Accessibility score across four domains, by walking plus transit. It is framed as opportunity accessibility rather than employment accessibility. Destination magnitudes are observed where available and proxy-backed elsewhere.
 
 ```text
 MAI_i = 0.40*A_econ + 0.20*A_edu + 0.20*A_health + 0.20*A_commerce
@@ -148,13 +148,15 @@ f(t) = 1                 if t <= 30 min
      = 0                 if t > 60 min
 ```
 
-Each POI's opportunity weight is multiplied by a bounded supply-side population factor derived from the residential density of its containing grid cell:
+Each POI's base opportunity weight follows a provenance-preserving hierarchy: observed facility magnitude first (`obs_jobs`, `obs_enrollment`, `obs_beds`, `obs_retail_gla_m2`), then building/area proxy, then tag proxy. Observed values are transformed within domain using capped reference scales so that a single large facility cannot dominate the composite. Each POI's opportunity weight is then multiplied by a bounded supply-side population factor derived from the residential density of its containing grid cell:
 
 ```text
 m_j = clip( sqrt(pop_density_j / median(pop_density>0)), 0.5, 2.0 )
 ```
 
 The same effective weights are used for transit and motorcycle MAI, so RAC_opp remains an internally consistent ratio. Sensitivity runs compare this primary specification with a no-population baseline.
+
+In the current pilot, observed-derived commercial floorspace and one hospital bed count are populated: 31 commercial POIs receive `obs_retail_gla_m2` (~13,205 m2 total), and Bệnh viện Đa khoa Gia Lâm receives `obs_beds=288`. Observed coverage is 34.9% of commercial-domain opportunity weight, 36.7% of healthcare-domain weight, and 15.1% of total opportunity weight. Enrollment and jobs remain proxy-backed pending citable source rows.
 
 ### 5.4 Relative Accessibility Competitiveness (RAC)
 
@@ -271,6 +273,8 @@ The pilot has **88 zero-NAI cells (19.0%)**, and the same 88 cells have SMCI_B =
 
 **Supply-side population weighting.** Adding the WorldPop-derived supply-side multiplier to MAI relabels only 8 of 462 cells relative to the no-population baseline (**kappa = 0.976**). Population weighting therefore improves the defensibility of opportunity magnitudes without driving the typology result.
 
+**Observed-vs-proxy MAI.** Replacing proxy commercial weights with observed-derived commercial floorspace and adding one observed hospital bed count changes mean SMCI_B only from **0.0435 to 0.0435**, with **Cohen's kappa = 1.000** and **0 of 462 cells relabelled**. Observed coverage is still partial, so the result is reported as a first observed-magnitude sensitivity rather than a full observed-opportunity specification.
+
 **Index form.** Against an additive alternative SMCI_add = (NAI_norm + MAI_norm + RAC_norm)/3, the multiplicative SMCI ranking holds strongly but not trivially. A geometric-mean alternative is deliberately not used as a robustness check, because it is a monotonic transform of the product and would yield rho = 1.0 by construction.
 
 **RAC normalization.** Comparing plain min-max against log(1+x) followed by min-max normalization of the RAC subcomponents yields identical typologies (kappa = 1.00) and near-identical SMCI rankings (rho = 0.9999), confirming insensitivity to the modest right-skew of RAC.
@@ -279,7 +283,7 @@ The pilot has **88 zero-NAI cells (19.0%)**, and the same 88 cells have SMCI_B =
 
 **Motorcycle travel times.** Ten named origin-destination pairs measured manually in the Android Google Maps app give a mean absolute error of **1.90 minutes** and a bias of **-1.04 minutes**, i.e., the calibrated model is slightly optimistic relative to the consumer app. This is a plausibility check; calibrated network times remain the primary basis because Google TWO_WHEELER API coverage for Vietnam is not relied upon.
 
-**POI quality.** A 20-record spot-check of the initial POI layer found 14 confirmed, 2 duplicates, 2 misclassifications, and 2 missing. The 55 Overture-only POIs were separately spot-checked at 100% confirmation before promotion of the merged layer. Economic-domain enrichment is reported as a strengthened open-data proxy, not as direct employment measurement.
+**POI quality.** A 20-record spot-check of the initial POI layer found 14 confirmed, 2 duplicates, 2 misclassifications, and 2 missing. The 55 Overture-only POIs were separately spot-checked at 100% confirmation before promotion of the merged layer. Economic-domain enrichment is reported as a strengthened open-data opportunity layer; observed-count coverage and proxy fallback are reported through the observed-vs-proxy MAI sensitivity.
 
 ---
 
@@ -301,7 +305,7 @@ The pilot has **88 zero-NAI cells (19.0%)**, and the same 88 cells have SMCI_B =
 
 This is a single-site pilot; the goal is framework development and feasibility, not citywide or national generalization. The 462-cell extent covers Ocean Park and a 2 km buffer only.
 
-The metropolitan index remains proxy-based. Economic enrichment and supply-side population weighting improve the opportunity layer, but the paper still does not observe employment counts, enrollment counts, or service capacities directly. MAI should therefore be read as a capacity-scaled opportunity index grounded in open spatial proxies, not as a census of jobs or seats.
+The metropolitan index is observed where available and proxy-backed elsewhere. Economic enrichment and supply-side population weighting improve the opportunity layer, but employment remains the hardest domain unless point jobs or defensible ward-level dasymetric estimates are obtained. MAI should therefore be read as a provenance-tracked opportunity index, not as a complete census of jobs or seats.
 
 Transit data are imperfect. Network B is a 2018 pre-VinBus baseline, deliberately retained as the pre-intervention conventional-transit benchmark. Network C uses a pseudo-GTFS layer constructed from the VinBus public API. It is not a fully scheduled timetable feed, though route headway and stop data are strong enough for the stop-level routing used here.
 
@@ -345,6 +349,6 @@ Vu Anh Tuan, Nguyen, H., & Pham, T. (2016). Motorcycle traffic characteristics i
 
 ---
 
-*Data, code, formulas, and validation outputs are maintained in the project repository (`src/`, `outputs/`, `docs/`). All indices are implemented and unit-tested in `src/accessibility.py` and the pipeline test suite (70 passing tests). Pilot results derive from `data/processed/pilot_metrics.csv`.*
+*Data, code, formulas, and validation outputs are maintained in the project repository (`src/`, `outputs/`, `docs/`). All indices are implemented and unit-tested in `src/accessibility.py` and the pipeline test suite. Pilot results derive from `data/processed/pilot_metrics.csv`.*
 
 > **Reference-verification note (delete before submission).** The following citations were confirmed against live sources during drafting: Geurs & van Wee (2004), Handy & Niemeier (1997), Moreno et al. (2021), Liao et al. (2020), and the Vietnamese motorcycle-speed sources used in calibration (JICA HAIDEP 2010; Nguyen & Nguyen 2018; Vu Anh Tuan et al. 2016). The following should be re-verified for exact volume/page/DOI before submission: Kaszczyszyn & Sypion-Dutkowska (2019), Khuat (2006), and Vu Anh Tuan (2015).

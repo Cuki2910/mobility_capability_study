@@ -15,17 +15,22 @@ import math
 import os
 import io
 import zipfile
+import sys
 
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import mapping
+from shapely.geometry import box
 from shapely.ops import unary_union
 
 # ── paths ──────────────────────────────────────────────────────────────────
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 GRID_GPKG    = os.path.join(ROOT, "data", "interim", "pilot_grid.gpkg")
 METRICS_CSV  = os.path.join(ROOT, "data", "processed", "pilot_metrics.csv")
-POIS_GPKG    = os.path.join(ROOT, "data", "interim", "merged_pois_economic.gpkg")
+STRICT_INPUTS_CSV = os.path.join(ROOT, "outputs", "validation", "pilot_accessibility_inputs_strict.csv")
+POIS_GPKG    = os.path.join(ROOT, "data", "interim", "merged_pois_observed.gpkg")
+OCEAN_BOUNDARY = os.path.join(ROOT, "data", "interim", "ocean_park_1_boundary.geojson")
 VINBUS_GEOM  = os.path.join(ROOT, "data", "raw", "vinbus_overpass_relations_geom.json")
 VINBUS_STOPS = os.path.join(ROOT, "data", "raw", "vinbus_pseudo_gtfs_fixed", "stops.txt")
 VINBUS_ROUTES= os.path.join(ROOT, "data", "raw", "vinbus_pseudo_gtfs_fixed", "routes.txt")
@@ -34,7 +39,15 @@ OUT_HTML     = os.path.join(ROOT, "outputs", "maps", "ocean_park_interactive.htm
 # ── 1. Grid + metrics ──────────────────────────────────────────────────────
 print("Reading grid ...")
 grid = gpd.read_file(GRID_GPKG).to_crs("EPSG:4326")
-metrics = pd.read_csv(METRICS_CSV)
+if os.path.exists(STRICT_INPUTS_CSV):
+    from src.pilot import compute_pilot_metrics
+
+    print("Reading strict observed MAI inputs ...")
+    metrics = compute_pilot_metrics(pd.read_csv(STRICT_INPUTS_CSV))
+    metrics_source_note = "Strict observed MAI (no tag-only proxy fallback)"
+else:
+    metrics = pd.read_csv(METRICS_CSV)
+    metrics_source_note = "Processed pilot metrics"
 if "cell_id" not in grid.columns:
     grid = grid.reset_index().rename(columns={"index": "cell_id"})
 grid["cell_id"] = grid["cell_id"].astype(int)
@@ -67,6 +80,44 @@ study_boundary_geojson = {
     }]
 }
 
+print("Building Ocean Park / surrounding-context separator ...")
+if os.path.exists(OCEAN_BOUNDARY):
+    ocean_boundary_geom = gpd.read_file(OCEAN_BOUNDARY).to_crs("EPSG:4326").geometry.iloc[0]
+    ocean_boundary_name = "Vinhomes Ocean Park 1 (OSM way 761986888)"
+else:
+    _metric_crs = grid.estimate_utm_crs()
+    _grid_m = grid.to_crs(_metric_crs)
+    minx, miny, maxx, maxy = _grid_m.geometry.unary_union.bounds
+    _ocean_geom = box(minx + 1700, miny + 1300, maxx - 800, maxy - 1300)
+    ocean_boundary_geom = gpd.GeoSeries([_ocean_geom], crs=_metric_crs).to_crs("EPSG:4326").iloc[0]
+    ocean_boundary_name = "Approximate Ocean Park 1 core"
+context_boundary_geom = study_boundary_geom.difference(ocean_boundary_geom)
+zone_boundary_geojson = {
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": mapping(ocean_boundary_geom),
+            "properties": {
+                "name": ocean_boundary_name,
+                "zone": "Ocean Park 1",
+                "color": "#00e5ff",
+                "fill": "#00e5ff",
+            },
+        },
+        {
+            "type": "Feature",
+            "geometry": mapping(context_boundary_geom),
+            "properties": {
+                "name": "Surrounding context cells",
+                "zone": "Adjacent context",
+                "color": "#cfd8dc",
+                "fill": "#cfd8dc",
+            },
+        },
+    ],
+}
+
 TYPOLOGY_COLORS = {
     "Integrated Capability": "#2ecc71",
     "Fragmented Capability": "#f39c12",
@@ -83,6 +134,7 @@ def fmt(v):
     return str(v)
 
 grid_features = []
+zero_nai_features = []
 for _, row in gdf.iterrows():
     if row.geometry is None:
         continue
@@ -91,7 +143,7 @@ for _, row in gdf.iterrows():
     def _f(col):
         v = row.get(col)
         return float(v) if pd.notna(v) else 0.0
-    grid_features.append({
+    feature = {
         "type": "Feature",
         "geometry": mapping(row.geometry),
         "properties": {
@@ -109,9 +161,14 @@ for _, row in gdf.iterrows():
             "SMCI_raw":   _f("SMCI_B"),
             "Delta_raw":  _f("Delta_SMCI"),
         },
-    })
+    }
+    grid_features.append(feature)
+    if _f("NAI") == 0.0:
+        zero_nai_features.append(feature)
 grid_geojson = {"type": "FeatureCollection", "features": grid_features}
+zero_nai_geojson = {"type": "FeatureCollection", "features": zero_nai_features}
 print(f"  {len(grid_features)} grid cells")
+print(f"  {len(zero_nai_features)} zero-NAI cells")
 
 # ── 2. POIs ────────────────────────────────────────────────────────────────
 print("Reading POIs ...")
@@ -129,12 +186,18 @@ DOMAIN_COLORS = {
 }
 
 def infer_domain(row):
-    cat     = str(row.get("category", "") or "").lower()
-    amenity = str(row.get("amenity",  "") or "").lower()
-    shop    = str(row.get("shop",     "") or "").lower()
-    edu     = str(row.get("education","") or "").lower()
-    office  = str(row.get("office",   "") or "").lower()
-    landuse = str(row.get("landuse",  "") or "").lower()
+    def _txt(key):
+        val = row.get(key, "")
+        if val is None or (isinstance(val, float) and pd.isna(val)):
+            return ""
+        text = str(val).strip().lower()
+        return "" if text in {"nan", "none", "<na>"} else text
+    cat     = _txt("category")
+    amenity = _txt("amenity")
+    shop    = _txt("shop")
+    edu     = _txt("education")
+    office  = _txt("office")
+    landuse = _txt("landuse")
     if cat in ("education","higher_ed") or "school" in amenity or "university" in amenity or edu:
         return "education"
     if cat == "health_and_medical" or amenity in ("hospital","clinic","pharmacy","doctors"):
@@ -342,14 +405,24 @@ delta_hist, delta_lo, delta_hi = make_histogram(grid_features, "Delta_raw", 20)
 
 METRIC_META = {
     "nai":   {"label": "NAI",        "unit": "count",    "desc": "Walkable POIs within 800m network distance",
+              "long": "<b>NAI</b>: local walkability. It counts nearby everyday POIs reachable on the walking network. Higher values mean the cell has more schools, clinics, shops, parks, or daily services close enough for walking.",
+              "how": "Cold blue = fewer walkable nearby POIs; warm red = more walkable nearby POIs.",
               "hist": nai_hist,   "lo": nai_lo,   "hi": nai_hi},
     "smci":  {"label": "SMCI_B",     "unit": "index",    "desc": "Sustainable Mobility Capability Index (Scenario B with VinBus)",
+              "long": "<b>SMCI_B</b>: final sustainable mobility capability after adding VinBus. It combines local walking access, metropolitan opportunity access, and transit-vs-motorcycle competitiveness. Because it is multiplicative, one weak component can pull the score down.",
+              "how": "Cold blue = weaker sustainable mobility capability; warm red = stronger capability.",
               "hist": smci_hist,  "lo": smci_lo,  "hi": smci_hi},
     "mai":   {"label": "MAI_B",      "unit": "weighted", "desc": "Metropolitan Accessibility Index — magnitude-weighted, walk+transit, 60 min cutoff",
+              "long": "<b>MAI_B</b>: metropolitan opportunity access after VinBus. It measures how many weighted opportunities can be reached by walking plus transit within the 60-minute impedance window. Destination weights use the strict source-backed MAI audit.",
+              "how": "Cold blue = fewer/weaker metropolitan opportunities reachable by walk+transit; warm red = more/stronger reachable opportunities.",
               "hist": mai_hist,   "lo": mai_lo,   "hi": mai_hi},
     "rac":   {"label": "RAC_B",      "unit": "ratio",    "desc": "Relative Accessibility Competitiveness = geom. mean(RAC_time, RAC_opp); higher = transit more competitive vs motorcycle",
+              "long": "<b>RAC_B</b>: how competitive walking plus transit is against motorcycle access after VinBus. It combines relative travel-time competitiveness and relative opportunity competitiveness. Higher values mean transit narrows the gap with motorcycles.",
+              "how": "Cold blue = walk+transit is less competitive against motorcycle; warm red = walk+transit is more competitive.",
               "hist": rac_hist,   "lo": rac_lo,   "hi": rac_hi},
     "delta": {"label": "Delta_SMCI", "unit": "index",    "desc": "SMCI change from adding VinBus (Scenario B minus A); positive = VinBus improves capability",
+              "long": "<b>Delta_SMCI</b>: change caused by adding VinBus, computed as Scenario B minus Scenario A using shared normalization bounds. Positive values mean the VinBus scenario improves sustainable mobility capability relative to the pre-VinBus baseline.",
+              "how": "Cold blue = little/no improvement from VinBus; warm red = larger positive improvement from VinBus.",
               "hist": delta_hist, "lo": delta_lo, "hi": delta_hi},
 }
 
@@ -418,9 +491,23 @@ select{{
   flex:1;background:rgba(79,195,247,0.5);border-radius:1px 1px 0 0;min-height:1px;
 }}
 #cont-legend .leg-desc{{font-size:10px;color:#78909c;line-height:1.4;margin-top:4px;}}
+#cont-legend .leg-how{{
+  font-size:10.5px;color:#d7ecff;line-height:1.45;margin-top:6px;
+  background:#0b2742;border-left:3px solid #4fc3f7;border-radius:4px;padding:6px 7px;
+}}
 #cont-legend .leg-unit{{
   font-size:9.5px;color:#4fc3f7;font-weight:600;
   text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;
+}}
+.layer-desc{{
+  background:#0d2137;border-radius:6px;padding:9px 10px;margin-top:8px;
+  font-size:11px;line-height:1.55;color:#c6d6f0;
+}}
+.layer-desc ul{{margin:6px 0 0 16px;padding:0;}}
+.layer-desc li{{margin:5px 0;}}
+.layer-desc b{{color:#e3ecff;}}
+.layer-desc .active-desc{{
+  margin-top:8px;padding-top:8px;border-top:1px solid #243454;color:#d7ecff;
 }}
 /* Map attribution override */
 .leaflet-control-attribution{{font-size:9px!important;opacity:0.7;}}
@@ -433,6 +520,7 @@ select{{
   <h1>Vinhomes Ocean Park</h1>
   <div class="subtitle">Fragmented Mobility Capability — Pilot Study</div>
   <div class="subtitle" style="color:#546e7a;">Gia Lam, Hanoi &middot; 462 cells &middot; 250 m grid &middot; 2026</div>
+  <div class="subtitle" style="color:#4fc3f7;">{metrics_source_note}</div>
 
   <div class="section">
     <h2>Basemap</h2>
@@ -449,6 +537,14 @@ select{{
     <label><input type="checkbox" id="chk-boundary" checked>
       <span class="swatch" style="background:transparent;border:2px dashed #f39c12;"></span>
       Study area boundary
+    </label>
+    <label><input type="checkbox" id="chk-zones" checked>
+      <span class="swatch" style="background:transparent;border:2px solid #00e5ff;"></span>
+      Ocean Park / adjacent-context separator
+    </label>
+    <label><input type="checkbox" id="chk-zero-nai">
+      <span class="swatch" style="background:rgba(255,255,255,.08);border:2px solid #ffffff;"></span>
+      Zero NAI cells ({len(zero_nai_features)})
     </label>
     <select id="grid-mode">
       <option value="typology" selected>Typology B (primary)</option>
@@ -472,12 +568,29 @@ select{{
       <div class="leg-hist" id="leg-hist"></div>
       <div class="leg-bar"></div>
       <div class="leg-label"><span id="leg-min"></span><span id="leg-max"></span></div>
+      <div class="leg-how" id="leg-how"></div>
       <div class="leg-desc" id="leg-desc"></div>
+    </div>
+    <div class="layer-desc">
+      <div><b>Core layers</b></div>
+      <ul>
+        <li><b>Typology B</b>: final spatial class for Scenario B.</li>
+        <li><b>NAI</b>: local walkability, walking access to nearby everyday amenities.</li>
+        <li><b>MAI_B</b>: metropolitan opportunity access after VinBus.</li>
+        <li><b>RAC_B</b>: how well walk+transit competes with motorcycle access.</li>
+        <li><b>Delta_SMCI</b>: how much VinBus changes SMCI.</li>
+        <li><b>SMCI_B</b>: final capability index after VinBus.</li>
+      </ul>
+      <div class="active-desc" id="active-layer-desc"></div>
+      <div class="active-desc" style="border-top-color:#ffffff;">
+        <b>Zero NAI caution</b><br>
+        NAI = 0 means no mapped walkable POIs within the walking threshold. It does not prove there are no real-world amenities. In this pilot, zero-NAI built cells are analytically important because they also force SMCI_B to 0.
+      </div>
     </div>
   </div>
 
   <div class="section">
-    <h2>Points of Interest (208)</h2>
+    <h2>Points of Interest (strict observed)</h2>
     <label><input type="checkbox" id="chk-poi" checked> Show POIs</label>
     <div style="margin-top:5px;">
       <div class="legend-row"><span class="swatch" style="background:#9b59b6;border-radius:50%;"></span>Education (incl. higher ed)</div>
@@ -487,7 +600,7 @@ select{{
       <div class="legend-row"><span class="swatch" style="background:#f1c40f;border-radius:50%;"></span>Retail</div>
       <div class="legend-row"><span class="swatch" style="background:#7f8c8d;border-radius:50%;"></span>Transport / Other</div>
     </div>
-    <div style="font-size:10px;color:#546e7a;margin-top:4px;">Sources: OSM + Overture Places + OSM landuse (Decision #18)</div>
+    <div style="font-size:10px;color:#546e7a;margin-top:4px;">Sources: OSM + Overture + source-backed MAI audit (Decision #21)</div>
   </div>
 
   <div class="section">
@@ -517,12 +630,12 @@ select{{
 
   <div class="section">
     <h2>Selected cell</h2>
-    <div id="info-panel">Click any grid cell to see its metrics.</div>
+    <div id="info-panel"></div>
   </div>
 
   <div class="section" style="margin-top:6px;font-size:10px;color:#455a64;line-height:1.5;">
     Methodology: proposal/proposal_v7.md &sect;3<br>
-    Pipeline: scripts/run_pilot_metrics.py<br>
+    Pipeline: scripts/build_accessibility_inputs.py --opportunity-basis observed_strict<br>
     SMCI = NAI<sub>norm</sub> &times; MAI<sub>norm</sub> &times; RAC<sub>norm</sub>
   </div>
 </div>
@@ -533,7 +646,9 @@ select{{
 <script>
 // ── Embedded GeoJSON data ──────────────────────────────────────────────────
 const GRID     = {js(grid_geojson)};
+const ZERO_NAI = {js(zero_nai_geojson)};
 const BOUNDARY = {js(study_boundary_geojson)};
+const ZONES    = {js(zone_boundary_geojson)};
 const POIS     = {js(poi_geojson)};
 const ROUTES   = {js(route_geojson)};
 const VSTOPS   = {js(stops_geojson)};
@@ -610,6 +725,28 @@ document.getElementById('chk-boundary').addEventListener('change', e => {{
   e.target.checked ? boundaryLayer.addTo(map) : map.removeLayer(boundaryLayer);
 }});
 
+const zoneLayer = L.geoJSON(ZONES, {{
+  style: f => {{
+    const isOcean = f.properties.zone === 'Ocean Park';
+    return {{
+      color: f.properties.color,
+      weight: isOcean ? 3.2 : 1.6,
+      dashArray: isOcean ? null : '5 5',
+      fillColor: f.properties.fill,
+      fillOpacity: isOcean ? 0.07 : 0.025,
+      opacity: isOcean ? 0.98 : 0.72,
+    }};
+  }},
+  onEachFeature: (f, layer) => {{
+    layer.bindTooltip(`<b>${{f.properties.zone}}</b><br>${{f.properties.name}}`, {{sticky:true}});
+  }},
+}});
+zoneLayer.addTo(map);
+
+document.getElementById('chk-zones').addEventListener('change', e => {{
+  e.target.checked ? zoneLayer.addTo(map) : map.removeLayer(zoneLayer);
+}});
+
 // ── Grid layer ────────────────────────────────────────────────────────────
 let gridMode = 'typology';
 
@@ -630,14 +767,77 @@ const BADGE_COLORS = {{
   'Motorcycle Lock-in':    ['#e74c3c','#fff'],
 }};
 
+const METRIC_KEYS = {{
+  typology: null,
+  nai: 'NAI_raw',
+  smci: 'SMCI_raw',
+  mai: 'MAI_raw',
+  rac: 'RAC_raw',
+  delta: 'Delta_raw',
+}};
+
+function modeHelp(mode) {{
+  if (mode === 'typology') {{
+    return `
+      <b>Typology B</b><br>
+      Four classes combine local walking access (NAI) with metropolitan competitiveness (MCS).
+      Green/orange/blue/red are categories, not a heat scale. Click any cell for its metrics.`;
+  }}
+  const m = METRIC_META[mode];
+  return `
+    <b>${{m.label}} heatmap</b><br>
+    <span style="color:#abd9e9;">Cold blue</span> = lower value.
+    <span style="color:#f46d43;">Warm red</span> = higher value.<br>
+    ${{m.how}}<br>
+    <span style="color:#78909c;">Current range: ${{m.lo.toFixed(4)}} to ${{m.hi.toFixed(4)}}. Click any cell for exact values.</span>`;
+}}
+
+function layerDescription(mode) {{
+  if (mode === 'typology') {{
+    return `<b>Selected: Typology B</b><br>
+      This is the final classification map for Scenario B. It groups cells into Integrated Capability,
+      Fragmented Capability, Transit-Dependent, and Motorcycle Lock-in by combining local access (NAI)
+      with metropolitan competitiveness. It is categorical, so the colors are class labels rather than
+      a cold-to-hot heat scale.`;
+  }}
+  const m = METRIC_META[mode];
+  return `<b>Selected: ${{m.label}}</b><br>${{m.long}}<br><span style="color:#9fb7d8;">${{m.how}}</span>`;
+}}
+
+function updateActiveDescription(mode) {{
+  document.getElementById('active-layer-desc').innerHTML = layerDescription(mode);
+}}
+
+function heatPosition(mode, value) {{
+  if (mode === 'typology') return '';
+  const m = METRIC_META[mode];
+  const t = norm(value, m.lo, m.hi);
+  if (t < 0.25) return 'low / cold';
+  if (t < 0.50) return 'lower-middle';
+  if (t < 0.75) return 'upper-middle';
+  return 'high / warm';
+}}
+
+function setDefaultInfo() {{
+  document.getElementById('info-panel').innerHTML = modeHelp(gridMode);
+}}
+
 function onEachCell(f, layer) {{
   layer.on('click', () => {{
     const p = f.properties;
     const [bg,fg] = BADGE_COLORS[p.typology_B] || ['#555','#fff'];
+    const activeKey = METRIC_KEYS[gridMode];
+    const activeValue = activeKey ? p[activeKey] : null;
+    const activeMetric = activeKey ? `
+      <div class="metric" style="grid-column:span 2;border:1px solid #4fc3f7;">
+        <div class="val">${{activeValue.toFixed ? activeValue.toFixed(4) : activeValue}}</div>
+        <div class="lbl">${{METRIC_META[gridMode].label}} — ${{heatPosition(gridMode, activeValue)}} on current heatmap</div>
+      </div>` : '';
     document.getElementById('info-panel').innerHTML = `
       <b>Cell #${{p.cell_id}}</b>&nbsp;
       <span class="badge" style="background:${{bg}};color:${{fg}};">${{p.typology_B}}</span>
       <div class="metric-grid">
+        ${{activeMetric}}
         <div class="metric">
           <div class="val">${{p.NAI}}</div>
           <div class="lbl">NAI &mdash; walkable POIs</div>
@@ -666,9 +866,44 @@ function onEachCell(f, layer) {{
 
 const gridLayer = L.geoJSON(GRID, {{style:gridStyle, onEachFeature:onEachCell}});
 gridLayer.addTo(map);
+zoneLayer.bringToFront();
+boundaryLayer.bringToFront();
+
+const zeroNaiLayer = L.geoJSON(ZERO_NAI, {{
+  style: {{
+    color: '#ffffff',
+    weight: 2.0,
+    dashArray: '2 4',
+    fillColor: '#ffffff',
+    fillOpacity: 0.09,
+    opacity: 0.95,
+  }},
+  onEachFeature: (f, layer) => {{
+    layer.bindTooltip(
+      `<b>Zero NAI cell #${{f.properties.cell_id}}</b><br>No mapped walkable POIs within threshold.<br>SMCI_B = ${{f.properties.SMCI_B}}`,
+      {{sticky:true}}
+    );
+  }},
+}});
+
+document.getElementById('chk-zero-nai').addEventListener('change', e => {{
+  if (e.target.checked) {{
+    zeroNaiLayer.addTo(map);
+    zeroNaiLayer.bringToFront();
+  }} else {{
+    map.removeLayer(zeroNaiLayer);
+  }}
+}});
 
 document.getElementById('chk-grid').addEventListener('change', e => {{
-  e.target.checked ? gridLayer.addTo(map) : map.removeLayer(gridLayer);
+  if (e.target.checked) {{
+    gridLayer.addTo(map);
+    zoneLayer.bringToFront();
+    boundaryLayer.bringToFront();
+    if (document.getElementById('chk-zero-nai').checked) zeroNaiLayer.bringToFront();
+  }} else {{
+    map.removeLayer(gridLayer);
+  }}
 }});
 
 // ── Continuous legend update ───────────────────────────────────────────────
@@ -687,6 +922,7 @@ function updateContLegend(mode) {{
   document.getElementById('leg-unit').textContent = m.unit.toUpperCase();
   document.getElementById('leg-min').textContent  = m.lo.toFixed(4);
   document.getElementById('leg-max').textContent  = m.hi.toFixed(4);
+  document.getElementById('leg-how').textContent  = m.how;
   document.getElementById('leg-desc').textContent = m.desc;
 
   // Draw mini histogram
@@ -708,7 +944,12 @@ document.getElementById('grid-mode').addEventListener('change', e => {{
   gridMode = e.target.value;
   gridLayer.setStyle(gridStyle);
   updateContLegend(gridMode);
+  updateActiveDescription(gridMode);
+  setDefaultInfo();
 }});
+updateContLegend(gridMode);
+updateActiveDescription(gridMode);
+setDefaultInfo();
 
 // ── POI layer ─────────────────────────────────────────────────────────────
 function poiIcon(color) {{

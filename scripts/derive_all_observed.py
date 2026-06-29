@@ -184,6 +184,114 @@ AMENITY_JOBS: dict[str, dict] = {
     "post_office": {"jobs": 8,  "source": "vnpost_branch_standard", "url": ""},
 }
 
+AUDIT_COLUMNS = [
+    "poi_id",
+    "name",
+    "domain",
+    "subtype",
+    "obs_magnitude",
+    "obs_unit",
+    "obs_source_tier",
+    "obs_source",
+    "obs_source_url",
+    "obs_confidence",
+    "obs_audit_status",
+    "include_in_mai",
+    "exclusion_reason",
+]
+
+def _clean_text(value) -> str:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return ""
+    text = str(value).strip()
+    return "" if text.lower() in {"nan", "none", "<na>"} else text
+
+def _positive(value) -> float | None:
+    parsed = pd.to_numeric(value, errors="coerce")
+    if pd.isna(parsed) or float(parsed) <= 0:
+        return None
+    return float(parsed)
+
+def _source_tier(source: str, domain: str, unit: str) -> str:
+    sid = source.lower()
+    if "haidep" in sid or "density" in sid or "dasymetric" in sid:
+        return "observed_dasymetric_weak"
+    if "moh" in sid or "moet" in sid or "circular" in sid or "decision" in sid:
+        return "official_source"
+    if "website" in sid or "hospital" in sid or "vinuniversity" in sid:
+        return "facility_source"
+    if "geometry" in sid or "building_area" in sid or "gla" in sid or unit.startswith("m2_"):
+        return "geometry_measured"
+    if "standard" in sid or "estimate" in sid or "default" in sid:
+        return "manual_checked"
+    return "observed_derived" if domain == "metro_commercial" else "observed_point"
+
+def _confidence(source_tier: str) -> str:
+    return {
+        "official_source": "high",
+        "facility_source": "high",
+        "geometry_measured": "medium",
+        "observed_dasymetric_weak": "low",
+        "manual_checked": "low",
+    }.get(source_tier, "medium")
+
+def _commercial_subtype(row: pd.Series) -> str:
+    shop = _clean_text(row.get("shop")).lower()
+    category = _clean_text(row.get("category")).lower()
+    leisure = _clean_text(row.get("leisure")).lower()
+    if _positive(row.get("obs_retail_gla_m2")) is not None:
+        return "retail_gla" if shop != "agrarian" else "agrarian_retail"
+    if leisure == "park":
+        return "park_leisure_area"
+    if category == "transportation":
+        return "transport_service"
+    if shop == "agrarian":
+        return "agrarian_retail"
+    return "generic_service"
+
+def _set_generic_observed(out: gpd.GeoDataFrame, idx, *, magnitude: float | None, unit: str,
+                          source: str, source_url: str = "", source_tier: str | None = None,
+                          status: str = "verified", include: bool = True,
+                          exclusion_reason: str = "") -> None:
+    if magnitude is not None:
+        out.at[idx, "obs_magnitude"] = float(magnitude)
+    out.at[idx, "obs_unit"] = unit
+    out.at[idx, "obs_source"] = source
+    out.at[idx, "obs_source_url"] = source_url
+    tier = source_tier or _source_tier(source, "", unit)
+    out.at[idx, "obs_source_tier"] = tier
+    out.at[idx, "obs_confidence"] = _confidence(tier)
+    out.at[idx, "obs_audit_status"] = status
+    out.at[idx, "include_in_mai"] = bool(include)
+    out.at[idx, "exclusion_reason"] = exclusion_reason
+
+def _write_observed_audit(enriched: gpd.GeoDataFrame, output: Path) -> pd.DataFrame:
+    from src.accessibility_inputs import classify_poi_opportunity, classify_poi_opportunity_domain
+
+    rows = []
+    for pos, row in enriched.iterrows():
+        domain, _ = classify_poi_opportunity_domain(row)
+        opp = classify_poi_opportunity(row, opportunity_basis="observed_strict")
+        rows.append({
+            "poi_id": row.get("id", pos),
+            "name": row.get("name", ""),
+            "domain": domain,
+            "subtype": row.get("obs_subtype", ""),
+            "obs_magnitude": opp.observed_value,
+            "obs_unit": opp.observed_unit,
+            "obs_source_tier": opp.source_tier or opp.opportunity_source,
+            "obs_source": opp.source_id,
+            "obs_source_url": opp.source_url,
+            "obs_confidence": opp.confidence,
+            "obs_audit_status": opp.audit_status,
+            "include_in_mai": opp.include_in_mai,
+            "exclusion_reason": opp.exclusion_reason,
+        })
+    audit = pd.DataFrame(rows, columns=AUDIT_COLUMNS)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    audit.to_csv(output, index=False, encoding="utf-8")
+    return audit
+
 
 def _derive_healthcare(row: pd.Series) -> dict | None:
     amenity = str(row.get("amenity") or "").lower()
@@ -410,16 +518,28 @@ def derive_all_observed(pois: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     out = pois.copy()
     # Ensure numeric obs columns are float (GeoPackage/Arrow stores them as string)
-    for col in ("obs_beds", "obs_enrollment", "obs_jobs", "obs_retail_gla_m2"):
+    for col in ("obs_beds", "obs_enrollment", "obs_jobs", "obs_retail_gla_m2", "obs_magnitude"):
         if col not in out.columns:
             out[col] = np.nan
         else:
             out[col] = pd.to_numeric(out[col], errors="coerce")
-    for col in ("obs_source", "obs_source_url"):
+    for col in (
+        "obs_source", "obs_source_url", "obs_unit", "obs_source_tier",
+        "obs_confidence", "obs_audit_status", "obs_subtype", "exclusion_reason",
+    ):
         if col not in out.columns:
             out[col] = ""
         else:
             out[col] = out[col].astype(str).replace("nan", "").replace("<NA>", "")
+    if "include_in_mai" not in out.columns:
+        out["include_in_mai"] = True
+
+    metric_area = np.zeros(len(out), dtype=float)
+    try:
+        metric = out.to_crs(out.estimate_utm_crs())
+        metric_area = metric.geometry.area.to_numpy(dtype=float)
+    except Exception:
+        metric_area = np.zeros(len(out), dtype=float)
 
     n_filled = {"healthcare": 0, "higher_education": 0, "economic": 0, "commercial": 0}
 
@@ -465,6 +585,68 @@ def derive_all_observed(pois: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
                     out.at[idx, "obs_source_url"] = result.get("obs_source_url", "")
                 n_filled["commercial"] += 1
 
+    for pos, (idx, row) in enumerate(out.iterrows()):
+        domain, _ = classify_poi_opportunity_domain(row)
+        if domain == "tertiary_healthcare":
+            value = _positive(out.at[idx, "obs_beds"])
+            if value is not None:
+                _set_generic_observed(
+                    out, idx, magnitude=value, unit="beds",
+                    source=_clean_text(out.at[idx, "obs_source"]) or "healthcare_source_backed_estimate",
+                    source_url=_clean_text(out.at[idx, "obs_source_url"]),
+                    status="verified",
+                )
+        elif domain == "higher_education":
+            value = _positive(out.at[idx, "obs_enrollment"])
+            if value is not None:
+                source = _clean_text(out.at[idx, "obs_source"]) or "education_capacity_source_backed_estimate"
+                unit = "seat_capacity_derived" if "standard" in source.lower() or "estimate" in source.lower() else "students"
+                _set_generic_observed(
+                    out, idx, magnitude=value, unit=unit, source=source,
+                    source_url=_clean_text(out.at[idx, "obs_source_url"]),
+                    status="verified",
+                )
+        elif domain == "economic":
+            value = _positive(out.at[idx, "obs_jobs"])
+            if value is not None:
+                _set_generic_observed(
+                    out, idx, magnitude=value, unit="jobs",
+                    source=_clean_text(out.at[idx, "obs_source"]) or "economic_source_backed_estimate",
+                    source_url=_clean_text(out.at[idx, "obs_source_url"]),
+                    status="verified",
+                )
+        elif domain == "metro_commercial":
+            subtype = _commercial_subtype(out.loc[idx])
+            out.at[idx, "obs_subtype"] = subtype
+            gla = _positive(out.at[idx, "obs_retail_gla_m2"])
+            geom_area = float(metric_area[pos]) if pos < len(metric_area) and np.isfinite(metric_area[pos]) else 0.0
+            if gla is not None:
+                _set_generic_observed(
+                    out, idx, magnitude=gla, unit="m2_gla",
+                    source=_clean_text(out.at[idx, "obs_source"]) or "commercial_gla_derived",
+                    source_url=_clean_text(out.at[idx, "obs_source_url"]),
+                    source_tier="geometry_measured",
+                    status="geometry_measured",
+                )
+            elif subtype in {"park_leisure_area", "agrarian_retail"} and geom_area > 0:
+                _set_generic_observed(
+                    out, idx, magnitude=round(geom_area, 1), unit="m2_park_or_leisure_area",
+                    source="osm_polygon_geometry_measured",
+                    source_url="",
+                    source_tier="geometry_measured",
+                    status="geometry_measured",
+                )
+            else:
+                _set_generic_observed(
+                    out, idx, magnitude=None, unit="excluded",
+                    source="strict_mai_excluded_no_measurable_destination_magnitude",
+                    source_url="",
+                    source_tier="excluded",
+                    status="exclude_not_destination",
+                    include=False,
+                    exclusion_reason=f"{subtype} has point-only/no measurable magnitude in current open data",
+                )
+
     print(f"Filled observed values:")
     for domain, n in n_filled.items():
         print(f"  {domain}: {n} POIs filled")
@@ -484,6 +666,11 @@ def main() -> int:
         default=ROOT / "data/interim/merged_pois_observed.gpkg",
         help="Output GeoPackage (overwrites in place by default)",
     )
+    parser.add_argument(
+        "--audit-output", type=Path,
+        default=ROOT / "data/interim/poi_observed_audit.csv",
+        help="POI-level strict observed audit CSV.",
+    )
     args = parser.parse_args()
 
     print(f"Reading {args.pois} ...")
@@ -495,6 +682,8 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     enriched.to_file(args.output, driver="GPKG")
     print(f"Wrote {args.output} ({len(enriched)} POIs)")
+    audit = _write_observed_audit(enriched, args.audit_output)
+    print(f"Wrote {args.audit_output} ({len(audit)} POIs)")
 
     # Coverage summary
     print("\nObserved coverage after enrichment:")
@@ -504,17 +693,25 @@ def main() -> int:
     for _, row in enriched.iterrows():
         domain, _ = classify_poi_opportunity_domain(row)
         if domain not in by_domain:
-            by_domain[domain] = {"total": 0, "observed": 0}
+            by_domain[domain] = {"total": 0, "observed": 0, "included": 0, "excluded": 0}
         by_domain[domain]["total"] += 1
-        spec = OBSERVED_OPPORTUNITY_REFS.get(domain, {})
-        col = spec.get("column")
-        if col:
-            v = pd.to_numeric(row.get(col), errors="coerce")
-            if pd.notna(v) and v > 0:
-                by_domain[domain]["observed"] += 1
+        if bool(row.get("include_in_mai", True)):
+            by_domain[domain]["included"] += 1
+        else:
+            by_domain[domain]["excluded"] += 1
+        v = pd.to_numeric(row.get("obs_magnitude"), errors="coerce")
+        if pd.notna(v) and v > 0:
+            by_domain[domain]["observed"] += 1
     for domain, counts in sorted(by_domain.items()):
-        pct = 100.0 * counts["observed"] / counts["total"] if counts["total"] else 0
-        print(f"  {domain}: {counts['observed']}/{counts['total']} = {pct:.1f}%")
+        denom = counts["included"]
+        pct = 100.0 * counts["observed"] / denom if denom else 100.0
+        print(
+            f"  {domain}: {counts['observed']}/{denom} included = {pct:.1f}% "
+            f"({counts['excluded']} excluded)"
+        )
+    blockers = int((audit["obs_audit_status"] == "needs_source").sum())
+    proxy_tags = int(audit["obs_source_tier"].fillna("").str.contains("proxy", case=False).sum())
+    print(f"\nStrict gate: needs_source={blockers}; proxy_source_tiers={proxy_tags}")
     return 0
 
 
