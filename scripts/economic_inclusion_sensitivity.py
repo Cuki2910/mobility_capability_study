@@ -48,7 +48,7 @@ def _run_pipeline(pois_path: Path):
         vinbus_geometry_json=VINBUS_GEOM if VINBUS_GEOM.exists() else None,
         gtfs_zip=GTFS_ZIP if GTFS_ZIP.exists() else None,
         gtfs_status="baseline_limited",
-        walk_cutoff_min=800.0 / 80.0,
+        walk_cutoff_min=1200.0 / 80.0,
         motorcycle_cutoff_min=3000.0 / 250.0,
         speed_factor_csv=SPEED_CSV if SPEED_CSV.exists() else None,
         headway_min=15.0,

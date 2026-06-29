@@ -12,6 +12,10 @@ these formulas inline elsewhere.
 import numpy as np
 
 # MAI v8 domain weights (Decision #12). Keys match classify_poi_opportunity_domain() output.
+# "default" is a theory-informed prior (employment-centrality), NOT yet survey-derived.
+# scripts/derive_mai_weights_utm.py grounds these in the UTM-Hanoi trip-purpose
+# distribution once real counts are filled; promote "utm_derived" to "default" then.
+# Robustness across schemes is strong (metric audit: equal/job_heavy/econ_light all κ≥0.92).
 MAI_DOMAIN_WEIGHTS = {
     "default":   {"economic": 0.40, "higher_education": 0.20, "tertiary_healthcare": 0.20, "metro_commercial": 0.20},
     "equal":     {"economic": 0.25, "higher_education": 0.25, "tertiary_healthcare": 0.25, "metro_commercial": 0.25},

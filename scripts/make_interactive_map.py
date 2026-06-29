@@ -404,7 +404,7 @@ rac_hist,   rac_lo,   rac_hi   = make_histogram(grid_features, "RAC_raw",   20)
 delta_hist, delta_lo, delta_hi = make_histogram(grid_features, "Delta_raw", 20)
 
 METRIC_META = {
-    "nai":   {"label": "NAI",        "unit": "count",    "desc": "Walkable POIs within 800m network distance",
+    "nai":   {"label": "NAI",        "unit": "count",    "desc": "Walkable POIs within 1200m network distance (~15 min)",
               "long": "<b>NAI</b>: local walkability. It counts nearby everyday POIs reachable on the walking network. Higher values mean the cell has more schools, clinics, shops, parks, or daily services close enough for walking.",
               "how": "Cold blue = fewer walkable nearby POIs; warm red = more walkable nearby POIs.",
               "hist": nai_hist,   "lo": nai_lo,   "hi": nai_hi},

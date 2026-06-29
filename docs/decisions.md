@@ -170,6 +170,19 @@ so settled debates don't get silently re-opened.
     Decay: linear, 1.0 at t<=30min → 0.0 at t=60min (zero beyond 60min).
     Sensitivity runs: equal weights (0.25 each), job-heavy (0.50/0.15/0.15/0.20).
 
+    **Weight provenance — OPEN ITEM (2026-06-30).** The 0.40/0.20/0.20/0.20 split is a
+    theory-informed prior (employment-centrality), not yet survey-derived. To pre-empt the
+    "weights look arbitrary" reviewer attack, `scripts/derive_mai_weights_utm.py` derives them
+    from the open UTM-Hanoi household travel survey (N=26,106; Nature Sci Data 2024, OSF
+    10.17605/OSF.IO/497US): observed trip-purpose shares → domains (work→economic,
+    education→higher_education, shopping→metro_commercial, caring→tertiary_healthcare;
+    leisure/visit excluded; renormalized). Blocked only on transcribing the trip-purpose counts
+    into `data/raw/utm_hanoi_trip_purpose.csv` (Fig. 4 / OSF — sandbox cannot reach OSF). HAIDEP
+    2010 shares were not usable (behind JICA licensing). Healthcare stays survey-*informed* not
+    *derived* (`caring` is a proxy; survey has no health-trip purpose). Robustness already covers
+    the risk: metric audit κ≥0.92 across equal/job_heavy/econ_light, so the headline does not
+    hinge on the prior. Promote `utm_derived` → `default` once counts are filled.
+
     RAC_opp_i = MAI_transit_i / MAI_motorcycle_i — ratio of two commensurable composite
     scores using the same decay function and domain weights. This is more principled than
     a ratio of raw POI counts.

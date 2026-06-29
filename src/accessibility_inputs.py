@@ -116,7 +116,7 @@ OBSERVED_OPPORTUNITY_REFS = {
     #
     # tertiary_healthcare: 50-bed district clinic = ref; 288-bed hospital → 5.76 (< cap 30)
     "tertiary_healthcare": {"column": "obs_beds", "unit": "beds", "ref": 50.0, "lo": 0.4, "hi": 30.0},
-    # higher_education: 1000-student secondary school = ref; large campus → ≤20
+    # higher_education: 1000-student education campus/reference facility = ref; large campus -> <=20
     "higher_education": {"column": "obs_enrollment", "unit": "students", "ref": 1000.0, "lo": 0.5, "hi": 20.0},
     # economic: ref=500 jobs (small industrial cluster); cap=5 mirrors Decision #18 landuse cap.
     # Without this, a 30,000-worker KCN would hit cap=30 and dominate the full MAI domain.

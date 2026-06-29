@@ -7,7 +7,8 @@ framework that justifies it.
 This is a **reference document**, not a tutorial. The authoritative implementation is
 `src/accessibility.py` (index formulas) and `src/accessibility_inputs.py` /
 `src/routing.py` (input construction). If a formula here disagrees with the code, the
-code wins — fix this file. Last synced: 2026-06-29 (strict observed MAI, 77 tests).
+code wins — fix this file. Last synced: 2026-06-30 (strict observed MAI + RAC_time
+promoted to primary per Decision #22; full-RAC retained as robustness; 77 tests).
 
 Convention: cell index `i`, opportunity/POI index `j`, domain index `k`,
 travel time `t_ij` in minutes unless stated.
@@ -20,9 +21,9 @@ travel time `t_ij` in minutes unless stated.
 |---|---|---|---|---|
 | **NAI** | Neighborhood | Count | SMCI, typology axis 1 | `routing.reachable_counts_and_mean_time` |
 | **MAI** | Metropolitan | Magnitude-weighted | RAC_opp, MCS, SMCI | `routing.composite_mai_from_graph` |
-| **RAC_time** | Mode-competitive | Time ratio | RAC, RAC_time-only contingency | `accessibility_inputs` (opp-weighted times) |
-| **RAC_opp** | Mode-competitive | Opportunity ratio | RAC | `accessibility_inputs._safe_ratio` |
-| **RAC** | Mode-competitive | Geometric mean | MCS, SMCI | `accessibility.compute_rac` |
+| **RAC_time** | Mode-competitive | Time ratio | **RAC primary, MCS, SMCI** | `accessibility_inputs` (opp-weighted times) |
+| **RAC_opp** | Mode-competitive | Opportunity ratio | RAC_full (legacy) | `accessibility_inputs._safe_ratio` |
+| **RAC** | Mode-competitive | RAC_time (primary) / full=geom. mean (legacy) | MCS, SMCI | `pilot.compute_pilot_metrics` |
 | **MCS** | Composite | Geometric mean | Typology axis 2 | `accessibility.metropolitan_competitiveness_score` |
 | **SMCI** | Composite | Multiplicative | Headline result, Δ | `accessibility.compute_smci` |
 | **SMCI_additive** | Composite | Additive | Robustness only | `accessibility.compute_smci_additive` |
@@ -45,7 +46,7 @@ neighborhood time threshold. Count-based, not magnitude-weighted (Decision #7).
 **Thresholds / parameters.**
 | Parameter | Value | Source |
 |---|---|---|
-| `T_walk` (neighborhood cutoff) | 15 min (≈800 m walk at 80 m/min) | `build_accessibility_inputs.py --walking-threshold-m 800` |
+| `T_walk` (neighborhood cutoff) | 1200 m network distance (≈15 min at 80 m/min) | `build_accessibility_inputs.py --walking-threshold-m 1200` |
 | Walking speed | 1.333 m/s (80 m/min) | `routing.py` access cutoff |
 | Routing | Dijkstra shortest path on OSM walk graph | `routing.reachable_counts_and_mean_time` |
 
@@ -82,6 +83,20 @@ MAI_i = 0.40 * A_i,economic
       + 0.20 * A_i,tertiary_healthcare
       + 0.20 * A_i,metro_commercial
 ```
+
+**Domain-weight provenance (0.40/0.20/0.20/0.20).** These are a **theory-informed prior**
+(employment-centrality tradition: economic access weighted highest), **not yet survey-derived**.
+`scripts/derive_mai_weights_utm.py` grounds them in the open UTM-Hanoi household travel survey
+(N=26,106; Nature Sci Data 2024, OSF DOI 10.17605/OSF.IO/497US) by mapping observed trip-purpose
+shares to domains (work→economic, education→higher_education, shopping→metro_commercial,
+caring→tertiary_healthcare; leisure/visit excluded; renormalized to sum 1). The script ships with
+a blank count template (`data/raw/utm_hanoi_trip_purpose.csv`) — counts must be transcribed from
+the survey (Fig. 4 / OSF), then `utm_derived` weights can be promoted to `default`. HAIDEP 2010
+trip-purpose shares were **not** usable (raw distribution behind JICA licensing). The healthcare
+weight stays survey-*informed*, not survey-*derived*: the survey has no health-trip purpose, so
+`caring` is an imperfect proxy and the 0.20 floor reflects essential-but-low-frequency access.
+**Robustness:** typology is stable across weight schemes (metric audit — equal/job_heavy/econ_light
+all κ≥0.92), so the headline does not hinge on the exact prior.
 
 **Two MAI surfaces are computed** with identical domains/weights/decay but different
 networks, so they are commensurable for RAC_opp:
@@ -121,7 +136,7 @@ commercial:  w = clip(gla_m2 / 1000,      0.1, 25.0)
 | Domain | Unit | Reference (→ w≈1.0) | Lower cap | Upper cap |
 |---|---|---|---|---|
 | tertiary_healthcare | staffed beds | 50 (district clinic) | 0.4 | 30.0 |
-| higher_education | enrollment | 1000 (secondary school) | 0.5 | 20.0 |
+| higher_education | enrollment | 1000 (mid-size education campus/reference facility) | 0.5 | 20.0 |
 | economic | jobs | 500 (SME cluster) | 0.1 | 5.0 |
 | metro_commercial | m² GLA | 1000 | 0.1 | 25.0 |
 
@@ -213,23 +228,42 @@ larger share of weighted metropolitan opportunity relative to the motorcycle. De
 floored at the 5th percentile of positive `MAI_motorcycle` to prevent blow-up in isolated
 drive-graph cells.
 
-### 3.3 RAC composite
+### 3.3 RAC composite — RAC_time primary (Decision #22)
+
+**Primary RAC = RAC_time alone.**
 
 ```text
-RAC_i = sqrt( RAC_time_norm_i * RAC_opp_norm_i )
+RAC_i = RAC_time_norm_i
 ```
-Both sub-indices are min-max normalized on shared Scenario A+B bounds (Section 6), then
-combined as a **geometric mean**.
+
+RAC_time is min-max normalized on shared Scenario A+B bounds (Section 6) and used directly as
+the RAC component of MCS / SMCI. Promoted to primary because full-RAC carries a structural
+MAI/RAC_opp collinearity (both share MAI_transit) that pushes VIF above the conventional
+threshold; dropping RAC_opp brings max VIF from 10.06 to 2.88 while preserving the typology
+(κ=0.9125, ρ=0.9889, 28/462 relabelled — Decision #22 metric audit).
+
+**Legacy full-RAC (robustness, retained).**
+
+```text
+RAC_full_i = sqrt( RAC_time_norm_i * RAC_opp_norm_i )
+```
+
+Both sub-indices min-max normalized on shared A+B bounds, combined as a **geometric mean**.
+Kept as `RAC_full_A/B` and `SMCI_B_full_rac_legacy` for the robustness comparison, not in the
+headline.
 
 | Parameter | Value | Code |
 |---|---|---|
-| Combination | geometric mean | `accessibility.compute_rac` |
-| Normalization | shared A+B min-max | `accessibility.compute_rac_shared` |
+| Primary RAC | RAC_time only | `pilot.compute_pilot_metrics` |
+| Legacy full RAC | geometric mean of RAC_time, RAC_opp | `accessibility.compute_rac_shared` then `pilot.compute_pilot_metrics` stores `RAC_full_A/B` |
+| Normalization | shared A+B min-max | `accessibility.compute_rac_shared`, then primary override in `pilot.compute_pilot_metrics` |
 | RAC_opp denominator floor | 5th pct of positive MAI_moto | `accessibility_inputs` `_moto_floor` |
 
-**Why geometric mean.** A mode is not competitive if it is fast but reaches almost nothing,
-or reaches much but is too slow. The geometric mean forces *both* sub-indices to be non-trivial
-— a near-zero on either pulls RAC down. (Same weakest-link logic as SMCI.)
+**Why geometric mean (legacy rationale).** A mode is not competitive if it is fast but reaches
+almost nothing, or reaches much but is too slow. The geometric mean forces *both* sub-indices to
+be non-trivial — a near-zero on either pulls RAC down. (Same weakest-link logic as SMCI.) The
+primary spec drops RAC_opp purely to remove the structural collinearity, not because the
+weakest-link logic is wrong.
 
 **Theory support.**
 - **Mode-competitive accessibility** — performance relative to the competing mode via
@@ -269,8 +303,10 @@ not score as "metropolitanly strong."
 ```text
 SMCI_i = NAI_norm_i * MAI_norm_i * RAC_norm_i
 ```
-All three components min-max normalized. Any component near zero collapses the index — that is
-the intended "capability requires all three at once" semantics.
+All three components min-max normalized; `RAC_norm` is the primary RAC (= RAC_time, Decision #22).
+Any component near zero collapses the index — that is the intended "capability requires all three
+at once" semantics. Current pilot: SMCI_A=0.0064, SMCI_B=0.0125, mean Δ=0.0061, 286/462 improved
+(61.9%), 88 unchanged, 88 declined; typology_B 173/173/58/58.
 
 **Scenario delta (shared scale, Decision #11).**
 ```text
@@ -363,7 +399,7 @@ competitiveness (MCS = MAI × RAC), so "locally complete but metropolitanly isol
 | Diagnostic | Definition / threshold | Code | Purpose |
 |---|---|---|---|
 | **VIF** | Variance inflation; flag if > 5 | `validation.collinearity_check` | MAI/RAC collinearity (structural, Decision #3) |
-| **RAC_time-only contingency** | Drop RAC_opp; RAC = RAC_time only | `pilot.compute_pilot_metrics` | VIF remedy when full-RAC VIF > 5 |
+| **Full-RAC robustness** | RAC = geom. mean(RAC_time, RAC_opp); legacy | `pilot.compute_pilot_metrics` | Robustness vs promoted RAC_time primary (Decision #22) |
 | **Cohen's κ** | Typology agreement between specs | `pilot.typology_kappa` | Robustness of classification |
 | **Spearman ρ** | SMCI rank agreement between specs | `scipy.stats.spearmanr` | Robustness of ranking |
 | **Additive SMCI** | `(NAI+MAI+RAC)/3` | `accessibility.compute_smci_additive` | Compensatory robustness contrast |
@@ -373,17 +409,19 @@ competitiveness (MCS = MAI × RAC), so "locally complete but metropolitanly isol
 | **Transit impedance sensitivity** | conservative/pessimistic wait+access penalties | `transit_impedance_sensitivity.py` | Network B/C robustness |
 
 **Thresholds in use.** VIF > 5 = high (conventional); κ ≥ 0.8 = strong agreement; ρ ≥ 0.95
-= ranking preserved. Current strict-mode values: VIF(MAI)=10.23, VIF(RAC)=11.12 (full-RAC);
-VIF(MAI)=2.93, VIF(RAC_time)=2.02 (RAC_time-only); primary vs RAC_time-only κ=0.9125, ρ=0.9889,
-28/462 relabelled.
+= ranking preserved. Current strict-mode values: **primary RAC_time** VIF(MAI)=2.93,
+VIF(RAC)=2.02 (both below threshold); legacy full-RAC VIF(MAI)=9.48, VIF(RAC)=10.06 (high,
+structural). Promoted RAC_time vs legacy full-RAC: κ=0.9125, ρ=0.9889, 28/462 relabelled
+(Decision #22 metric audit, `outputs/validation/metric_variant_audit.md`).
 
 **Theory support.**
 - VIF / collinearity diagnostics — standard regression-diagnostic practice; here motivated by
   the *structural* overlap between MAI and RAC_opp (they share MAI_transit), so collinearity is
   expected, not incidental (Decision #3).
 - Sensitivity-first reporting — the additive contrast (Decision #4), shared-scale Δ (Decision #11),
-  and RAC_time-only contingency (Decision #3) are all designed to test the headline rather than
-  defend it.
+  and the legacy full-RAC robustness comparison (Decisions #3, #22) are all designed to test the
+  headline rather than defend it. RAC_time was promoted from contingency to primary once the
+  metric audit confirmed it removes the structural collinearity while preserving the typology.
 
 ---
 
@@ -391,7 +429,7 @@ VIF(MAI)=2.93, VIF(RAC_time)=2.02 (RAC_time-only); primary vs RAC_time-only κ=0
 
 | Parameter | Symbol | Value | Where |
 |---|---|---|---|
-| Neighborhood walk cutoff | `T_walk` | 15 min (~800 m) | NAI |
+| Neighborhood walk cutoff | `T_walk` | 1200 m network distance (~15 min at 80 m/min) | NAI |
 | Walk speed | — | 80 m/min (1.333 m/s) | NAI, transit access |
 | Decay full-weight cutoff | `t_full` | 30 min | MAI decay |
 | Decay zero cutoff | `t_zero` | 60 min | MAI decay |
@@ -442,5 +480,6 @@ VIF(MAI)=2.93, VIF(RAC_time)=2.02 (RAC_time-only); primary vs RAC_time-only κ=0
 **Cross-references in repo:** formula source of truth `src/accessibility.py`; input
 construction `src/accessibility_inputs.py`, `src/routing.py`; decision rationale
 `docs/decisions.md` (#2 typology, #3 VIF, #4 additive, #7 NAI count, #11 shared-scale,
-#12/#15 MAI, #18 domain caps, #19 population, #20 RAC_time, #21 observed hierarchy);
+#12/#15 MAI, #18 domain caps, #19 population, #20 RAC_time, #21 observed hierarchy,
+#22 RAC_time primary promotion);
 methodology prose `proposal/proposal_v7.md` §8–10 and `paper/paper_draft.md` §2, §5–6.
