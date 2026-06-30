@@ -170,18 +170,20 @@ so settled debates don't get silently re-opened.
     Decay: linear, 1.0 at t<=30min → 0.0 at t=60min (zero beyond 60min).
     Sensitivity runs: equal weights (0.25 each), job-heavy (0.50/0.15/0.15/0.20).
 
-    **Weight provenance — OPEN ITEM (2026-06-30).** The 0.40/0.20/0.20/0.20 split is a
-    theory-informed prior (employment-centrality), not yet survey-derived. To pre-empt the
-    "weights look arbitrary" reviewer attack, `scripts/derive_mai_weights_utm.py` derives them
-    from the open UTM-Hanoi household travel survey (N=26,106; Nature Sci Data 2024, OSF
-    10.17605/OSF.IO/497US): observed trip-purpose shares → domains (work→economic,
-    education→higher_education, shopping→metro_commercial, caring→tertiary_healthcare;
-    leisure/visit excluded; renormalized). Blocked only on transcribing the trip-purpose counts
-    into `data/raw/utm_hanoi_trip_purpose.csv` (Fig. 4 / OSF — sandbox cannot reach OSF). HAIDEP
-    2010 shares were not usable (behind JICA licensing). Healthcare stays survey-*informed* not
-    *derived* (`caring` is a proxy; survey has no health-trip purpose). Robustness already covers
-    the risk: metric audit κ≥0.92 across equal/job_heavy/econ_light, so the headline does not
-    hinge on the prior. Promote `utm_derived` → `default` once counts are filled.
+    **Weight provenance (updated 2026-06-30).** The 0.40/0.20/0.20/0.20 split is a
+    theory-informed prior (employment-centrality), not raw revealed demand. To pre-empt the
+    "weights look arbitrary" reviewer attack, `scripts/derive_mai_weights_utm.py` derives a
+    sensitivity scheme from the open UTM-Hanoi transport-policy perception dataset (Kieu et al. 2024,
+    Scientific Data; OSF 10.17605/OSF.IO/497US): observed trip-purpose shares → domains
+    (work→economic, education→higher_education, shopping→metro_commercial,
+    caring→tertiary_healthcare; leisure/visit excluded; renormalized). Counts are filled in
+    `data/raw/utm_hanoi_trip_purpose.csv` and provenance is written to
+    `data/interim/mai_weights_utm_derived.csv`; the resulting weights are economic 0.6885,
+    higher_education 0.2043, tertiary_healthcare 0.0198, and metro_commercial 0.0874.
+    HAIDEP 2010 shares were not usable (behind JICA licensing). Healthcare stays survey-*informed*
+    not *derived* (`caring` is a proxy; survey has no health-trip purpose). Robustness already
+    covers the risk: metric audit κ≥0.92 across equal/job_heavy/econ_light, so the headline does
+    not hinge on the prior. Keep `utm_derived` as sensitivity unless the paper explicitly promotes it.
 
     RAC_opp_i = MAI_transit_i / MAI_motorcycle_i — ratio of two commensurable composite
     scores using the same decay function and domain weights. This is more principled than
@@ -389,9 +391,10 @@ so settled debates don't get silently re-opened.
       from MAI with audit reasons)
 
     Strict observed gate (2026-06-29): `needs_source=0`, `proxy_source_tiers=0`; audit table:
-    `data/interim/poi_observed_audit.csv`. After Decision #22 promoted RAC_time as primary,
-    observed-vs-proxy sensitivity gives SMCI_B 0.0129 → 0.0125, κ=0.9245, 24/462 cells
-    relabelled, Spearman ρ=0.9966, VIF(MAI)=2.93, and VIF(RAC)=2.02. Report:
+    `data/interim/poi_observed_audit.csv`. After Decision #22 promoted RAC_time as primary
+    and Decision #23 promoted the 1200 m NAI threshold, observed-vs-proxy sensitivity gives
+    proxy SMCI_B 0.0163 → strict observed 0.0160, κ=0.9245, 24/462 cells relabelled,
+    Spearman ρ=0.9950, VIF(MAI)=3.78, and VIF(RAC)=2.00. Report:
     `outputs/validation/observed_vs_proxy_sensitivity.md`.
 
 22. **RAC_time promoted to primary after reviewer-risk metric audit (2026-06-29).**
@@ -402,14 +405,73 @@ so settled debates don't get silently re-opened.
     Output: `outputs/validation/metric_variant_audit.md`.
 
     The audit selected `rac_time_only` for promotion because it directly fixes the
-    MAI/RAC_opp double-counting risk: max VIF drops from 10.06 under the legacy full-RAC
-    composite to 2.88, while preserving the prior classification well (κ=0.9125,
-    Spearman ρ=0.9889, 28/462 cells relabelled, zero-SMCI cells unchanged at 88).
+    MAI/RAC_opp double-counting risk. With the 1200 m / 15 min NAI threshold, max VIF
+    drops from 10.04 under the legacy full-RAC composite to 3.82, while preserving the
+    prior classification well (κ=0.9116, Spearman ρ=0.9824, 28/462 cells relabelled).
 
     Implementation: `src/pilot.py` now sets primary `RAC_A/B = RAC_time_A/B`. The
     previous full composite is retained as `RAC_full_A/B` and
     `SMCI_B_full_rac_legacy` for robustness reporting. The promoted primary strict
-    observed headline is SMCI_A=0.0064, SMCI_B=0.0125, mean Delta_SMCI=0.0061,
-    286/462 cells improved, 88 unchanged, 88 declined, and Scenario B typology counts
-    are 173 Integrated Capability, 58 Fragmented Capability, 58 Transit-Dependent,
-    and 173 Motorcycle Lock-in.
+    observed headline is SMCI_A=0.0084, SMCI_B=0.0160, mean Delta_SMCI=0.0076,
+    305/462 cells improved, 33 unchanged, 124 declined, and Scenario B typology counts
+    are 172 Integrated Capability, 59 Fragmented Capability, 59 Transit-Dependent,
+    and 172 Motorcycle Lock-in.
+
+23. **NAI primary threshold is 15 minutes / 1200 m (2026-06-30).**
+    The neighborhood walking threshold is promoted from the earlier 800 m / ~10 min pilot
+    setting to 1200 m network distance, equivalent to 15 minutes at 80 m/min. This aligns the
+    NAI axis with the 15-minute-city framing used in the literature while preserving the
+    same count-based NAI logic.
+
+    Implementation: `scripts/build_accessibility_inputs.py --walking-threshold-m` defaults
+    to 1200, and network-mode builders pass `walk_cutoff_min=15.0`. Sensitivity/audit scripts
+    that rebuild NAI now default to the same 15-minute cutoff. The excluded-POI missingness
+    audit retains its 800 m buffer because that is a separate spatial-audit radius, not the
+    NAI threshold.
+
+    Effect on current strict observed + RAC_time primary metrics: mean NAI rises to 13.47,
+    zero-NAI cells fall to 33/462 (7.1%), SMCI_A=0.0084, SMCI_B=0.0160, and 305/462 cells
+    improve under Scenario B. The change makes zero-access claims less overstated and more
+    defensible for a paper using a 15-minute neighborhood concept.
+
+24. **Prior weights checked using UTM-Hanoi survey dataset (2026-06-30).**
+    The composite MAI's prior domain weights (0.40 economic, 0.20 higher_education,
+    0.20 tertiary_healthcare, 0.20 metro_commercial) were checked against the UTM-Hanoi
+    transport-policy perception dataset (`N=26,106`, doi:10.1038/s41597-024-02950-9).
+
+    The raw counts for primary trip purposes are: work (15,145 / 58.0%), education
+    (4,494 / 17.2%), visit (3,176 / 12.2%), shopping (1,922 / 7.4%), leisure
+    (934 / 3.6%), and caring (435 / 1.7%). The strict MAI-domain mapping used by
+    `scripts/derive_mai_weights_utm.py` maps work→economic, education→higher_education,
+    shopping→metro_commercial, caring→tertiary_healthcare, and excludes leisure/visit before
+    renormalization. It yields `utm_derived` weights: economic 0.6885, higher_education 0.2043,
+    tertiary_healthcare 0.0198, metro_commercial 0.0874.
+
+    The decision is to retain the smoothed prior weights (0.40/0.20/0.20/0.20) as default
+    rather than adopting raw revealed-demand weights. This represents a normative approach to
+    accessibility (need across multiple daily functions) rather than revealed-demand weighting,
+    which is endogenous to current employment concentrations. The UTM-derived scheme is kept
+    as sensitivity evidence and an audit trail, not promoted to the primary specification.
+
+25. **Comparison site (planned vs unplanned) is a Paper #2 design, not a pilot add-on (2026-06-30).**
+    A matched control site — Trâu Quỳ town, Gia Lâm (organic/unplanned settlement) — is adopted
+    to upgrade the design from single-site descriptive to a matched-pair spatial comparison
+    against Ocean Park (master-planned). This is a *counterfactual control*, distinct from the
+    "reproducibility appendix" that Decision #1 deliberately cut: the purpose is to test the
+    green/planning dimension (Decision #9), not to re-run the same kind of site.
+
+    Locked design choices (full protocol: `docs/comparison_site_protocol.md`):
+    - **Headline comparison uses Scenario A (no VinBus) for BOTH sites** so "planning" is not
+      entangled with "the private bus line"; VinBus's marginal value stays a separate layer
+      (Ocean Park ΔSMCI).
+    - **Match on network distance-to-CBD over the actual Red River bridges** (±15%), area, bearing,
+      and density; report every unmatched variable as a limitation. Road structure is expected to
+      differ (it is part of the treatment) and is reported, not matched away.
+    - **Cross-site comparison uses absolute SMCI/RAC or shared-scale pooled normalization**, NOT
+      within-site typology shares (which are rank-relative — same caveat as Decision #11 shared-scale).
+    - Sites rejected: Đa Tốn (inside the Ocean Park footprint), Kiêu Kỵ/Bát Tràng (too small,
+      adjacent → spillover; Bát Tràng's pottery monoculture is non-representative).
+    - Claim discipline: n=2 observational → report capability-surface *differences*, do NOT claim
+      the master plan *causes* them.
+    Bottleneck flagged: observed-opportunity magnitudes (Decision #21) must be rebuilt from scratch
+    for the control site; this is the most labor-intensive step and the main coverage-bias risk.
