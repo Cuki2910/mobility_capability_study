@@ -14,7 +14,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=["proxy", "network"], default="proxy")
     parser.add_argument("--grid", type=Path, default=Path("data/interim/pilot_grid.gpkg"))
-    parser.add_argument("--pois", type=Path, default=Path("data/interim/merged_pois.gpkg"))
+    parser.add_argument("--pois", type=Path, default=Path("data/interim/merged_pois_observed.gpkg"))
     parser.add_argument("--walk-graph", type=Path, default=Path("data/raw/pilot_walk_network.graphml"))
     parser.add_argument("--drive-graph", type=Path, default=Path("data/raw/pilot_drive_network.graphml"))
     parser.add_argument("--vinbus-geometry", type=Path, default=Path("data/raw/vinbus_overpass_relations_geom.json"))
@@ -49,10 +49,12 @@ def main() -> int:
     parser.add_argument(
         "--opportunity-basis",
         choices=["proxy", "observed", "observed_strict"],
-        default="proxy",
-        help="MAI opportunity weights: proxy reproduces current baseline; observed uses "
-        "Decision #21 hybrid hierarchy; observed_strict requires source-backed magnitudes "
-        "or explicit exclusion for every included POI.",
+        default="observed_strict",
+        help="MAI opportunity weights: observed_strict (DEFAULT, the canonical primary spec, "
+        "Decision #21/#22) requires source-backed magnitudes or explicit exclusion for every "
+        "included POI and needs --pois data/interim/merged_pois_observed.gpkg; observed uses "
+        "the Decision #21 hybrid hierarchy; proxy reproduces the legacy regression baseline "
+        "(use --pois data/interim/merged_pois.gpkg with it).",
     )
     parser.add_argument("--output", type=Path, default=Path("data/interim/pilot_accessibility_inputs.csv"))
     args = parser.parse_args()

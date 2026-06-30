@@ -101,6 +101,10 @@ python scripts/fetch_hanoi_gtfs.py   # optional: rerun only if replacing the 201
 python scripts/check_mobility_database.py --query Hanoi
 
 # Pipeline (run in order):
+# build defaults are now the canonical primary spec: --opportunity-basis observed_strict
+# + --pois data/interim/merged_pois_observed.gpkg (no need to pass them). This reproduces
+# SMCI_A=0.0084 / SMCI_B=0.0160. For the legacy proxy baseline pass BOTH
+# `--opportunity-basis proxy --pois data/interim/merged_pois.gpkg`.
 python scripts/build_accessibility_inputs.py --mode network --gtfs-status baseline_limited
 python scripts/run_pilot_metrics.py
 python scripts/make_validation_report.py
@@ -141,18 +145,16 @@ pytest tests/ -v   # must be 77 passed
 - **Hanoi GTFS is present locally as a 2018 pre-VinBus baseline.** Network B is `baseline_limited` by vintage, not missing: stop geometry is used for stop_accessibility(), while timetable service is reported as a pre-intervention limitation.
 - **theory_first_typology uses rank-based split**, not `>= np.median()`, to
   guarantee 4 typologies even when MCS has a mass point at 0. See decision #2.
-- **MAI and RAC are expected to be correlated by construction**, not just by
-  chance — see decision #3. Always run VIF check
+- **MAI and RAC are expected to be correlated by construction** when RAC_opp is
+  included, not just by chance — see decision #3. Always run VIF check
   (`src/validation.py::collinearity_check`) before trusting the 4-way
-  classification on new data. Current shared-scale MAI/RAC pilot VIF is high
-  (MAI~19.33, RAC~20.21). RAC_time-only sensitivity has been run
-  (`scripts/rac_time_only_sensitivity.py`): κ=0.871, 42/462 cells
-  relabelled — findings robust. In RAC_time-only spec: VIF(MAI)=4.53 (OK),
-  VIF(RAC_time)=3.86 (OK). See decisions.md #3.
+  classification on new data. Current primary RAC_time spec is below threshold
+  (VIF(MAI)=3.78, VIF(RAC)=2.00); legacy full-RAC remains high
+  (VIF(MAI)=10.04, VIF(RAC)=9.89) and is reported as robustness.
 - **Current RAC primary (2026-06-29, Decision #22):** RAC_time is promoted to
   primary. Legacy full-RAC is retained as `RAC_full_A/B` and
-  `SMCI_B_full_rac_legacy`. Metric audit: max VIF 10.06 -> 2.88, kappa=0.9125,
-  rho=0.9889, 28/462 relabelled.
+  `SMCI_B_full_rac_legacy`. With the 1200 m / 15 min NAI threshold, metric audit:
+  max VIF 10.04 -> 3.82, kappa=0.9116, rho=0.9824, 28/462 relabelled.
 - **Delta_SMCI must be shared-scale.** Scenario A/B normalization uses common
   A+B bounds for MAI, RAC subcomponents, and RAC composite before MCS/SMCI.
   Separate per-scenario min-max scaling produces artificial declines.
@@ -230,10 +232,10 @@ pytest tests/ -v   # must be 77 passed
   false positive). MAI/RAC VIF dropped to 16.0/15.8 (from 19.7/21.6). mean SMCI_B 0.0968→0.0845
   (commercial proxy had inflated it). Spot-check sheet: `outputs/validation/economic_poi_spot_check.csv`.
 - [x] Built/population zero-access audit: `outputs/validation/built_population_zero_access.md`.
-  Building footprints are present in 455/462 cells; **88 zero-NAI cells** (19.0%, current strict
-  observed MAI spec; was 116 under merged-POI proxy, 166 under OSM-only) contain ~11,798 residents
-  (15.0% of pilot population) — zero inflation is not simply lake/park/open-space.
-  Merged POI promotion + strict observed MAI progressively reduced the zero-NAI mass.
+  Building footprints are present in 455/462 cells; with the 1200 m / 15 min NAI threshold,
+  **33 zero-NAI cells** (7.1%) remain, including 30 built zero-NAI cells containing ~3,466
+  residents (4.4% of pilot population). Zero inflation is reduced but still not simply
+  lake/park/open-space.
 - [x] Merged-POI sensitivity: `outputs/validation/merged_poi_sensitivity.md`.
   Overture gate PASS. Merged POIs reduce zero-NAI cells to 116/462 (vs 166 OSM-only).
   Build default is still OSM-only (106 POIs); merged layer is sensitivity only until promoted.
@@ -292,8 +294,9 @@ pytest tests/ -v   # must be 77 passed
   discipline) to prevent KCN domination. Strict observed-vs-proxy sensitivity: SMCI_B
   0.0435→0.0500, κ=0.876, 40/462 relabelled, Spearman ρ=0.991. VIF(MAI)=10.23, VIF(RAC)=11.12
   (slightly higher than proxy; RAC_time-only contingency #3 remains the VIF remedy).
-  **Current after Decision #22:** promoted RAC_time primary gives SMCI_B 0.0129 -> 0.0125,
-  kappa=0.9245, 24/462 relabelled, Spearman rho=0.9966, VIF(MAI)=2.93, VIF(RAC)=2.02.
+  **Current after Decision #22 + 1200 m NAI threshold:** promoted RAC_time primary gives
+  proxy SMCI_B 0.0163 -> strict observed 0.0160, kappa=0.9245, 24/462 relabelled,
+  Spearman rho=0.9950, VIF(MAI)=3.78, VIF(RAC)=2.00.
   Source tiers:
   `official_source`, `facility_source`, `geometry_measured`, `observed_point`,
   `observed_derived`, `observed_dasymetric_weak`, `excluded_not_destination`.
@@ -303,9 +306,14 @@ pytest tests/ -v   # must be 77 passed
   RAC_opp-only, winsor/log normalization, additive SMCI, absolute-threshold typology,
   MAI weight/decay sensitivity, exponential decay, top-1/top-5 opportunity leverage,
   and strict-excluded-POI spatial missingness. Winner: RAC_time primary because max VIF
-  drops 10.06 -> 2.88 while preserving legacy full-RAC labels (kappa=0.9125,
-  rho=0.9889, 28/462 relabelled). Current promoted strict metrics: SMCI_A=0.0064,
-  SMCI_B=0.0125, mean Delta=0.0061, 286/462 improved, 88 unchanged, 88 declined;
-  typology_B counts 173/58/58/173. Legacy full-RAC retained as `RAC_full_A/B` and
-  `SMCI_B_full_rac_legacy`.
+  drops 10.04 -> 3.82 while preserving legacy full-RAC labels (kappa=0.9116,
+  rho=0.9824, 28/462 relabelled). Current promoted strict metrics with 1200 m / 15 min
+  NAI: SMCI_A=0.0084, SMCI_B=0.0160, mean Delta=0.0076, 305/462 improved,
+  33 unchanged, 124 declined; typology_B counts 172 Integrated Capability,
+  59 Fragmented Capability, 59 Transit-Dependent, 172 Motorcycle Lock-in.
+  Legacy full-RAC retained as `RAC_full_A/B` and `SMCI_B_full_rac_legacy`.
+- [x] **NAI threshold aligned to 15-minute-city literature (2026-06-30, Decision #23):**
+  primary NAI now uses 1200 m network walking distance (15 min at 80 m/min), replacing the
+  earlier 800 m / 10 min neighborhood threshold. This increases mean NAI to 13.47 and
+  reduces zero-NAI cells to 33/462 while preserving the framework logic.
 - [ ] Full study area data collection and analysis.
