@@ -5,11 +5,11 @@ Reviewer-risk variants were compared against the current strict observed MAI spe
 ## Recommendation
 
 - Recommended primary candidate: **rac_time_only**
-- Legacy full-RAC max VIF: 10.06
-- Recommended max VIF: 2.88
-- Kappa vs current typology: 0.9125
-- Spearman rho vs current SMCI_B: 0.9889
-- Relabelled cells vs current: 28 / 462
+- Legacy full-RAC max VIF: 10.04
+- Recommended max VIF: 3.82
+- Kappa vs current typology: 1.0000
+- Spearman rho vs current SMCI_B: 1.0000
+- Relabelled cells vs current: 0 / 462
 
 Promotion rule: eligible candidates must keep kappa >= 0.85, Spearman rho >= 0.95, and not increase zero-SMCI cells; among them, the lowest-VIF candidate wins.
 
@@ -17,32 +17,32 @@ Promotion rule: eligible candidates must keep kappa >= 0.85, Spearman rho >= 0.9
 
 | Variant | NAI | RAC | Norm | SMCI | Kappa | Rho | Max VIF | Zero SMCI | Relabelled |
 |---|---|---|---|---|---:|---:|---:|---:|---:|
-| legacy_full_rac | NAI | full | minmax | product | 1.0000 | 1.0000 | 10.06 | 88 | 0 |
-| nai_diversity | NAI_diversity | full | minmax | product | 0.8626 | 0.9806 | 10.27 | 88 | 44 |
-| nai_capped | NAI_capped | full | minmax | product | 0.9254 | 0.9923 | 10.51 | 88 | 24 |
-| rac_time_only | NAI | time_only | minmax | product | 0.9125 | 0.9889 | 2.88 | 88 | 28 |
-| rac_opp_only | NAI | opp_only | minmax | product | 0.8284 | 0.9870 | 3832457.14 | 88 | 56 |
-| winsor_norm | NAI | full | winsor | product | 0.9875 | 0.9967 | 9.77 | 94 | 4 |
-| log_norm | NAI | full | log | product | 0.9751 | 0.9975 | 17.35 | 88 | 8 |
-| additive_smci | NAI | full | minmax | additive | 1.0000 | 0.8957 | 10.06 | 1 | 0 |
-| reviewer_safe_capped_time_winsor | NAI_capped | time_only | winsor | product | 0.8412 | 0.9736 | 3.56 | 94 | 51 |
-| reviewer_safe_diversity_time_winsor | NAI_diversity | time_only | winsor | product | 0.7815 | 0.9632 | 3.92 | 94 | 70 |
-| absolute_count5_mcs60 | NAI | full | minmax | product | 0.8477 | 1.0000 | 10.06 | 88 | 49 |
-| absolute_diversity4_mcs60 | NAI_diversity | full | minmax | product | 0.6629 | 0.9806 | 10.27 | 88 | 109 |
+| legacy_full_rac | NAI | full | minmax | product | 0.9116 | 0.9824 | 10.04 | 34 | 28 |
+| nai_diversity | NAI_diversity | full | minmax | product | 0.7219 | 0.9608 | 11.66 | 34 | 91 |
+| nai_capped | NAI_capped | full | minmax | product | 0.7872 | 0.9779 | 10.49 | 34 | 69 |
+| rac_time_only | NAI | time_only | minmax | product | 1.0000 | 1.0000 | 3.82 | 34 | 0 |
+| rac_opp_only | NAI | opp_only | minmax | product | 0.7388 | 0.9260 | 3834910.34 | 33 | 82 |
+| winsor_norm | NAI | full | winsor | product | 0.9243 | 0.9820 | 9.63 | 44 | 24 |
+| log_norm | NAI | full | log | product | 0.9368 | 0.9861 | 16.73 | 34 | 20 |
+| additive_smci | NAI | full | minmax | additive | 0.9116 | 0.9235 | 10.04 | 1 | 28 |
+| reviewer_safe_capped_time_winsor | NAI_capped | time_only | winsor | product | 0.8529 | 0.9799 | 5.30 | 44 | 48 |
+| reviewer_safe_diversity_time_winsor | NAI_diversity | time_only | winsor | product | 0.7900 | 0.9705 | 6.19 | 44 | 69 |
+| absolute_count5_mcs60 | NAI | full | minmax | product | 0.2999 | 0.9824 | 10.04 | 34 | 221 |
+| absolute_diversity4_mcs60 | NAI_diversity | full | minmax | product | 0.3677 | 0.9608 | 11.66 | 34 | 201 |
 
 ## Rebuild Sensitivities
 
 | Variant | Mean SMCI_B | Share improved | Kappa | Rho | Zero SMCI | Relabelled |
 |---|---:|---:|---:|---:|---:|---:|
-| weights_equal | 0.0493 | 64.3% | 0.9378 | 0.9981 | 88 | 20 |
-| weights_job_heavy | 0.0506 | 61.5% | 0.9751 | 0.9994 | 88 | 8 |
-| weights_econ_light | 0.0491 | 64.3% | 0.9191 | 0.9971 | 88 | 26 |
-| weights_service_health_heavy | 0.0494 | 64.3% | 0.9503 | 0.9985 | 88 | 16 |
-| decay_20_40 | 0.0519 | 44.2% | 0.8488 | 0.9835 | 88 | 48 |
-| decay_45_90 | 0.0460 | 64.5% | 0.9312 | 0.9923 | 89 | 22 |
-| decay_exponential_30_60 | 0.0546 | 61.9% | 0.9191 | 0.9964 | 88 | 26 |
-| mai_no_top1pct | 0.0527 | 61.5% | 0.9751 | 0.9994 | 88 | 8 |
-| mai_no_top5pct | 0.0468 | 62.8% | 0.9316 | 0.9963 | 88 | 22 |
+| weights_equal | 0.0170 | 68.6% | 0.9306 | 0.9988 | 34 | 22 |
+| weights_job_heavy | 0.0155 | 65.6% | 0.9812 | 0.9997 | 34 | 6 |
+| weights_econ_light | 0.0173 | 68.4% | 0.9369 | 0.9976 | 33 | 20 |
+| weights_service_health_heavy | 0.0170 | 68.6% | 0.9623 | 0.9985 | 34 | 12 |
+| decay_20_40 | 0.0186 | 46.1% | 0.7763 | 0.9676 | 34 | 72 |
+| decay_45_90 | 0.0141 | 69.0% | 0.9072 | 0.9944 | 35 | 30 |
+| decay_exponential_30_60 | 0.0186 | 66.0% | 0.9314 | 0.9971 | 34 | 22 |
+| mai_no_top1pct | 0.0163 | 65.6% | 0.9812 | 0.9988 | 34 | 6 |
+| mai_no_top5pct | 0.0166 | 66.5% | 0.9433 | 0.9967 | 34 | 18 |
 
 ## Missingness
 

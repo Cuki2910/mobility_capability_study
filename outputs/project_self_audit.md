@@ -3,16 +3,16 @@
 ## Snapshot
 
 - grid_cells: 462
-- mean_SMCI_A: 0.00642940851603
-- mean_SMCI_B: 0.0125305498661878
-- share_improved: 0.6190476190476191
+- mean_SMCI_A: 0.0083976979499925
+- mean_SMCI_B: 0.0159704628007397
+- share_improved: 0.6601731601731602
 - gtfs_status: baseline_limited
 - pre_vinbus_baseline: True
 - poi_spot_checks: {'total': 20, 'completed': 20, 'breakdown': {'confirmed': 14, 'misclassified': 2, 'duplicate': 2, 'missing_in_osm': 2}}
 - motorcycle_android_checks: {'rows': 10, 'android_completed': 10, 'has_android_column': True, 'mae_minutes': 1.9, 'bias_minutes': -1.0399999999999998}
 - android_emulator: {'status_file': True, 'installed': True, 'motorcycle_mode_available': False}
 - population_resolution: {'resolution_m': 92.76666629760172, 'grid_size_m': 250.0, 'decision': 'allow_fine_grained_proxy', 'adequate_for_250m_pilot': True, 'resolution_source': 'raster_metadata', 'raster': 'data\\raw\\worldpop\\vnm_ppp_2020.tif'}
-- distribution_diagnostics: {'NAI_zero_share': 0.1904761904761904, 'SMCI_B_zero_share': 0.1904761904761904, 'improved_share': 0.6190476190476191, 'unchanged_share': 0.1904761904761904, 'declined_share': 0.1904761904761904}
+- distribution_diagnostics: {'NAI_zero_share': 0.0714285714285714, 'SMCI_B_zero_share': 0.0735930735930736, 'improved_share': 0.6601731601731602, 'unchanged_share': 0.0714285714285714, 'declined_share': 0.2683982683982684}
 - high_vif: False
 - built_population_zero_access_audit: True
 - merged_poi_sensitivity: True

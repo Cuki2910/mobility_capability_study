@@ -6,14 +6,14 @@ Decision #21 compares proxy opportunity weights, the hybrid observed hierarchy, 
 
 | Metric | Proxy | Hybrid observed | Strict observed |
 |---|---:|---:|---:|
-| mean_SMCI_B | 0.0129 | 0.0125 | 0.0125 |
-| share_improved | 0.6450 | 0.6190 | 0.6190 |
+| mean_SMCI_B | 0.0163 | 0.0160 | 0.0160 |
+| share_improved | 0.6861 | 0.6602 | 0.6602 |
 | typology_kappa | 1.0000 | 0.9245 | 0.9245 |
 | cells_relabelled | 0.0000 | 24.0000 | 24.0000 |
-| spearman_SMCI_B | 1.0000 | 0.9966 | 0.9966 |
+| spearman_SMCI_B | 1.0000 | 0.9950 | 0.9950 |
 | spearman_p_value | 0.0000 | 0.0000 | 0.0000 |
-| VIF_MAI | 3.3102 | 2.9308 | 2.9308 |
-| VIF_RAC | 1.9456 | 2.0186 | 2.0186 |
+| VIF_MAI | 4.6460 | 3.7839 | 3.7839 |
+| VIF_RAC | 1.9390 | 1.9993 | 1.9993 |
 
 ## Strict Observed Coverage
 
