@@ -9,9 +9,30 @@ This is a **reference document**, not a tutorial. The authoritative implementati
 `src/routing.py` (input construction). If a formula here disagrees with the code, the
 code wins — fix this file. Last synced: 2026-06-30 (strict observed MAI + RAC_time
 promoted to primary per Decision #22; full-RAC retained as robustness; 77 tests).
+For a plain-language Vietnamese explanation, see `docs/metrics_explained_vi.md`.
 
 Convention: cell index `i`, opportunity/POI index `j`, domain index `k`,
 travel time `t_ij` in minutes unless stated.
+
+---
+
+## Terminology — base concepts (defined, with sources)
+
+Domain terms used throughout this study, each grounded in a citable definition so the
+metrics build on established constructs rather than ad-hoc usage.
+
+| Term | Definition (as used here) | Source |
+|---|---|---|
+| **Point of Interest (POI)** | A proxy for a real-world location (e.g. restaurant, school, clinic), usually represented as a geometric point entity, carrying a name and a hierarchically organized category. In this study each POI `j` is one opportunity destination. | Psyllidis et al. (2022) |
+| **POI category / urban function** | The type label organizing POIs hierarchically (e.g. health → hospital); the basis for assigning each POI to one of the four MAI opportunity domains. | Psyllidis et al. (2022) |
+| **Accessibility** | The extent to which the land-use–transport system enables individuals to reach activities/opportunities; a place-based measure of *reachable opportunity*, not realized travel. | Geurs & van Wee (2004) |
+| **Cumulative-opportunity accessibility** | Count (or weighted sum) of opportunities reachable within a fixed travel-time/distance budget. NAI is the count-based, walk-only special case; MAI the magnitude-weighted, multimodal case. | Handy & Niemeier (1997) |
+| **Walkability / 15-minute access** | Local proximity to daily destinations reachable on foot within ~15 min; operationalized as a 1200 m network catchment at 80 m/min. | Moreno et al. (2021); Yang et al. (2023) |
+| **Network distance / travel time** | Shortest-path distance or time along the actual routable network (OSM graph via Dijkstra), not straight-line ("as-the-crow-flies") distance. `t_ij` is the network travel time from cell `i` to POI `j`. | (routing convention; `routing.py`) |
+| **Catchment** | The set of POIs `j` whose network travel time from cell `i` falls within the relevant threshold `{ j : t_ij <= T }`. | (operational, this study) |
+| **Mode-competitive accessibility** | Accessibility of one mode expressed *relative to* a competing mode (here walk+transit vs motorcycle) rather than in absolute terms. | Liao et al. (2020) |
+
+POI provenance and source tiers specific to this study's opportunity magnitudes are in §2.3.
 
 ---
 
@@ -46,8 +67,8 @@ neighborhood time threshold. Count-based, not magnitude-weighted (Decision #7).
 **Thresholds / parameters.**
 | Parameter | Value | Source |
 |---|---|---|
-| `T_walk` (neighborhood cutoff) | 1200 m network distance (≈15 min at 80 m/min) | `build_accessibility_inputs.py --walking-threshold-m 1200` |
-| Walking speed | 1.333 m/s (80 m/min) | `routing.py` access cutoff |
+| `T_walk` (neighborhood cutoff) | 1200 m network distance (≈15 min at 80 m/min) | Yang et al. (2023); `build_accessibility_inputs.py --walking-threshold-m 1200` |
+| Walking speed | 1.333 m/s (80 m/min) | Yang et al. (2023); `routing.py` access cutoff |
 | Routing | Dijkstra shortest path on OSM walk graph | `routing.reachable_counts_and_mean_time` |
 
 **Why count, not gravity (Decision #7).** At the neighborhood scale the relevant question
@@ -59,6 +80,11 @@ gravity/decay weighting here would smuggle metropolitan-scale logic into a local
 - **15-minute city / walkability** — local proximity to daily destinations as a dimension
   of sustainable urbanism (Moreno et al., 2021). NAI operationalizes the "local completeness"
   axis the framework deliberately separates from metropolitan reach.
+- **Inclusive 15-minute accessibility** — recent large-scale work treats 15-minute access to
+  essential services as an inclusion/equity question, not only an urban-design slogan
+  (Bruno et al., 2024).
+- **1200 m operationalization** — 15-minute community-life-circle studies commonly implement
+  15 minutes as 1200 m at 80 m/min walking speed (Yang et al., 2023).
 - **Cumulative-opportunity accessibility** — counting opportunities within a travel-time
   budget (Handy & Niemeier, 1997). NAI is the count-based, walk-only special case.
 
@@ -86,12 +112,13 @@ MAI_i = 0.40 * A_i,economic
 
 **Domain-weight provenance (0.40/0.20/0.20/0.20).** These are a **theory-informed prior**
 (employment-centrality tradition: economic access weighted highest), **not yet survey-derived**.
-`scripts/derive_mai_weights_utm.py` grounds them in the open UTM-Hanoi household travel survey
-(N=26,106; Nature Sci Data 2024, OSF DOI 10.17605/OSF.IO/497US) by mapping observed trip-purpose
+`scripts/derive_mai_weights_utm.py` can ground them in the open UTM-Hanoi transport-policy
+perception dataset (Kieu et al., 2024; OSF DOI 10.17605/OSF.IO/497US) by mapping observed trip-purpose
 shares to domains (work→economic, education→higher_education, shopping→metro_commercial,
 caring→tertiary_healthcare; leisure/visit excluded; renormalized to sum 1). The script ships with
 a blank count template (`data/raw/utm_hanoi_trip_purpose.csv`) — counts must be transcribed from
-the survey (Fig. 4 / OSF), then `utm_derived` weights can be promoted to `default`. HAIDEP 2010
+the source figure / OSF tables before `utm_derived` can be promoted to `default`; current
+`default` remains the prior above. HAIDEP 2010
 trip-purpose shares were **not** usable (raw distribution behind JICA licensing). The healthcare
 weight stays survey-*informed*, not survey-*derived*: the survey has no health-trip purpose, so
 `caring` is an imperfect proxy and the 0.20 floor reflects essential-but-low-frequency access.
@@ -239,8 +266,8 @@ RAC_i = RAC_time_norm_i
 RAC_time is min-max normalized on shared Scenario A+B bounds (Section 6) and used directly as
 the RAC component of MCS / SMCI. Promoted to primary because full-RAC carries a structural
 MAI/RAC_opp collinearity (both share MAI_transit) that pushes VIF above the conventional
-threshold; dropping RAC_opp brings max VIF from 10.06 to 2.88 while preserving the typology
-(κ=0.9125, ρ=0.9889, 28/462 relabelled — Decision #22 metric audit).
+threshold; dropping RAC_opp brings max VIF from 10.04 to 3.82 while preserving the typology
+(κ=0.9116, ρ=0.9824, 28/462 relabelled — Decision #22/#23 metric audit).
 
 **Legacy full-RAC (robustness, retained).**
 
@@ -305,8 +332,8 @@ SMCI_i = NAI_norm_i * MAI_norm_i * RAC_norm_i
 ```
 All three components min-max normalized; `RAC_norm` is the primary RAC (= RAC_time, Decision #22).
 Any component near zero collapses the index — that is the intended "capability requires all three
-at once" semantics. Current pilot: SMCI_A=0.0064, SMCI_B=0.0125, mean Δ=0.0061, 286/462 improved
-(61.9%), 88 unchanged, 88 declined; typology_B 173/173/58/58.
+at once" semantics. Current pilot: SMCI_A=0.0084, SMCI_B=0.0160, mean Delta=0.0076, 305/462 improved
+(66.0%), 33 unchanged, 124 declined; typology_B 172/172/59/59.
 
 **Scenario delta (shared scale, Decision #11).**
 ```text
@@ -331,9 +358,9 @@ The *additive* form allows compensation across dimensions and is the genuine rob
 Guarded by `tests/test_accessibility.py::test_geometric_mean_check_is_vacuous`.
 
 **Theory support.**
-- **Capability approach to mobility** — shifts evaluation from infrastructure *provision* to
-  feasible mobility *outcomes* (paper §2). SMCI asks what a resident can plausibly do from a
-  location, not what is nominally built nearby.
+- **Capability and transport justice** — shifts evaluation from infrastructure *provision* to
+  feasible mobility *outcomes* (Sen, 1999; Pereira et al., 2017). SMCI asks what a resident
+  can plausibly do from a location, not what is nominally built nearby.
 - **Multi-dimensional / weakest-link composition** — sustainable mobility requires local access
   *and* metropolitan reach *and* a competitive sustainable mode simultaneously; a multiplicative
   index encodes non-substitutability across the three dimensions.
@@ -408,10 +435,11 @@ competitiveness (MCS = MAI × RAC), so "locally complete but metropolitanly isol
 | **Motorcycle speed sensitivity** | slow/fast lane-splitting scenarios | `motorcycle_speed_sensitivity.py` | Network D robustness |
 | **Transit impedance sensitivity** | conservative/pessimistic wait+access penalties | `transit_impedance_sensitivity.py` | Network B/C robustness |
 
-**Thresholds in use.** VIF > 5 = high (conventional); κ ≥ 0.8 = strong agreement; ρ ≥ 0.95
-= ranking preserved. Current strict-mode values: **primary RAC_time** VIF(MAI)=2.93,
-VIF(RAC)=2.02 (both below threshold); legacy full-RAC VIF(MAI)=9.48, VIF(RAC)=10.06 (high,
-structural). Promoted RAC_time vs legacy full-RAC: κ=0.9125, ρ=0.9889, 28/462 relabelled
+**Thresholds in use.** VIF > 5 = a conservative collinearity flag (O'Brien, 2007);
+κ ≥ 0.8 = strong agreement (Landis & Koch, 1977); ρ ≥ 0.95 = ranking preserved.
+Current strict-mode values: **primary RAC_time** VIF(MAI)=3.78,
+VIF(RAC)=2.00 (both below threshold); legacy full-RAC VIF(MAI)=10.04, VIF(RAC)=9.89 (high,
+structural). Promoted RAC_time vs legacy full-RAC: κ=0.9116, ρ=0.9824, 28/462 relabelled
 (Decision #22 metric audit, `outputs/validation/metric_variant_audit.md`).
 
 **Theory support.**
@@ -449,6 +477,8 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9125, ρ=0.9889, 28/462 
 
 ## 10. References (theory support)
 
+- Bruno, M., Melo, H. P. M., Campanelli, B., & Loreto, V. (2024). A universal framework
+  for inclusive 15-minute cities. *Nature Cities*. https://doi.org/10.1038/s44284-024-00119-4
 - Geurs, K. T., & van Wee, B. (2004). Accessibility evaluation of land-use and transport
   strategies: Review and research directions. *Journal of Transport Geography, 12*(2), 127–140.
   https://doi.org/10.1016/j.jtrangeo.2003.10.005
@@ -456,11 +486,18 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9125, ρ=0.9889, 28/462 
   and alternatives. *Environment and Planning A, 29*(7), 1175–1194. https://doi.org/10.1068/a291175
 - Hansen, W. G. (1959). How accessibility shapes land use. *Journal of the American Institute
   of Planners, 25*(2), 73–76. https://doi.org/10.1080/01944365908978307
+- Japan International Cooperation Agency (JICA). (2010). *The comprehensive urban development
+  programme in Hanoi capital city (HAIDEP)*. JICA / Hanoi People's Committee.
 - Kaszczyszyn, P., & Sypion-Dutkowska, N. (2019). Walking access to public transport stops for
   city residents: A comparison of methods. *Sustainability, 11*(14), 3758.
   https://doi.org/10.3390/su11143758
+- Kieu, M., Comber, A., Nguyen Thi Thuy, H., Bui Quang, T., Hoang Huu, P., & Malleson, N.
+  (2024). An open dataset on individual perceptions of transport policies. *Scientific Data*.
+  https://doi.org/10.1038/s41597-024-02950-9
 - Khuat, V. H. (2006). *Traffic management in motorcycle dependent cities* (Doctoral
   dissertation). Darmstadt University of Technology.
+- Landis, J. R., & Koch, G. G. (1977). The measurement of observer agreement for categorical
+  data. *Biometrics, 33*(1), 159–174. https://doi.org/10.2307/2529310
 - Liao, Y., Gil, J., Pereira, R. H. M., Yeh, S., & Verendel, V. (2020). Disparities in travel
   time between car and transit: Spatiotemporal patterns in cities. *Scientific Reports, 10*,
   4056. https://doi.org/10.1038/s41598-020-61077-0
@@ -469,17 +506,28 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9125, ρ=0.9889, 28/462 
   cities. *Smart Cities, 4*(1), 93–111. https://doi.org/10.3390/smartcities4010006
 - Nguyen, X. L., & Nguyen, H. T. (2018). Operating speed of motorcycles on urban streets in
   Hanoi. *Journal of the Eastern Asia Society for Transportation Studies, 12*, 1421–1435.
+- O'Brien, R. M. (2007). A caution regarding rules of thumb for variance inflation factors.
+  *Quality & Quantity, 41*, 673–690. https://doi.org/10.1007/s11135-006-9018-6
+- Psyllidis, A., Gao, S., Hu, Y., Kim, E-K., McKenzie, G., Purves, R., Yuan, M., & Andris, C.
+  (2022). Points of Interest (POI): A commentary on the state of the art, challenges, and
+  prospects for the future. *Computational Urban Science, 2*(1), 20.
+  https://doi.org/10.1007/s43762-022-00047-w
+- Pereira, R. H. M., Schwanen, T., & Banister, D. (2017). Distributive justice and equity
+  in transportation. *Transport Reviews, 37*(2), 170–191.
+  https://doi.org/10.1080/01441647.2016.1257660
+- Sen, A. (1999). *Development as freedom*. Oxford University Press.
 - Vu Anh Tuan. (2015). Mode choice behavior and modal shift to public transport in developing
   countries: The case of Hanoi city. *Journal of the Eastern Asia Society for Transportation
   Studies, 11*, 473–487.
 - Vu Anh Tuan, Nguyen, H., & Pham, T. (2016). Motorcycle traffic characteristics in Hanoi.
   *Transportation Research Procedia, 15*, 651–662.
-- Japan International Cooperation Agency (JICA). (2010). *The comprehensive urban development
-  programme in Hanoi capital city (HAIDEP)*. JICA / Hanoi People's Committee.
+- Yang, Y., Qian, Y., Zeng, J., Wei, X., & Yang, M. (2023). Walkability measurement of
+  15-minute community life circle in Shanghai. *Land, 12*(1), 153.
+  https://doi.org/10.3390/land12010153
 
 **Cross-references in repo:** formula source of truth `src/accessibility.py`; input
 construction `src/accessibility_inputs.py`, `src/routing.py`; decision rationale
 `docs/decisions.md` (#2 typology, #3 VIF, #4 additive, #7 NAI count, #11 shared-scale,
 #12/#15 MAI, #18 domain caps, #19 population, #20 RAC_time, #21 observed hierarchy,
-#22 RAC_time primary promotion);
+#22 RAC_time primary promotion, #23 1200 m NAI threshold);
 methodology prose `proposal/proposal_v7.md` §8–10 and `paper/paper_draft.md` §2, §5–6.

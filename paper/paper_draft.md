@@ -343,6 +343,8 @@ Moreno, C., Allam, Z., Chabaud, D., Gall, C., & Pratlong, F. (2021). Introducing
 
 Nguyen, X. L., & Nguyen, H. T. (2018). Operating speed of motorcycles on urban streets in Hanoi. *Journal of the Eastern Asia Society for Transportation Studies, 12*, 1421-1435.
 
+Psyllidis, A., Gao, S., Hu, Y., Kim, E-K., McKenzie, G., Purves, R., Yuan, M., & Andris, C. (2022). Points of Interest (POI): A commentary on the state of the art, challenges, and prospects for the future. *Computational Urban Science, 2*(1), 20. https://doi.org/10.1007/s43762-022-00047-w
+
 Vu Anh Tuan. (2015). Mode choice behavior and modal shift to public transport in developing countries: The case of Hanoi city. *Journal of the Eastern Asia Society for Transportation Studies, 11*, 473-487.
 
 Vu Anh Tuan, Nguyen, H., & Pham, T. (2016). Motorcycle traffic characteristics in Hanoi. *Transportation Research Procedia, 15*, 651-662.
