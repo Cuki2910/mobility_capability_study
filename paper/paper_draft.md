@@ -3,7 +3,7 @@
 **Author:** Cuki2910
 **Target journal:** *Journal of Transport Geography*
 **Article type:** Methods development and pilot validation
-**Draft date:** 2026-06-24 (updated: 2026-06-27 pilot metrics and zero-access interpretation)
+**Draft date:** 2026-06-24 (updated: 2026-07-01 — 800 m NAI primary threshold, RAC_time primary, strict-observed MAI)
 
 ---
 
@@ -11,7 +11,7 @@
 
 Green-branded megaprojects in Southeast Asia are increasingly promoted as sustainable alternatives to dispersed, motorcycle-dependent urban growth. Yet conventional accessibility metrics evaluate such projects either at the neighborhood scale (walkability, the "15-minute city") or at the metropolitan scale (cumulative-opportunity job access), and almost always benchmark public transport against the private car. In motorcycle-dependent cities, where the practical alternative to transit is the motorcycle rather than the car, both choices misrepresent the lived constraint on sustainable mobility. This paper develops and pilots a dual-scale, mode-competitive accessibility framework that separates neighborhood-scale walking access from metropolitan-scale walk-and-transit access, and introduces a Relative Accessibility Competitiveness (RAC) term that benchmarks walk-and-transit performance directly against motorcycle performance. The three components are combined into a multiplicative Sustainable Mobility Capability Index (SMCI) and a theory-first four-way spatial typology.
 
-We pilot the framework on Vinhomes Ocean Park, Hanoi, a 250+ ha electric-bus-branded development, across 462 grid cells of 250 m. The analysis uses OpenStreetMap walking and driving networks, a merged 208-feature opportunity layer, a 2018 pre-VinBus GTFS baseline, VinBus pseudo-GTFS stop and headway data, VIDA building footprints, and WorldPop 2020 population. Motorcycle travel times are calibrated from Vietnamese speed literature and validated against manual Google Maps measurements (mean absolute error 1.90 minutes). The VinBus scenario raises mean SMCI from 0.0322 to 0.0435 and improves 298 of 462 cells (64.5%), while 88 cells are unchanged and 76 decline slightly under the opportunity-weighted time-competitiveness term. However, 88 cells (19.0%) remain at zero walking access; 84 of these zero-access cells (95.5%) are built cells. Among cells with positive SMCI, the median rises from 0.0197 to 0.0220, showing that improvement is not only a mean effect. Findings are robust to motorcycle-speed sensitivity (kappa >= 0.994), transit-impedance sensitivity (kappa >= 0.890), and a RAC_time-only specification addressing structural multicollinearity (kappa = 0.900). The pilot demonstrates that local walkability and competitive sustainable mobility are distinct capabilities, and that green mobility claims must be evaluated through both distributional improvement and persistent zero-access fragmentation.
+We pilot the framework on Vinhomes Ocean Park, Hanoi, a 250+ ha electric-bus-branded development, across 462 grid cells of 250 m. The analysis uses OpenStreetMap walking and driving networks, a merged 208-feature opportunity layer, a 2018 pre-VinBus GTFS baseline, VinBus pseudo-GTFS stop and headway data, VIDA building footprints, and WorldPop 2020 population. Motorcycle travel times are calibrated from Vietnamese speed literature and validated against manual Google Maps measurements (mean absolute error 1.90 minutes). Using a Hanoi-sensitive 800 m (10-minute) walking catchment as the primary neighborhood threshold and a RAC_time primary specification, the VinBus scenario raises mean SMCI from 0.0070 to 0.0133 and improves 281 of 462 cells (60.8%), while 88 cells are unchanged and 93 decline slightly under the opportunity-weighted time-competitiveness term. However, 88 cells (19.0%) remain at zero walking access; 84 of these zero-access cells are built cells housing about 15.0% of pilot population. Among cells with positive SMCI, the median rises from 0.0051 to 0.0081, showing that improvement is not only a mean effect. Findings are robust to motorcycle-speed sensitivity (kappa >= 0.987), transit-impedance sensitivity (kappa >= 0.895), and the legacy full-RAC specification as a multicollinearity robustness check (kappa = 0.907); the 1200 m / 15-minute catchment is reported as an optimistic upper-bound sensitivity. The pilot demonstrates that local walkability and competitive sustainable mobility are distinct capabilities, and that green mobility claims must be evaluated through both distributional improvement and persistent zero-access fragmentation.
 
 **Keywords:** accessibility; mode competition; motorcycle dependence; sustainable mobility; green megaprojects; Hanoi; Vietnam
 
@@ -23,7 +23,7 @@ Sustainable mobility is commonly equated with two things that are, in practice, 
 
 A second limitation applies to motorcycle-dependent cities. The accessibility-and-mode-choice literature usually frames the competitiveness of public transport relative to the private car, typically through a transit-to-car travel-time or opportunity ratio (e.g., Liao et al., 2020; Kaszczyszyn & Sypion-Dutkowska, 2019). In Hanoi this benchmark is the wrong one. Motorcycles account for over 80% of trips in the city (Vu Anh Tuan, 2015), are faster than cars in congested conditions because of lane-splitting, and are deeply embedded in household routines. A transit service that would be "competitive with the car" can remain uncompetitive with the motorcycle, which is the mode residents actually weigh it against.
 
-This matters for the evaluation of green megaprojects: large, master-planned, environmentally branded developments that are proliferating across Vietnam and the wider region. Their sustainability claims rest partly on internal amenities and partly on new transit provision, such as the electric VinBus network at our study site. But if the relevant counterfactual is the motorcycle, then neither "amenities within walking distance" nor "a bus line exists" is sufficient evidence that the development produces sustainable mobility capability.
+This matters for the evaluation of green megaprojects: large, master-planned, environmentally branded developments that are proliferating across Vietnam and the wider region (Shatkin, 2008; Joss et al., 2011; Caprotti, 2014, 2015; Cugurullo, 2016). Their sustainability claims rest partly on internal amenities and partly on new transit provision, such as the electric VinBus network at our study site. But if the relevant counterfactual is the motorcycle, then neither "amenities within walking distance" nor "a bus line exists" is sufficient evidence that the development produces sustainable mobility capability.
 
 We ask: **Does a green-branded development produce sustainable mobility capability when everyday life remains organized around the motorcycle?** We answer by building a framework that measures neighborhood access and metropolitan access on separate scales, adds a mode-competition term benchmarked against the motorcycle, and combines these into a weakest-link index and an interpretable spatial typology. We then validate the framework with a pilot implementation at Vinhomes Ocean Park, Hanoi.
 
@@ -41,7 +41,7 @@ The contribution is methodological: a transferable, reproducible accessibility f
 
 **GTFS and open-data accessibility.** GTFS-based accessibility methods have made transit evaluation more reproducible, especially when paired with open street networks and cumulative-opportunity measures. This study follows that open-data tradition but faces a common Global South limitation: one network has a dated public feed, and the new private/electric operator does not publish official GTFS. We therefore separate official-feed, pseudo-GTFS, and non-API route-relation evidence rather than treating all transit data as equivalent.
 
-**Motorcycle mobility, megaprojects, and capability.** Southeast Asian accessibility studies must account for motorcycle dominance, because two-wheelers affect speed, parking, access/egress, and mode-choice thresholds in ways that car-based benchmarks miss (Khuat, 2006; Vu Anh Tuan, 2015). The same issue is acute in green megaproject and TOD evaluation: project branding may emphasize electric transit or internal amenities, while residents continue to evaluate trips against the speed and flexibility of motorcycles. A capability perspective shifts attention from infrastructure provision to feasible mobility outcomes.
+**Motorcycle mobility, megaprojects, and capability.** Southeast Asian accessibility studies must account for motorcycle dominance, because two-wheelers affect speed, parking, access/egress, and mode-choice thresholds in ways that car-based benchmarks miss (Khuat, 2006; Vu Anh Tuan, 2015). The same issue is acute in green megaproject and TOD evaluation: TOD links compact mixed use and transit access (Calthorpe, 1993; Cervero & Kockelman, 1997), while green-megaproject critiques warn that sustainability may remain a branding or planning claim unless outcomes are measured (Shatkin, 2008; Caprotti, 2014; Cugurullo, 2016). A capability perspective shifts attention from infrastructure provision to feasible mobility outcomes.
 
 **Mode-competitive accessibility.** A smaller literature frames transit performance relative to the competing mode, usually the private car, via travel-time or opportunity ratios (Liao et al., 2020; Kaszczyszyn & Sypion-Dutkowska, 2019). This is the closest precedent to our approach, and we adopt its central insight: absolute accessibility is less behaviorally meaningful than accessibility relative to the realistic alternative.
 
@@ -124,7 +124,7 @@ NAI is a count of qualifying POIs reachable on the walking network within the ne
 NAI_i = count of qualifying POIs reachable by walking from cell i within the neighborhood threshold
 ```
 
-A simple count is used deliberately: at the neighborhood scale, the presence of a school, clinic, shop, or park is more behaviorally relevant than its precise capacity. NAI is min-max normalized to NAI_norm for index construction.
+A simple count is used deliberately: at the neighborhood scale, the presence of a school, clinic, shop, or park is more behaviorally relevant than its precise capacity. NAI is min-max normalized to NAI_norm for index construction. The primary neighborhood threshold is an 800 m network walking distance (about 10 minutes at 80 m/min), consistent with the international 10-minute-neighborhood pedestrian shed and Vietnam pedestrian-shed evidence rather than a mechanical 15-minute conversion. A 1200 m / 15-minute catchment is reported as an optimistic upper-bound sensitivity, and a 600/800/1000/1200 m threshold-response audit shows the four-typology structure is near-invariant across the range while absolute SMCI levels and zero-access shares are threshold-sensitive.
 
 ### 5.3 Metropolitan Accessibility Index (MAI)
 
@@ -216,64 +216,64 @@ Cells are then split on rank-based medians of NAI and MCS. Rank-based medians pr
 
 ### 6.1 The Intervention Improves Capability, But Zero-Access Cells Must Be Separated
 
-Across 462 cells, the VinBus scenario raises mean SMCI from **0.0322 (Scenario A) to 0.0435 (Scenario B)**, a mean Delta_SMCI of **+0.0113**. The global mean is not the primary interpretive statistic because the multiplicative SMCI is zero-inflated: if NAI, MAI, or RAC is zero, SMCI is zero. We therefore report zero-access cells separately and compute distributional summaries for cells with positive capability.
+Across 462 cells, under the primary 800 m (10-minute) NAI walking catchment and RAC_time primary specification, the VinBus scenario raises mean SMCI from **0.0070 (Scenario A) to 0.0133 (Scenario B)**, a mean Delta_SMCI of **+0.0063**. The global mean is not the primary interpretive statistic because the multiplicative SMCI is zero-inflated: if NAI, MAI, or RAC is zero, SMCI is zero. We therefore report zero-access cells separately and compute distributional summaries for cells with positive capability.
 
-The improvement is broad but spatially uneven: **298 cells (64.5%) improve, 88 are unchanged, and 76 decline slightly** once the RAC_time component is defined as an opportunity-weighted travel-time ratio. The unchanged cells are primarily zero-access cells. Declines are interpreted cautiously: VinBus increases opportunity access for many cells, but the time-competitiveness term can fall where additional reachable opportunities have longer weighted walk-transit times than the motorcycle benchmark.
+The improvement is broad but spatially uneven: **281 cells (60.8%) improve, 88 are unchanged, and 93 decline slightly** once the RAC_time component is defined as an opportunity-weighted travel-time ratio. The unchanged cells are primarily zero-access cells. Declines are interpreted cautiously: VinBus increases opportunity access for many cells, but the time-competitiveness term can fall where additional reachable opportunities have longer weighted walk-transit times than the motorcycle benchmark.
 
-**Table 3. Pilot summary (Scenario B unless noted).**
+**Table 3. Pilot summary (Scenario B unless noted; 800 m NAI primary threshold).**
 
 | Metric | Value |
 |---|---:|
 | Grid cells | 462 |
-| Mean SMCI, Scenario A | 0.0322 |
-| Mean SMCI, Scenario B | 0.0435 |
-| Mean Delta_SMCI | 0.0113 |
-| Cells improved / unchanged / declined | 298 / 88 / 76 |
-| Share improved | 64.5% |
+| Mean SMCI, Scenario A | 0.0070 |
+| Mean SMCI, Scenario B | 0.0133 |
+| Mean Delta_SMCI | 0.0063 |
+| Cells improved / unchanged / declined | 281 / 88 / 93 |
+| Share improved | 60.8% |
 | Zero-NAI cells | 88 (19.0%) |
-| Positive-cell median SMCI, Scenario A | 0.0197 |
-| Positive-cell median SMCI, Scenario B | 0.0220 |
+| Positive-cell median SMCI, Scenario A | 0.0051 |
+| Positive-cell median SMCI, Scenario B | 0.0081 |
 
-Among cells with positive SMCI, the median rises from **0.0197** in Scenario A to **0.0220** in Scenario B. This confirms that the change is not only a mean effect caused by a few high-access cells. The unchanged group is also substantively meaningful: these are cells where adding metropolitan transit access does not overcome missing neighborhood walking access or very weak local opportunity structure.
+Among cells with positive SMCI, the median rises from **0.0051** in Scenario A to **0.0081** in Scenario B. This confirms that the change is not only a mean effect caused by a few high-access cells. The unchanged group is also substantively meaningful: these are cells where adding metropolitan transit access does not overcome missing neighborhood walking access or very weak local opportunity structure.
 
 ### 6.2 Spatial Fragmentation Persists Under the Intervention
 
-Even with VinBus, the Scenario B typology is sharply divided (Table 4). **166 cells (35.9%) remain in Motorcycle Lock-in**, exactly matching the 166 cells in Integrated Capability, with 65 cells each in the Fragmented and Transit-Dependent types. For comparison, Scenario A places 155 cells each in Integrated and Motorcycle Lock-in and 76 each in the intermediate types; the intervention relabels **84 of 462 cells** (18.2%).
+Even with VinBus, the Scenario B typology is sharply divided (Table 4). **171 cells (37.0%) remain in Motorcycle Lock-in**, exactly matching the 171 cells in Integrated Capability, with 60 cells each in the Fragmented and Transit-Dependent types. For comparison, Scenario A places 144 cells each in Integrated and Motorcycle Lock-in and 87 each in the intermediate types; the intervention relabels **130 of 462 cells** (28.1%).
 
 **Table 4. Typology distribution by scenario.**
 
 | Typology | Scenario A (cells) | Scenario B (cells) | Scenario B (% cells) |
 |---|---:|---:|---:|
-| Integrated Capability | 155 | 166 | 35.9% |
-| Fragmented Capability | 76 | 65 | 14.1% |
-| Transit-Dependent | 76 | 65 | 14.1% |
-| Motorcycle Lock-in | 155 | 166 | 35.9% |
+| Integrated Capability | 144 | 171 | 37.0% |
+| Fragmented Capability | 87 | 60 | 13.0% |
+| Transit-Dependent | 87 | 60 | 13.0% |
+| Motorcycle Lock-in | 144 | 171 | 37.0% |
 
 The persistence of a large Motorcycle Lock-in class under the intervention is the central substantive finding: a green megaproject with a functioning electric-bus network still leaves more than a third of its grid in a condition where neither local access nor transit competitiveness is strong.
 
 ### 6.3 Population Exposure: The Equity Reading Is Slightly Worse Than the Cell Average
 
-Cell averages still require an exposure check. Using WorldPop 2020 (estimated study-area population approximately 78,816; all 462 cells non-zero), the **population-weighted mean SMCI_B is 0.0423 versus the unweighted 0.0435**, a small downward bias of 2.7%. The rank correlation between cell population and SMCI_B is near zero (Spearman rho = -0.017, p = 0.711), so population is roughly evenly spread across capability levels.
+Cell averages still require an exposure check. Using WorldPop 2020 (estimated study-area population approximately 78,816; all 462 cells non-zero), the **population-weighted mean SMCI_B is 0.0129 versus the unweighted 0.0133**, a small downward bias of 3.2%. The rank correlation between cell population and SMCI_B is near zero (Spearman rho = -0.007), so population is roughly evenly spread across capability levels.
 
-By population share, the **Motorcycle Lock-in type houses the largest resident group at 33.4%**, ahead of Integrated Capability (31.1%), Fragmented Capability (19.6%), and Transit-Dependent (16.0%). The largest single group of residents therefore lives where sustainable mobility capability is weakest, even though the population-weighted and unweighted means are close.
+By population share, the **Integrated Capability type houses the largest resident group at 34.7%**, with **Motorcycle Lock-in a near-equal 33.9%**, ahead of Fragmented Capability (16.0%) and Transit-Dependent (15.4%). A resident group as large as the best-served type therefore lives where sustainable mobility capability is weakest, even though the population-weighted and unweighted means are close.
 
 ### 6.4 Zero-Access Cells Are Genuinely Built and Populated
 
-The pilot has **88 zero-NAI cells (19.0%)**, and the same 88 cells have SMCI_B = 0 because the index is multiplicative. This is not a lake-and-park artifact: VIDA building footprints are present in **455 of 462 cells (98.5%)**, and **84 of the 88 zero-NAI cells are built**, housing about **11,798 residents (15.0% of the pilot population)**. Zero inflation thus reflects under-served built-up areas, which is a substantive caution for interpretation rather than a data error. These cells should be reported as a separate zero-access category rather than absorbed into the lowest positive quantile.
+At the 800 m primary threshold the pilot has **88 zero-NAI cells (19.0%)**, and the same 88 cells have SMCI_B = 0 because the index is multiplicative. This is not a lake-and-park artifact: VIDA building footprints are present in **455 of 462 cells (98.5%)**, and **84 of the 88 zero-NAI cells are built**, housing about **11,798 residents (15.0% of the pilot population)**. Zero inflation thus reflects under-served built-up areas, which is a substantive caution for interpretation rather than a data error. (At the 1200 m optimistic upper bound, zero-NAI cells fall to 33/462, 7.1%.) These cells should be reported as a separate zero-access category rather than absorbed into the lowest positive quantile.
 
 ### 6.5 Robustness
 
 **Headway assumptions (Network C).** VinBus route data provide observed per-route headways for most routes, with a fallback headway used only where route frequencies are absent. Sensitivity tests show that fallback-headway choices do not materially alter the study-area classification: **the typology partition is invariant (Cohen's kappa = 1.00)** across the tested fallback scenarios.
 
-**Structural multicollinearity (MAI vs. RAC).** Because RAC_opp shares its numerator (MAI_transit) with MAI, the two are collinear by construction. In the primary specification VIF is high (NAI 2.67, MAI 8.21, RAC 7.90). Replacing the full RAC composite with RAC_time alone removes the shared term and brings both within the conventional threshold (MAI 3.25, RAC_time 1.86). The typology agreement between the primary and RAC_time-only specifications is **Cohen's kappa = 0.900 (32 of 462 cells relabelled)**. The full-RAC specification is retained as primary, with RAC_time-only reported as a robustness disclosure.
+**Structural multicollinearity (MAI vs. RAC).** Because RAC_opp shares its numerator (MAI_transit) with MAI, the two are collinear by construction. In the legacy full-RAC specification VIF is high (NAI 3.38, MAI 9.58, RAC 9.56). The promoted primary uses RAC_time alone, which removes the shared term and brings all terms well within the conventional threshold (NAI 2.26, MAI 2.93, RAC_time 2.05). The typology agreement between the promoted RAC_time primary and the legacy full-RAC specification is **Cohen's kappa = 0.907 (30 of 462 cells relabelled)**. The RAC_time specification is retained as primary, with the legacy full-RAC reported as a robustness disclosure.
 
-**Motorcycle speed sensitivity.** Three Network D calibration scenarios were tested. Slower congested motorcycle speeds raise mean SMCI_B to 0.0486; faster lane-splitting lowers it to 0.0410. Typology agreement remains near-perfect in both cases (**kappa = 0.994; 2 of 462 cells relabelled**), indicating that the classification is not driven by a narrow motorcycle-speed assumption.
+**Motorcycle speed sensitivity.** Three Network D calibration scenarios were tested. Slower congested motorcycle speeds raise mean SMCI_B to 0.0160; faster lane-splitting lowers it to 0.0115. Typology agreement remains near-perfect in both cases (**kappa >= 0.987; <= 4 of 462 cells relabelled**), indicating that the classification is not driven by a narrow motorcycle-speed assumption.
 
-**Transit impedance sensitivity.** Behavioral penalties were applied only to walk-transit travel times, leaving MAI opportunity weights unchanged. Conservative penalties reduce mean SMCI_B to 0.0342 and pessimistic penalties to 0.0269; typology agreement remains high (**kappa = 0.933 and 0.890**, respectively). This is a behavioral-realism sensitivity, not observed mode-choice validation.
+**Transit impedance sensitivity.** Behavioral penalties were applied only to walk-transit travel times, leaving MAI opportunity weights unchanged. Conservative penalties reduce mean SMCI_B to 0.0098 and pessimistic penalties to 0.0065; typology agreement remains high (**kappa = 0.901 and 0.895**, respectively, with 32 and 34 cells relabelled). This is a behavioral-realism sensitivity, not observed mode-choice validation.
 
 **Supply-side population weighting.** Adding the WorldPop-derived supply-side multiplier to MAI relabels only 8 of 462 cells relative to the no-population baseline (**kappa = 0.976**). Population weighting therefore improves the defensibility of opportunity magnitudes without driving the typology result.
 
-**Observed-vs-proxy MAI.** Replacing proxy commercial weights with observed-derived commercial floorspace and adding one observed hospital bed count changes mean SMCI_B only from **0.0435 to 0.0435**, with **Cohen's kappa = 1.000** and **0 of 462 cells relabelled**. Observed coverage is still partial, so the result is reported as a first observed-magnitude sensitivity rather than a full observed-opportunity specification.
+**Observed-vs-proxy MAI.** The primary specification uses strict, source-backed opportunity magnitudes for every included destination across all four domains. Moving from the proxy baseline to this strict provenance-tiered specification changes mean SMCI_B only from **0.0129 to 0.0133**, with **Cohen's kappa = 0.937** and **20 of 462 cells relabelled**; the cell ranking is preserved almost exactly (**Spearman rho = 0.9965**). Every included destination has a source-backed magnitude, with disaggregated values capped and key facilities anchored using citable headcounts.
 
 **Index form.** Against an additive alternative SMCI_add = (NAI_norm + MAI_norm + RAC_norm)/3, the multiplicative SMCI ranking holds strongly but not trivially. A geometric-mean alternative is deliberately not used as a robustness check, because it is a monotonic transform of the product and would yield rho = 1.0 by construction.
 
@@ -289,7 +289,7 @@ The pilot has **88 zero-NAI cells (19.0%)**, and the same 88 cells have SMCI_B =
 
 ## 7. Discussion
 
-**Local walkability is not sustainable mobility capability.** The pilot operationalizes, and then empirically separates, two capabilities that are routinely conflated. Ocean Park performs reasonably on neighborhood access in many cells, yet 64.1% of cells fall outside Integrated Capability and 35.9% remain in Motorcycle Lock-in even with VinBus. The framework's value is its ability to make this gap visible and locable.
+**Local walkability is not sustainable mobility capability.** The pilot operationalizes, and then empirically separates, two capabilities that are routinely conflated. Ocean Park performs reasonably on neighborhood access in many cells, yet 63.0% of cells fall outside Integrated Capability and 37.0% remain in Motorcycle Lock-in even with VinBus. The framework's value is its ability to make this gap visible and locable.
 
 **The benchmark mode matters.** Standard transport models benchmark transit against the car. Doing so in Hanoi would overstate transit competitiveness, because the car is slower than the motorcycle in congestion. By benchmarking against the motorcycle, RAC reframes the question from "does a bus exist?" to "would a rational motorcyclist switch?", a more demanding and more policy-relevant test.
 
@@ -321,17 +321,29 @@ The VinBus pseudo-GTFS creates an ethics and replicability risk. The source API 
 
 ## 9. Conclusion
 
-We have developed and piloted a dual-scale, mode-competitive accessibility framework that distinguishes neighborhood access, metropolitan access, and, critically, competitiveness against the motorcycle rather than the car. Applied to Vinhomes Ocean Park, the framework shows that an electric-bus-branded green megaproject improves sustainable mobility capability on average (mean SMCI 0.0322 to 0.0435; 64.5% of cells improved) while leaving a persistent Motorcycle Lock-in condition that covers 35.9% of cells and 33.4% of residents. The more important result is distributional: 19.0% of cells remain at zero walking access, and 95.5% of those zero-access cells are built. The findings are robust to motorcycle-speed assumptions, transit-impedance penalties, normalization choices, and a multicollinearity-corrected specification. The framework is open, reproducible, and transferable to the many cities where the realistic alternative to transit is two wheels, not four. Full citywide application is the next step.
+We have developed and piloted a dual-scale, mode-competitive accessibility framework that distinguishes neighborhood access, metropolitan access, and, critically, competitiveness against the motorcycle rather than the car. Applied to Vinhomes Ocean Park, the framework shows that an electric-bus-branded green megaproject improves sustainable mobility capability on average (mean SMCI 0.0070 to 0.0133; 60.8% of cells improved) while leaving a persistent Motorcycle Lock-in condition that covers 37.0% of cells and 33.9% of residents. The more important result is distributional: 19.0% of cells remain at zero walking access, and 95.5% of those zero-access cells are built. The findings are robust to motorcycle-speed assumptions, transit-impedance penalties, normalization choices, and a multicollinearity-corrected specification. The framework is open, reproducible, and transferable to the many cities where the realistic alternative to transit is two wheels, not four. Full citywide application is the next step.
 
 ---
 
 ## References
+
+Calthorpe, P. (1993). *The next American metropolis: Ecology, community, and the American dream*. Princeton Architectural Press.
+
+Caprotti, F. (2014). Eco-urbanism and the eco-city, or, denying the right to the city? *Antipode, 46*(5), 1285-1303. https://doi.org/10.1111/anti.12087
+
+Caprotti, F. (2015). Eco for whom? Envisioning eco-urbanism in the Sino-Singapore Tianjin Eco-city, China. *International Journal of Urban and Regional Research, 39*(3), 495-517. https://doi.org/10.1111/1468-2427.12233
+
+Cervero, R., & Kockelman, K. (1997). Travel demand and the 3Ds: Density, diversity, and design. *Transportation Research Part D: Transport and Environment, 2*(3), 199-219. https://doi.org/10.1016/S1361-9209(97)00009-6
+
+Cugurullo, F. (2016). Urban eco-modernisation and the policy context of new eco-city projects: Where Masdar City fails and why. *Urban Studies, 53*(11), 2417-2433. https://doi.org/10.1177/0042098015588727
 
 Geurs, K. T., & van Wee, B. (2004). Accessibility evaluation of land-use and transport strategies: Review and research directions. *Journal of Transport Geography, 12*(2), 127-140. https://doi.org/10.1016/j.jtrangeo.2003.10.005
 
 Handy, S. L., & Niemeier, D. A. (1997). Measuring accessibility: An exploration of issues and alternatives. *Environment and Planning A, 29*(7), 1175-1194. https://doi.org/10.1068/a291175
 
 Japan International Cooperation Agency (JICA). (2010). *The comprehensive urban development programme in Hanoi capital city (HAIDEP)*. JICA / Hanoi People's Committee.
+
+Joss, S., Tomozeiu, D., & Cowley, R. (2011). Eco-cities: The mainstreaming of urban sustainability - key characteristics and driving factors. *International Journal of Sustainable Development and Planning, 6*(3), 268-285. https://doi.org/10.2495/SDP-V6-N3-268-285
 
 Kaszczyszyn, P., & Sypion-Dutkowska, N. (2019). Walking access to public transport stops for city residents: A comparison of methods. *Sustainability, 11*(14), 3758. https://doi.org/10.3390/su11143758
 
@@ -345,6 +357,8 @@ Nguyen, X. L., & Nguyen, H. T. (2018). Operating speed of motorcycles on urban s
 
 Psyllidis, A., Gao, S., Hu, Y., Kim, E-K., McKenzie, G., Purves, R., Yuan, M., & Andris, C. (2022). Points of Interest (POI): A commentary on the state of the art, challenges, and prospects for the future. *Computational Urban Science, 2*(1), 20. https://doi.org/10.1007/s43762-022-00047-w
 
+Shatkin, G. (2008). The city and the bottom line: Urban megaprojects and the privatization of planning in Southeast Asia. *Environment and Planning A, 40*(2), 383-401. https://doi.org/10.1068/a38439
+
 Vu Anh Tuan. (2015). Mode choice behavior and modal shift to public transport in developing countries: The case of Hanoi city. *Journal of the Eastern Asia Society for Transportation Studies, 11*, 473-487.
 
 Vu Anh Tuan, Nguyen, H., & Pham, T. (2016). Motorcycle traffic characteristics in Hanoi. *Transportation Research Procedia, 15*, 651-662.
@@ -353,4 +367,4 @@ Vu Anh Tuan, Nguyen, H., & Pham, T. (2016). Motorcycle traffic characteristics i
 
 *Data, code, formulas, and validation outputs are maintained in the project repository (`src/`, `outputs/`, `docs/`). All indices are implemented and unit-tested in `src/accessibility.py` and the pipeline test suite. Pilot results derive from `data/processed/pilot_metrics.csv`.*
 
-> **Reference-verification note (delete before submission).** The following citations were confirmed against live sources during drafting: Geurs & van Wee (2004), Handy & Niemeier (1997), Moreno et al. (2021), Liao et al. (2020), and the Vietnamese motorcycle-speed sources used in calibration (JICA HAIDEP 2010; Nguyen & Nguyen 2018; Vu Anh Tuan et al. 2016). The following should be re-verified for exact volume/page/DOI before submission: Kaszczyszyn & Sypion-Dutkowska (2019), Khuat (2006), and Vu Anh Tuan (2015).
+> **Reference-verification note (delete before submission).** The following citations were confirmed against live sources during drafting: Geurs & van Wee (2004), Handy & Niemeier (1997), Moreno et al. (2021), Liao et al. (2020), Cervero & Kockelman (1997), Shatkin (2008), Joss et al. (2011), Caprotti (2014, 2015), Cugurullo (2016), and the Vietnamese motorcycle-speed sources used in calibration (JICA HAIDEP 2010; Nguyen & Nguyen 2018; Vu Anh Tuan et al. 2016). The following should be re-verified for exact volume/page/DOI before submission: Calthorpe (1993), Kaszczyszyn & Sypion-Dutkowska (2019), Khuat (2006), and Vu Anh Tuan (2015).

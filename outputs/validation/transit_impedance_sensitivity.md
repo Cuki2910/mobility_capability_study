@@ -4,9 +4,9 @@ Penalties are applied only to Scenario B walk-transit travel times. MAI opportun
 
 ```csv
 scenario,mean_SMCI_B,SMCI_B_shift_vs_baseline,share_improved,zero_cells_SMCI_B,unchanged_cells,typology_kappa_vs_baseline,cells_relabelled_vs_baseline
-baseline,0.043455337111906765,0.0,0.645021645021645,88,88,1.0,0
-conservative,0.03419694577206703,-0.009258391339839737,0.3398268398268398,88,88,0.9328204314720813,22
-pessimistic,0.026862921387535186,-0.01659241572437158,0.05411255411255411,88,88,0.8900697969543148,36
+baseline,0.013289804372247506,0.0,0.6082251082251082,88,88,1.0,0
+conservative,0.009774408547019902,-0.0035153958252276043,0.36147186147186144,88,88,0.9008410801239487,32
+pessimistic,0.006501059273485652,-0.006788745098761854,0.05194805194805195,88,88,0.895267432091851,34
 ```
 
 Interpretation: this is a behavioral-realism sensitivity, not observed mode-choice validation.

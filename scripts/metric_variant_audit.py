@@ -342,8 +342,8 @@ def main() -> int:
     parser.add_argument(
         "--walk-cutoff-min",
         type=float,
-        default=15.0,
-        help="NAI walk cutoff in minutes. Default matches 1200m / 80m-min.",
+        default=10.0,
+        help="NAI walk cutoff in minutes. Default matches the 800 m / 80 m-min primary (Decision #27).",
     )
     parser.add_argument("--nai-category-cap", type=int, default=3)
     parser.add_argument("--excluded-radius-m", type=float, default=800.0)

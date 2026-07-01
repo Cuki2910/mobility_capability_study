@@ -3,7 +3,7 @@ NAI high,231
 NAI low,231
 MCS high,231
 MCS low,231
-high NAI / high MCS,172
-high NAI / low MCS,59
-low NAI / high MCS,59
-low NAI / low MCS,172
+high NAI / high MCS,171
+high NAI / low MCS,60
+low NAI / high MCS,60
+low NAI / low MCS,171

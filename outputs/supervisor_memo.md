@@ -2,18 +2,18 @@
 
 ## Result Snapshot
 - Grid cells: 462
-- Mean SMCI Scenario A: 0.0084
-- Mean SMCI Scenario B: 0.0160
-- Mean Delta_SMCI: 0.0076
-- Share improved: 66.02%
-- Improved / unchanged / declined cells: 305 (66.02%) / 33 (7.14%) / 124 (26.84%)
-- Distribution note: Mean SMCI is small mainly because RAC_B is compressed by an extreme max (mean normalized RAC_B=0.0817; p99=0.1983; max=1.0000) and zero-valued components make multiplicative SMCI exactly zero for many cells.
+- Mean SMCI Scenario A: 0.0070
+- Mean SMCI Scenario B: 0.0133
+- Mean Delta_SMCI: 0.0063
+- Share improved: 60.82%
+- Improved / unchanged / declined cells: 281 (60.82%) / 88 (19.05%) / 93 (20.13%)
+- Distribution note: Mean SMCI is small mainly because RAC_B is compressed by an extreme max (mean normalized RAC_B=0.0819; p99=0.2116; max=1.0000) and zero-valued components make multiplicative SMCI exactly zero for many cells.
 
 ## Typology Counts, Scenario B
-- Motorcycle Lock-in: 172
-- Integrated Capability: 172
-- Transit-Dependent: 59
-- Fragmented Capability: 59
+- Motorcycle Lock-in: 171
+- Integrated Capability: 171
+- Fragmented Capability: 60
+- Transit-Dependent: 60
 
 ## Confirmed Real Data
 - OSM pilot graph/POI/grid manifest present: True.

@@ -412,16 +412,20 @@ so settled debates don't get silently re-opened.
     Implementation: `src/pilot.py` now sets primary `RAC_A/B = RAC_time_A/B`. The
     previous full composite is retained as `RAC_full_A/B` and
     `SMCI_B_full_rac_legacy` for robustness reporting. The promoted primary strict
-    observed headline is SMCI_A=0.0084, SMCI_B=0.0160, mean Delta_SMCI=0.0076,
-    305/462 cells improved, 33 unchanged, 124 declined, and Scenario B typology counts
-    are 172 Integrated Capability, 59 Fragmented Capability, 59 Transit-Dependent,
-    and 172 Motorcycle Lock-in.
+    observed headline is SMCI_A=0.0092, SMCI_B=0.0169, mean Delta_SMCI=0.0077,
+    298/462 cells improved, 33 unchanged, 131 declined, and Scenario B typology counts
+    are 170 Integrated Capability, 61 Fragmented Capability, 61 Transit-Dependent,
+    and 170 Motorcycle Lock-in.
 
 23. **NAI primary threshold is 15 minutes / 1200 m (2026-06-30).**
     The neighborhood walking threshold is promoted from the earlier 800 m / ~10 min pilot
     setting to 1200 m network distance, equivalent to 15 minutes at 80 m/min. This aligns the
     NAI axis with the 15-minute-city framing used in the literature while preserving the
     same count-based NAI logic.
+
+    **Status update 2026-07-01:** Superseded by Decisions #26 and #27. After professor feedback,
+    1200 m is no longer the primary threshold: Decision #27 selects 800 m (10-minute neighborhood)
+    as primary and demotes 1200 m to an optimistic 15-minute-city upper-bound sensitivity.
 
     Implementation: `scripts/build_accessibility_inputs.py --walking-threshold-m` defaults
     to 1200, and network-mode builders pass `walk_cutoff_min=15.0`. Sensitivity/audit scripts
@@ -430,7 +434,7 @@ so settled debates don't get silently re-opened.
     NAI threshold.
 
     Effect on current strict observed + RAC_time primary metrics: mean NAI rises to 13.47,
-    zero-NAI cells fall to 33/462 (7.1%), SMCI_A=0.0084, SMCI_B=0.0160, and 305/462 cells
+    zero-NAI cells fall to 33/462 (7.1%), SMCI_A=0.0092, SMCI_B=0.0169, and 298/462 cells
     improve under Scenario B. The change makes zero-access claims less overstated and more
     defensible for a paper using a 15-minute neighborhood concept.
 
@@ -475,3 +479,66 @@ so settled debates don't get silently re-opened.
       the master plan *causes* them.
     Bottleneck flagged: observed-opportunity magnitudes (Decision #21) must be rebuilt from scratch
     for the control site; this is the most labor-intensive step and the main coverage-bias risk.
+
+26. **NAI threshold must be localized, not imported from European 15-minute-city defaults (2026-07-01).**
+    Professor feedback challenged the 1200 m / 15-minute walking catchment as too optimistic for
+    Hanoi's tropical, motorcycle-dominant walking environment. Heat, humidity, sidewalk obstruction,
+    crossing stress, shade availability, and motorcycle interaction mean that 15 minutes of nominal
+    network distance may not represent the same pedestrian burden as in European 15-minute-city
+    applications.
+
+    Decision: retain the 15-minute city as a conceptual local-completeness frame, but demote
+    1200 m from "settled primary threshold" to "upper-bound sensitivity" until a threshold-response
+    audit is run. The audit must rebuild NAI and downstream metrics at 600 m, 800 m, 1000 m, and
+    1200 m, then report zero-NAI cells, mean SMCI_A/B, Delta_SMCI, typology stability, and policy
+    interpretation changes.
+
+    First audit (`scripts/nai_threshold_sensitivity.py`, 2026-07-01):
+    - 600 m: zero-NAI 133/462 (28.8%), mean NAI 3.56, mean SMCI_B 0.0107, kappa vs 1200 m 0.718.
+    - 800 m: zero-NAI 88/462 (19.0%), mean NAI 6.09, mean SMCI_B 0.0133, kappa 0.756.
+    - 1000 m: zero-NAI 58/462 (12.6%), mean NAI 9.47, mean SMCI_B 0.0148, kappa 0.837.
+    - 1200 m: zero-NAI 33/462 (7.1%), mean NAI 13.47, mean SMCI_B 0.0169.
+
+    Result: the VinBus/SMCI improvement direction survives stricter thresholds, but local
+    completeness and typology labels are materially threshold-sensitive. This supports reporting
+    1200 m as the optimistic upper bound and selecting a final primary cutoff on Hanoi walking
+    plausibility.
+
+    The final primary threshold should be selected based on Hanoi-sensitive plausibility and
+    robustness, not on a mechanical conversion of 15 minutes at 80 m/min. If the headline insight
+    holds across stricter catchments, that becomes stronger evidence. If it changes materially,
+    the paper should foreground that the megaproject's apparent neighborhood completeness depends
+    on an optimistic walking assumption.
+
+27. **Primary NAI threshold selected at 800 m (10-minute neighborhood) (2026-07-01).**
+    Following the Decision #26 audit and professor feedback, the primary NAI walking catchment is
+    set to **800 m network distance (~10 min at 80 m/min)**. 1200 m / 15 min is demoted to an
+    optimistic upper-bound sensitivity.
+
+    Rationale:
+    - **Convention.** 800 m is the international "10-minute neighborhood" pedestrian shed
+      (¼–½ mile walk-to-transit), whereas "15-minute city" is a multi-modal (walk+bike) frame;
+      applying its 15-minute budget to walking alone stretches the catchment by cycling speed and
+      mislabels it. 800 m has a walking-specific basis; 1200 m-walking does not.
+    - **Vietnam evidence.** HCMC/Vietnam pedestrian-shed literature uses 800 m ≈ 10 min at 1.3 m/s
+      as the urban walk catchment (HAIDEP raw trip-length is behind JICA licensing — see
+      `docs/metrics_reference.md` — so 800 m is anchored on published Vietnam pedestrian-shed work,
+      not HAIDEP directly). For a motorcycle-dependent city with low willingness-to-walk, 800 m is a
+      generous-but-defensible walk radius; 1200 m is not.
+    - **Robustness.** The four-typology structure is near-invariant across 600–1200 m (quadrant
+      counts 174/57/57/174 → 171/60/60/171 → 174/57/57/174 → 170/61/61/170), so the headline does
+      not hinge on the exact catchment — only the absolute SMCI level and zero-NAI share move.
+
+    New primary metrics (strict observed + RAC_time primary, 800 m NAI):
+    SMCI_A=0.0070, SMCI_B=0.0133, mean Delta_SMCI=0.0063, 281/462 improved (60.8%),
+    88 unchanged, 93 declined; zero-NAI=88/462 (19.0%), mean NAI=6.09, median NAI=4;
+    zero-SMCI_B=88; positive-SMCI median 0.0051→0.0081; typology_B counts
+    171 Integrated Capability, 60 Fragmented Capability, 60 Transit-Dependent,
+    171 Motorcycle Lock-in. Primary VIF stays well under 5 (NAI=2.26, MAI=2.93, RAC=2.05);
+    legacy full-RAC remains high (MAI=9.58, RAC=9.56) and is reported as robustness only.
+
+    Implementation: `scripts/build_accessibility_inputs.py --walking-threshold-m` defaults to 800;
+    all sensitivity/audit scripts that rebuild NAI now use `walk_cutoff_min=800/80` as their primary
+    baseline; `scripts/nai_threshold_sensitivity.py --reference-threshold-m` defaults to 800. The
+    800 m primary reproduces `data/interim/nai_threshold_sensitivity/inputs_800m.csv` exactly
+    (max abs diff 0 across all numeric columns).
