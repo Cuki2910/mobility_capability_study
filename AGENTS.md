@@ -52,14 +52,19 @@ truth so the two agents do not drift.
 
 ## After changes
 
-- Run `pytest tests/ -v` (must be 61 passed) after touching `src/accessibility.py`,
-  `validation`, network construction, or calibration.
+- With multiple agents, create `.agent/ownership.json` from the tracked example and
+  run `python scripts/check_agent_ownership.py` before handoff.
+- Run `python scripts/agent_gate.py` before handoff. The tracked policy at
+  `config/agent_policy.json` enforces coupled changes and canonical-output locking;
+  see `docs/agent_workflow.md` for override and integration rules.
+- Run `pytest tests/ -v` (the full current suite must pass) after touching
+  `src/accessibility.py`, validation, network construction, or calibration.
 - Report: files changed, tests run, remaining data blockers.
 
 ## Two-agent coordination (Claude + Codex)
 
 - Treat `CLAUDE.md` + `docs/` as shared truth; agent-private memory is NOT shared
   between Claude and Codex, so durable facts belong in these files.
-- Avoid both agents editing the same file in parallel — split work by area
-  (e.g. one on pipeline/`src`, one on proposal text) to prevent merge conflicts
-  and methodology drift.
+- Avoid both agents editing the same file in parallel — reserve file ownership in
+  `.agent/ownership.json` and use separate Git worktrees as specified in
+  `docs/agent_workflow.md`.
