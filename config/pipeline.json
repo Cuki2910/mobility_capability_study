@@ -1,54 +1,287 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "nodes": {
     "audit_pois": {
-      "command": ["python", "scripts/audit_pois.py"],
+      "command": [
+        "python",
+        "scripts/audit_pois.py"
+      ],
       "depends_on": [],
-      "inputs": ["data/interim/pilot_pois.gpkg"],
-      "outputs": ["outputs/poi_audit.csv", "outputs/poi_audit.md"],
-      "decisions": ["DEC-020"]
+      "inputs": [
+        "data/interim/pilot_pois.gpkg"
+      ],
+      "outputs": [
+        "outputs/poi_audit.csv",
+        "outputs/poi_audit.md"
+      ],
+      "decisions": [
+        "DEC-020"
+      ],
+      "objective": "Validate pilot POI quality before accessibility construction",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "outputs/poi_audit.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        },
+        "outputs/poi_audit.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
     },
     "build_accessibility_inputs": {
-      "command": ["python", "scripts/build_accessibility_inputs.py", "--mode", "network", "--gtfs-status", "baseline_limited"],
-      "depends_on": ["audit_pois"],
-      "inputs": ["data/interim/pilot_grid.gpkg", "data/interim/merged_pois_observed.gpkg", "data/raw/pilot_walk_network.graphml", "data/raw/pilot_drive_network.graphml", "data/raw/hanoi_gtfs.zip", "data/raw/vinbus_pseudo_gtfs_fixed"],
-      "outputs": ["data/interim/pilot_accessibility_inputs.csv"],
-      "decisions": ["DEC-017", "DEC-020", "DEC-021", "DEC-027"]
+      "command": [
+        "python",
+        "scripts/build_accessibility_inputs.py",
+        "--mode",
+        "network",
+        "--gtfs-status",
+        "baseline_limited"
+      ],
+      "depends_on": [
+        "audit_pois"
+      ],
+      "inputs": [
+        "data/interim/pilot_grid.gpkg",
+        "data/interim/merged_pois_observed.gpkg",
+        "data/raw/pilot_walk_network.graphml",
+        "data/raw/pilot_drive_network.graphml",
+        "data/raw/hanoi_gtfs.zip",
+        "data/raw/vinbus_pseudo_gtfs_fixed"
+      ],
+      "outputs": [
+        "data/interim/pilot_accessibility_inputs.csv"
+      ],
+      "decisions": [
+        "DEC-017",
+        "DEC-020",
+        "DEC-021",
+        "DEC-027"
+      ],
+      "objective": "Build auditable network accessibility inputs",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "heavy"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "data/interim/pilot_accessibility_inputs.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        }
+      }
     },
     "run_pilot_metrics": {
-      "command": ["python", "scripts/run_pilot_metrics.py"],
-      "depends_on": ["build_accessibility_inputs"],
-      "inputs": ["data/interim/pilot_accessibility_inputs.csv"],
-      "outputs": ["data/processed/pilot_metrics.csv", "outputs/pilot_summary.csv"],
-      "decisions": ["DEC-002", "DEC-007", "DEC-022"]
+      "command": [
+        "python",
+        "scripts/run_pilot_metrics.py"
+      ],
+      "depends_on": [
+        "build_accessibility_inputs"
+      ],
+      "inputs": [
+        "data/interim/pilot_accessibility_inputs.csv"
+      ],
+      "outputs": [
+        "data/processed/pilot_metrics.csv",
+        "outputs/pilot_summary.csv"
+      ],
+      "decisions": [
+        "DEC-002",
+        "DEC-007",
+        "DEC-022"
+      ],
+      "objective": "Compute shared-scale scenario metrics and typologies",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "data/processed/pilot_metrics.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        },
+        "outputs/pilot_summary.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        }
+      }
     },
     "make_validation_report": {
-      "command": ["python", "scripts/make_validation_report.py"],
-      "depends_on": ["run_pilot_metrics"],
-      "inputs": ["data/processed/pilot_metrics.csv"],
-      "outputs": ["outputs/validation/vif_flags.csv"],
-      "decisions": ["DEC-003", "DEC-022"]
+      "command": [
+        "python",
+        "scripts/make_validation_report.py"
+      ],
+      "depends_on": [
+        "run_pilot_metrics"
+      ],
+      "inputs": [
+        "data/processed/pilot_metrics.csv"
+      ],
+      "outputs": [
+        "outputs/validation/vif_flags.csv"
+      ],
+      "decisions": [
+        "DEC-003",
+        "DEC-022"
+      ],
+      "objective": "Evaluate collinearity and metric validity",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "outputs/validation/vif_flags.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        }
+      }
     },
     "compute_population_weighted_smci": {
-      "command": ["python", "scripts/compute_population_weighted_smci.py"],
-      "depends_on": ["run_pilot_metrics"],
-      "inputs": ["data/processed/pilot_metrics.csv", "data/interim/grid_worldpop.csv"],
-      "outputs": ["outputs/validation/population_weighted_smci.md"],
-      "decisions": ["DEC-019"]
+      "command": [
+        "python",
+        "scripts/compute_population_weighted_smci.py"
+      ],
+      "depends_on": [
+        "run_pilot_metrics"
+      ],
+      "inputs": [
+        "data/processed/pilot_metrics.csv",
+        "data/interim/grid_worldpop.csv"
+      ],
+      "outputs": [
+        "outputs/validation/population_weighted_smci.md"
+      ],
+      "decisions": [
+        "DEC-019"
+      ],
+      "objective": "Evaluate population-weighted capability",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "outputs/validation/population_weighted_smci.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
     },
     "build_headline_snapshot": {
-      "command": ["python", "scripts/build_headline_snapshot.py"],
-      "depends_on": ["make_validation_report", "compute_population_weighted_smci"],
-      "inputs": ["outputs/pilot_summary.csv", "data/processed/pilot_metrics.csv", "outputs/validation/vif_flags.csv"],
-      "outputs": ["outputs/headline_metrics.json"],
-      "decisions": ["DEC-002", "DEC-022", "DEC-027"]
+      "command": [
+        "python",
+        "scripts/build_headline_snapshot.py"
+      ],
+      "depends_on": [
+        "make_validation_report",
+        "compute_population_weighted_smci"
+      ],
+      "inputs": [
+        "outputs/pilot_summary.csv",
+        "data/processed/pilot_metrics.csv",
+        "outputs/validation/vif_flags.csv"
+      ],
+      "outputs": [
+        "outputs/headline_metrics.json"
+      ],
+      "decisions": [
+        "DEC-002",
+        "DEC-022",
+        "DEC-027"
+      ],
+      "objective": "Publish one machine-readable headline source of truth",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core",
+        "publication"
+      ],
+      "artifact_contract": {
+        "outputs/headline_metrics.json": {
+          "non_empty": true,
+          "suffix": ".json"
+        }
+      }
     },
     "project_self_audit": {
-      "command": ["python", "scripts/project_self_audit.py"],
-      "depends_on": ["build_headline_snapshot"],
-      "inputs": ["outputs/headline_metrics.json"],
-      "outputs": ["outputs/project_self_audit.json", "outputs/project_self_audit.md"],
-      "decisions": ["DEC-022", "DEC-027"]
+      "command": [
+        "python",
+        "scripts/project_self_audit.py"
+      ],
+      "depends_on": [
+        "build_headline_snapshot"
+      ],
+      "inputs": [
+        "outputs/headline_metrics.json"
+      ],
+      "outputs": [
+        "outputs/project_self_audit.json",
+        "outputs/project_self_audit.md"
+      ],
+      "decisions": [
+        "DEC-022",
+        "DEC-027"
+      ],
+      "objective": "Evaluate project completeness and stale outputs",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core",
+        "publication"
+      ],
+      "artifact_contract": {
+        "outputs/project_self_audit.json": {
+          "non_empty": true,
+          "suffix": ".json"
+        },
+        "outputs/project_self_audit.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
     }
   }
 }

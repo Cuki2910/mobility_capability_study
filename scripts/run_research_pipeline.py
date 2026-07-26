@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.provenance import (artifact_record, is_fresh, load_pipeline, new_manifest,
-                            rebuild_sqlite, select_nodes, utc_now, write_json_atomic)
+                            rebuild_sqlite, select_nodes, utc_now, validate_artifact_contract, write_json_atomic)
 
 
 def main() -> int:
@@ -22,10 +22,23 @@ def main() -> int:
     parser.add_argument("--to", dest="end")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--target", choices=("core", "publication", "all"), default="all")
+    parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--max-nodes", type=int)
+    parser.add_argument("--explain", action="store_true")
     args = parser.parse_args()
     pipeline_path = args.pipeline if args.pipeline.is_absolute() else ROOT / args.pipeline
     pipeline = load_pipeline(pipeline_path)
     selected = select_nodes(pipeline["nodes"], node=args.node, start=args.start, end=args.end)
+    if args.target != "all":
+        selected = [name for name in selected if args.target in pipeline["nodes"][name].get("tags", [])]
+    if args.offline:
+        network = [name for name in selected if pipeline["nodes"][name].get("resources", {}).get("network")]
+        if network: raise ValueError(f"Offline target contains network nodes: {network}")
+    if args.max_nodes is not None:
+        selected = selected[:args.max_nodes]
+    if args.explain:
+        print(f"Selected {len(selected)} nodes for target={args.target}, offline={args.offline}")
     if args.dry_run:
         for name in selected:
             spec = pipeline["nodes"][name]
@@ -59,12 +72,11 @@ def main() -> int:
                 record["status"] = "succeeded" if result.returncode == 0 else "failed"
                 if result.returncode:
                     raise RuntimeError(f"{name} failed with exit code {result.returncode}")
-                missing_outputs = [path for path in spec.get("outputs", [])
-                                   if not (ROOT / path).exists()]
-                if missing_outputs:
+                contract_errors = validate_artifact_contract(spec, ROOT)
+                if contract_errors:
                     record["status"] = "failed"
                     record["exit_code"] = 1
-                    raise FileNotFoundError(f"{name} missing outputs: {missing_outputs}")
+                    raise FileNotFoundError(f"{name} artifact contract failed: {contract_errors}")
             record["artifacts"] = [artifact_record(ROOT / path, "input")
                                    for path in spec.get("inputs", [])]
             record["artifacts"] += [artifact_record(ROOT / path, "output")

@@ -7,11 +7,12 @@ import os
 import sqlite3
 import subprocess
 import tempfile
+import platform
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def utc_now() -> str:
@@ -63,15 +64,59 @@ def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
         raise
 
 
+def _safe_relative(value: str) -> bool:
+    path = Path(value)
+    return bool(value) and not path.is_absolute() and ".." not in path.parts
+
+
 def load_pipeline(path: Path) -> dict[str, Any]:
-    pipeline = json.loads(path.read_text(encoding="utf-8"))
+    pipeline = json.loads(path.read_text(encoding="utf-8-sig"))
     if pipeline.get("schema_version") != SCHEMA_VERSION:
         raise ValueError(f"Unsupported pipeline schema: {pipeline.get('schema_version')}")
     nodes = pipeline.get("nodes")
     if not isinstance(nodes, dict) or not nodes:
         raise ValueError("Pipeline must contain a non-empty nodes object")
+    allowed = {"objective", "command", "depends_on", "inputs", "outputs", "decisions", "evaluations", "resources", "tags", "artifact_contract"}
+    producers: dict[str, str] = {}
+    for name, node in nodes.items():
+        unknown = set(node) - allowed
+        if unknown:
+            raise ValueError(f"{name} has unknown fields: {sorted(unknown)}")
+        if not node.get("objective") or not isinstance(node.get("command"), list):
+            raise ValueError(f"{name} requires objective and command")
+        for value in (*node.get("inputs", []), *node.get("outputs", [])):
+            if not _safe_relative(value):
+                raise ValueError(f"Unsafe pipeline path: {value}")
+        for output in node.get("outputs", []):
+            if output in producers:
+                raise ValueError(f"Duplicate output producer: {output}")
+            producers[output] = name
     topological_order(nodes)
     return pipeline
+
+
+def graph_edges(nodes: dict[str, Any]) -> list[dict[str, str]]:
+    producers = {path: name for name, node in nodes.items() for path in node.get("outputs", [])}
+    edges: list[dict[str, str]] = []
+    for name, node in nodes.items():
+        edges += [{"source": dep, "target": name, "type": "DEPENDS_ON"} for dep in node.get("depends_on", [])]
+        edges += [{"source": name, "target": path, "type": "PRODUCED"} for path in node.get("outputs", [])]
+        edges += [{"source": producers[path], "target": name, "type": "DERIVED_FROM"} for path in node.get("inputs", []) if path in producers]
+        edges += [{"source": name, "target": decision, "type": "GOVERNED_BY"} for decision in node.get("decisions", [])]
+        edges += [{"source": name, "target": evaluator, "type": "EVALUATED_BY"} for evaluator in node.get("evaluations", [])]
+    return edges
+
+
+def validate_artifact_contract(node: dict[str, Any], root: Path) -> list[str]:
+    errors = []
+    contracts = node.get("artifact_contract", {})
+    for output in node.get("outputs", []):
+        path = root / output
+        contract = contracts.get(output, {})
+        if not path.exists(): errors.append(f"missing output: {output}")
+        elif contract.get("non_empty", True) and path.is_file() and path.stat().st_size == 0: errors.append(f"empty output: {output}")
+        elif contract.get("suffix") and path.suffix != contract["suffix"]: errors.append(f"wrong suffix: {output}")
+    return errors
 
 
 def topological_order(nodes: dict[str, Any]) -> list[str]:
@@ -140,9 +185,10 @@ def is_fresh(node: dict[str, Any], root: Path,
 
 def new_manifest(run_id: str, pipeline_path: Path, root: Path) -> dict[str, Any]:
     return {"schema_version": SCHEMA_VERSION, "run_id": run_id,
-            "pipeline": pipeline_path.as_posix(), "started_at": utc_now(),
-            "finished_at": None, "status": "running", "git": git_state(root),
-            "nodes": []}
+            "pipeline": pipeline_path.as_posix(), "pipeline_sha256": sha256_path(pipeline_path),
+            "started_at": utc_now(), "finished_at": None, "status": "running",
+            "git": git_state(root), "environment": {"python": platform.python_version(),
+            "platform": platform.platform()}, "nodes": []}
 
 
 def rebuild_sqlite(manifest_dir: Path, database: Path) -> None:
