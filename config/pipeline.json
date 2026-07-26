@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "nodes": {
+    "audit_pois": {
+      "command": ["python", "scripts/audit_pois.py"],
+      "depends_on": [],
+      "inputs": ["data/interim/pilot_pois.gpkg"],
+      "outputs": ["outputs/poi_audit.csv", "outputs/poi_audit.md"],
+      "decisions": ["DEC-020"]
+    },
+    "build_accessibility_inputs": {
+      "command": ["python", "scripts/build_accessibility_inputs.py", "--mode", "network", "--gtfs-status", "baseline_limited"],
+      "depends_on": ["audit_pois"],
+      "inputs": ["data/interim/pilot_grid.gpkg", "data/interim/merged_pois_observed.gpkg", "data/raw/pilot_walk_network.graphml", "data/raw/pilot_drive_network.graphml", "data/raw/hanoi_gtfs.zip", "data/raw/vinbus_pseudo_gtfs_fixed"],
+      "outputs": ["data/interim/pilot_accessibility_inputs.csv"],
+      "decisions": ["DEC-017", "DEC-020", "DEC-021", "DEC-027"]
+    },
+    "run_pilot_metrics": {
+      "command": ["python", "scripts/run_pilot_metrics.py"],
+      "depends_on": ["build_accessibility_inputs"],
+      "inputs": ["data/interim/pilot_accessibility_inputs.csv"],
+      "outputs": ["data/processed/pilot_metrics.csv", "outputs/pilot_summary.csv"],
+      "decisions": ["DEC-002", "DEC-007", "DEC-022"]
+    },
+    "make_validation_report": {
+      "command": ["python", "scripts/make_validation_report.py"],
+      "depends_on": ["run_pilot_metrics"],
+      "inputs": ["data/processed/pilot_metrics.csv"],
+      "outputs": ["outputs/validation/vif_flags.csv"],
+      "decisions": ["DEC-003", "DEC-022"]
+    },
+    "compute_population_weighted_smci": {
+      "command": ["python", "scripts/compute_population_weighted_smci.py"],
+      "depends_on": ["run_pilot_metrics"],
+      "inputs": ["data/processed/pilot_metrics.csv", "data/interim/grid_worldpop.csv"],
+      "outputs": ["outputs/validation/population_weighted_smci.md"],
+      "decisions": ["DEC-019"]
+    },
+    "build_headline_snapshot": {
+      "command": ["python", "scripts/build_headline_snapshot.py"],
+      "depends_on": ["make_validation_report", "compute_population_weighted_smci"],
+      "inputs": ["outputs/pilot_summary.csv", "data/processed/pilot_metrics.csv", "outputs/validation/vif_flags.csv"],
+      "outputs": ["outputs/headline_metrics.json"],
+      "decisions": ["DEC-002", "DEC-022", "DEC-027"]
+    },
+    "project_self_audit": {
+      "command": ["python", "scripts/project_self_audit.py"],
+      "depends_on": ["build_headline_snapshot"],
+      "inputs": ["outputs/headline_metrics.json"],
+      "outputs": ["outputs/project_self_audit.json", "outputs/project_self_audit.md"],
+      "decisions": ["DEC-022", "DEC-027"]
+    }
+  }
+}
