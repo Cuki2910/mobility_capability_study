@@ -282,11 +282,32 @@ At the 800 m primary threshold the pilot has **88 zero-NAI cells (19.0%)**, and 
 
 **POI quality.** A 20-record spot-check of the initial POI layer found 14 confirmed, 2 duplicates, 2 misclassifications, and 2 missing. The 55 Overture-only POIs were separately spot-checked at 100% confirmation before promotion of the merged layer. Economic-domain enrichment is reported as a strengthened open-data opportunity layer; observed-count coverage and proxy fallback are reported through the observed-vs-proxy MAI sensitivity.
 
+### 6.7 The Enclave Boundary Is Sharp, Not Gradual
+
+The proposal's central scalar claim — that project-level accessibility and metropolitan capability are distinct achievements — is tested directly with a distance-banded comparison across the Ocean Park 1 boundary (`outputs/tables/boundary_discontinuity.csv`). Cells are grouped into 250-500 m bands on each side of the boundary under Scenario B.
+
+**Table 5. SMCI_B and typology share by distance from the Ocean Park 1 boundary.**
+
+| Band | Side | Cells | SMCI_B mean | Integrated Capability | Motorcycle Lock-in |
+|---|---|---:|---:|---:|---:|
+| 0-250 m | inside | 39 | 0.0929 | 89.7% | 5.1% |
+| 250-500 m | inside | 22 | 0.0938 | 100.0% | 0.0% |
+| 500-1000 m | inside | 9 | 0.1051 | 100.0% | 0.0% |
+| 0-250 m | outside | 44 | 0.0096 | 40.9% | 31.8% |
+| 250-500 m | outside | 47 | 0.0088 | 23.4% | 40.4% |
+| 500-1000 m | outside | 109 | 0.0119 | 21.1% | 34.9% |
+
+Mean SMCI_B drops by a factor of roughly **10x within the first 250 m outside the boundary** (0.0929 inside to 0.0096 outside), and the Integrated Capability share falls from 89.7% to 40.9% over the same step. The discontinuity is not a smooth decay: cells 250-1000 m outside the boundary show similar or slightly lower SMCI_B than the immediately adjacent band, indicating a step change at the project edge rather than a gradient into the surrounding city. Population living within 250 m outside the boundary (approximately 5,799 residents) already experiences Motorcycle Lock-in at nearly a third of cells, compared with 5.1% just inside.
+
+This is direct evidence for the enclave interpretation set out in the proposal (Section 12): the planned core performs as intended, but sustainable mobility capability does not diffuse into the adjacent urban fabric within the pilot's 1 km observation window.
+
 ---
 
 ## 7. Discussion
 
 **Local walkability is not sustainable mobility capability.** The pilot operationalizes, and then empirically separates, two capabilities that are routinely conflated. Ocean Park performs reasonably on neighborhood access in many cells, yet 63.0% of cells fall outside Integrated Capability and 37.0% remain in Motorcycle Lock-in even with VinBus. The framework's value is its ability to make this gap visible and locable.
+
+**The project boundary functions as an accessibility discontinuity, not a gradient.** Section 6.7 shows SMCI_B falling roughly tenfold within 250 m of crossing the Ocean Park 1 boundary, with no smooth recovery further out. This step-change pattern is consistent with an accessibility enclave: the developer's internal KPI (amenities, planned form, private transit) is met, but the benefit does not diffuse into the adjacent city fabric. A gradual decline would support a diffusion story; a step change supports a bounded-enclave story, which is the stronger and more falsifiable claim this paper advances.
 
 **The benchmark mode matters.** Standard transport models benchmark transit against the car. Doing so in Hanoi would overstate transit competitiveness, because the car is slower than the motorcycle in congestion. By benchmarking against the motorcycle, RAC reframes the question from "does a bus exist?" to "would a rational motorcyclist switch?", a more demanding and more policy-relevant test.
 
