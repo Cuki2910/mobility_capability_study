@@ -83,10 +83,10 @@ The framework uses four networks.
 | --- | --- | --- |
 | A | Walking | Local access and walk approach links |
 | B | Walking + conventional transit | Scenario A baseline |
-| C | Walking + conventional transit + VinBus | Scenario B intervention |
+| C | Walking + conventional transit + VinBus | Scenario B network assumption |
 | D | Motorcycle | Competitive benchmark |
 
-Scenario A combines Networks A and B and represents the no-VinBus baseline. Scenario B combines Networks A and C and represents the VinBus intervention. Network D is used in both scenarios to calculate motorcycle competitiveness.
+Scenario A combines Networks A and B and represents the modeled conventional-transit reference. Scenario B combines Networks A and C and represents the VinBus network assumption. Network D is used in both scenarios to calculate motorcycle competitiveness.
 
 Motorcycle travel time is not raw car-equivalent OSM driving time. The routing uses calibrated motorcycle speed assumptions, then checks plausibility against manual Android Google Maps motorcycle-mode measurements.
 
@@ -203,7 +203,7 @@ The primary index is:
 SMCI_i = NAI_norm_i * MAI_norm_i * RAC_norm_i
 ```
 
-SMCI is a weakest-link index. A cell needs local walking access, metropolitan opportunity access, and mode competitiveness at the same time.
+SMCI is a multiplicative, weak-link-sensitive composite with zero annihilation. A cell needs local walking access, metropolitan opportunity access, and mode competitiveness at the same time; any zero normalized component sets the product to zero, while partial compensation remains possible among positive values.
 
 Scenario A/B comparison uses shared normalization bounds across both scenarios. Delta SMCI is therefore:
 
@@ -288,9 +288,9 @@ The current pilot results, under the strict provenance-tiered opportunity specif
 | NAI walking threshold | 800 m (~10 min); 1200 m reported as optimistic upper bound |
 | Motorcycle validation MAE | 1.90 min |
 
-The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI rises from 0.0070 in Scenario A to 0.0133 in Scenario B under the promoted RAC_time specification and the 800 m NAI primary threshold, but this average is affected by zero-inflation in the weakest-link index. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI and therefore zero SMCI_B, because any zero component collapses the multiplicative index. Cross-checking these zero-access cells against VIDA building footprints shows that 84 are built cells housing about 11,798 residents (15.0% of pilot population), so zero accessibility is not simply a lake, park, or open-space artifact. At the 1200 m optimistic upper bound, zero-NAI cells fall to 33/462 (7.1%).
+The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI is 0.0070 in Scenario A and 0.0133 in Scenario B under the promoted RAC_time specification and the 800 m NAI primary threshold, but this average is affected by zero annihilation in the multiplicative composite. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI and therefore zero SMCI_B, because any zero component collapses the product. Cross-checking these zero-access cells against VIDA building footprints shows that 84 are built cells housing about 11,798 residents (15.0% of pilot population), so zero accessibility is not simply a lake, park, or open-space artifact. At the 1200 m optimistic upper bound, zero-NAI cells fall to 33/462 (7.1%).
 
-The VinBus scenario improves SMCI in 281 of 462 cells (60.8%), while 88 cells (19.0%) remain unchanged and 93 cells (20.1%) decline slightly under the opportunity-weighted time-competitiveness term. Among cells with positive SMCI, the median rises from 0.0051 in Scenario A to 0.0081 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells that have at least some sustainable mobility capability. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
+The VinBus network assumption yields higher SMCI in 281 of 462 cells (60.8%), while 88 cells (19.0%) remain unchanged and 93 cells (20.1%) have slightly lower modeled values under the opportunity-weighted time-competitiveness term. Among cells with positive SMCI, the median is 0.0051 in Scenario A and 0.0081 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells where all three measured components are positive. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
 
 ### Scenario B typology
 
