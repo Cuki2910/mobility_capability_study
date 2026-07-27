@@ -114,7 +114,7 @@ Four networks are defined:
 - **Network C, walking + existing transit + VinBus:** stop-level VinBus routing using pseudo-GTFS route, stop, and headway data.
 - **Network D, motorcycle:** OSM driving network calibrated to motorcycle speeds.
 
-Two scenarios are compared. **Scenario A** uses Networks A + B (no VinBus). **Scenario B** uses Networks A + C (with VinBus). Network D is the competitiveness benchmark in both. The intervention effect is Delta_SMCI = SMCI(B) - SMCI(A), computed on shared A+B normalization bounds so that the difference reflects scenario change rather than re-scaling artifacts.
+Two scenarios are compared. **Scenario A** uses Networks A + B (no VinBus). **Scenario B** uses Networks A + C (with VinBus). Network D is the competitiveness benchmark in both. The modeled scenario difference is Delta_SMCI = SMCI(B) - SMCI(A), computed on shared A+B normalization bounds so that the difference reflects scenario change rather than re-scaling artifacts. Because A and B are modeled counterfactuals rather than observed before-and-after panels, Delta_SMCI should be interpreted as the estimated accessibility difference under each network assumption, not as a causal intervention effect.
 
 ### 5.2 Neighborhood Accessibility Index (NAI)
 
@@ -124,11 +124,11 @@ NAI is a count of qualifying POIs reachable on the walking network within the ne
 NAI_i = count of qualifying POIs reachable by walking from cell i within the neighborhood threshold
 ```
 
-A simple count is used deliberately: at the neighborhood scale, the presence of a school, clinic, shop, or park is more behaviorally relevant than its precise capacity. NAI is min-max normalized to NAI_norm for index construction. The primary neighborhood threshold is an 800 m network walking distance (about 10 minutes at 80 m/min), consistent with the international 10-minute-neighborhood pedestrian shed and Vietnam pedestrian-shed evidence rather than a mechanical 15-minute conversion. A 1200 m / 15-minute catchment is reported as an optimistic upper-bound sensitivity, and a 600/800/1000/1200 m threshold-response audit shows the four-typology structure is near-invariant across the range while absolute SMCI levels and zero-access shares are threshold-sensitive.
+A simple count is used deliberately: at the neighborhood scale, the presence of a school, clinic, shop, or park is more behaviorally relevant than its precise capacity. NAI is min-max normalized to NAI_norm for index construction. The primary neighborhood threshold is an 800 m network walking distance (about 10 minutes at 80 m/min), used as a transparent operational assumption rather than a locally validated behavioral cutoff — no Hanoi or Ho Chi Minh City study identified in the literature independently establishes 800 m as empirically optimal (see DEC-029). A 1200 m / 15-minute catchment is reported as an optimistic upper-bound sensitivity, and a 600/800/1000/1200 m threshold-response audit shows the four-typology structure is near-invariant across the range while absolute SMCI levels and zero-access shares are threshold-sensitive.
 
 ### 5.3 Metropolitan Accessibility Index (MAI)
 
-MAI is a composite Metropolitan Opportunity Accessibility score across four domains, by walking plus transit. It is framed as opportunity accessibility rather than employment accessibility. Destination magnitudes are observed where available and proxy-backed elsewhere.
+MAI is a composite Metropolitan Opportunity Accessibility score across four domains, by walking plus transit. It is framed as opportunity accessibility rather than employment accessibility. Destination magnitudes follow a strict provenance-tiered hierarchy (official citable > geometry-measured > observed-derived > dasymetric-standard > area-tag proxy); only magnitudes with source-backed provenance are included in the strict primary specification, and proxy-only destinations are excluded rather than imputed.
 
 ```text
 MAI_i = 0.40*A_econ + 0.20*A_edu + 0.20*A_health + 0.20*A_commerce
@@ -216,29 +216,26 @@ Cells are then split on rank-based medians of NAI and MCS. Rank-based medians pr
 
 ### 6.1 The Intervention Improves Capability, But Zero-Access Cells Must Be Separated
 
-Across 462 cells, under the primary 800 m (10-minute) NAI walking catchment and RAC_time primary specification, the VinBus scenario raises mean SMCI from **0.0070 (Scenario A) to 0.0133 (Scenario B)**, a mean Delta_SMCI of **+0.0063**. The global mean is not the primary interpretive statistic because the multiplicative SMCI is zero-inflated: if NAI, MAI, or RAC is zero, SMCI is zero. We therefore report zero-access cells separately and compute distributional summaries for cells with positive capability.
+Across <!-- headline:/n_cells|int -->462<!-- /headline --> cells, under the primary 800 m (10-minute) NAI walking catchment and RAC_time primary specification, the VinBus scenario raises mean SMCI from **0.0070 (Scenario A) to 0.0133 (Scenario B)**, a mean Delta_SMCI of **+0.0063**. The global mean is not the primary interpretive statistic because the multiplicative SMCI is zero-inflated: if NAI, MAI, or RAC is zero, SMCI is zero. We therefore report zero-access cells separately and compute distributional summaries for cells with positive capability.
 
-The improvement is broad but spatially uneven: **281 cells (60.8%) improve, 88 are unchanged, and 93 decline slightly** once the RAC_time component is defined as an opportunity-weighted travel-time ratio. The unchanged cells are primarily zero-access cells. Declines are interpreted cautiously: VinBus increases opportunity access for many cells, but the time-competitiveness term can fall where additional reachable opportunities have longer weighted walk-transit times than the motorcycle benchmark.
+The improvement is broad but spatially uneven: **<!-- headline:/delta_groups/improved|int -->281<!-- /headline --> cells (60.8%) improve, 88 are unchanged, and 93 decline slightly** once the RAC_time component is defined as an opportunity-weighted travel-time ratio. The unchanged cells are primarily zero-access cells. Declines are interpreted cautiously: VinBus increases opportunity access for many cells, but the time-competitiveness term can fall where additional reachable opportunities have longer weighted walk-transit times than the motorcycle benchmark.
 
-**Table 3. Pilot summary (Scenario B unless noted; 800 m NAI primary threshold).**
+**Table 3. Primary pilot results**
 
-| Metric | Value |
+| Metric | Result |
 |---|---:|
 | Grid cells | 462 |
-| Mean SMCI, Scenario A | 0.0070 |
-| Mean SMCI, Scenario B | 0.0133 |
-| Mean Delta_SMCI | 0.0063 |
+| Mean SMCI A / B / Delta | 0.0070 / 0.0133 / +0.0063 |
+| Positive-cell median A / B | 0.0051 / 0.0081 |
 | Cells improved / unchanged / declined | 281 / 88 / 93 |
 | Share improved | 60.8% |
 | Zero-NAI cells | 88 (19.0%) |
-| Positive-cell median SMCI, Scenario A | 0.0051 |
-| Positive-cell median SMCI, Scenario B | 0.0081 |
 
 Among cells with positive SMCI, the median rises from **0.0051** in Scenario A to **0.0081** in Scenario B. This confirms that the change is not only a mean effect caused by a few high-access cells. The unchanged group is also substantively meaningful: these are cells where adding metropolitan transit access does not overcome missing neighborhood walking access or very weak local opportunity structure.
 
 ### 6.2 Spatial Fragmentation Persists Under the Intervention
 
-Even with VinBus, the Scenario B typology is sharply divided (Table 4). **171 cells (37.0%) remain in Motorcycle Lock-in**, exactly matching the 171 cells in Integrated Capability, with 60 cells each in the Fragmented and Transit-Dependent types. For comparison, Scenario A places 144 cells each in Integrated and Motorcycle Lock-in and 87 each in the intermediate types; the intervention relabels **130 of 462 cells** (28.1%).
+Even with VinBus, the Scenario B typology is sharply divided (Table 4). **<!-- headline:/typology_B/Motorcycle Lock-in|int -->171<!-- /headline --> cells (37.0%) remain in Motorcycle Lock-in**, exactly matching the 171 cells in Integrated Capability, with 60 cells each in the Fragmented and Transit-Dependent types. For comparison, Scenario A places 144 cells each in Integrated and Motorcycle Lock-in and 87 each in the intermediate types; the intervention relabels **130 of 462 cells** (28.1%).
 
 **Table 4. Typology distribution by scenario.**
 
@@ -265,7 +262,7 @@ At the 800 m primary threshold the pilot has **88 zero-NAI cells (19.0%)**, and 
 
 **Headway assumptions (Network C).** VinBus route data provide observed per-route headways for most routes, with a fallback headway used only where route frequencies are absent. Sensitivity tests show that fallback-headway choices do not materially alter the study-area classification: **the typology partition is invariant (Cohen's kappa = 1.00)** across the tested fallback scenarios.
 
-**Structural multicollinearity (MAI vs. RAC).** Because RAC_opp shares its numerator (MAI_transit) with MAI, the two are collinear by construction. In the legacy full-RAC specification VIF is high (NAI 3.38, MAI 9.58, RAC 9.56). The promoted primary uses RAC_time alone, which removes the shared term and brings all terms well within the conventional threshold (NAI 2.26, MAI 2.93, RAC_time 2.05). The typology agreement between the promoted RAC_time primary and the legacy full-RAC specification is **Cohen's kappa = 0.907 (30 of 462 cells relabelled)**. The RAC_time specification is retained as primary, with the legacy full-RAC reported as a robustness disclosure.
+**Structural multicollinearity (MAI vs. RAC).** Because RAC_opp shares its numerator (MAI_transit) with MAI, the two are collinear by construction. In the legacy full-RAC specification VIF is high (NAI 2.45, MAI 9.07, RAC 9.73). The promoted primary uses RAC_time alone, which removes the shared term and brings all terms well within the conventional threshold (NAI 2.26, MAI 2.93, RAC_time 2.05). The typology agreement between the promoted RAC_time primary and the legacy full-RAC specification is **Cohen's kappa = <!-- headline:/full_rac_agreement/kappa|.3f -->0.906<!-- /headline --> (<!-- headline:/full_rac_agreement/cells_relabelled|int -->30<!-- /headline --> of 462 cells relabelled)**. The RAC_time specification is retained as primary, with the legacy full-RAC reported as a robustness disclosure.
 
 **Motorcycle speed sensitivity.** Three Network D calibration scenarios were tested. Slower congested motorcycle speeds raise mean SMCI_B to 0.0160; faster lane-splitting lowers it to 0.0115. Typology agreement remains near-perfect in both cases (**kappa >= 0.987; <= 4 of 462 cells relabelled**), indicating that the classification is not driven by a narrow motorcycle-speed assumption.
 
