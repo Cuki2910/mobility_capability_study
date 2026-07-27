@@ -671,3 +671,22 @@ so settled debates don't get silently re-opened.
     for each type of road in Hanoi. *International Journal of Environmental
     Science and Development, 3*(5), 412-416.
     https://doi.org/10.7763/IJESD.2012.V3.257
+
+31. **DEC-031 — Production calibration is mandatory; motorcycle robustness uses primary global ±20% scenarios (2026-07-27).**
+    The canonical network build now hard-fails when `data/raw/motorcycle_speed_calibration.csv`
+    is absent; implicit `src/calibration.py` defaults remain library/test behavior only. The
+    pipeline DAG declares the CSV and DEC-030 as dependencies, and the loader validates positive
+    finite values plus `motorcycle_speed_kph = base_speed_kph × multiplier`.
+
+    The prior speed-sensitivity artifact used proxy POIs and selective mechanism-labelled factors,
+    so its baseline did not reproduce the promoted strict-observed primary. It is replaced by
+    neutral global factors 0.80/1.00/1.20 applied to all calibration rows with
+    `opportunity_basis=observed_strict`. The rerun baseline reproduces mean SMCI_B=0.0132898 and
+    281/462 higher modeled values. Mean SMCI_B is 0.0167250 at −20% speed and 0.0110446 at +20%;
+    typology is unchanged in both (kappa=1.000; 0 relabelled).
+
+    Ten OD model times are now regenerated from the production graph and CSV before comparison
+    with unchanged manual Google Maps observations. The report records calibration SHA-256 and
+    routing metadata. Diagnostics are MAE=1.90 min, MAPE=22.19%, MBE=-1.04 min, RMSE=2.20 min;
+    these are a small-sample plausibility check, not external calibration validation. The
+    3-minute threshold is explicitly project-defined, not a literature standard.

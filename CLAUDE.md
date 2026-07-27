@@ -288,7 +288,7 @@ pytest tests/ -v   # current baseline: 85 passed
   New primary metrics: SMCI_A=0.0322, SMCI_B=0.0435, 298/462 improved (64.5%),
   88 unchanged, 76 declined slightly, zero-NAI=88. RAC_time-only sensitivity:
   kappa=0.900, 32/462 relabelled, VIF(MAI)=3.25 and VIF(RAC_time)=1.86. Motorcycle
-  speed sensitivity is stable (kappa=0.994, 2 relabelled); transit impedance sensitivity
+  global ±20% motorcycle-speed sensitivity is stable (kappa=1.000, 0 relabelled in both scenarios); transit impedance sensitivity
   remains acceptable but shows expected SMCI decline under conservative/pessimistic penalties.
   Reports: `outputs/validation/motorcycle_speed_sensitivity.md`,
   `outputs/validation/transit_impedance_sensitivity.md`. Pytest: 70 tests pass.

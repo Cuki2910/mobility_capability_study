@@ -56,6 +56,7 @@
         "data/interim/merged_pois_observed.gpkg",
         "data/raw/pilot_walk_network.graphml",
         "data/raw/pilot_drive_network.graphml",
+        "data/raw/motorcycle_speed_calibration.csv",
         "data/raw/hanoi_gtfs.zip",
         "data/raw/vinbus_pseudo_gtfs_fixed"
       ],
@@ -66,7 +67,8 @@
         "DEC-017",
         "DEC-020",
         "DEC-021",
-        "DEC-027"
+        "DEC-027",
+        "DEC-030"
       ],
       "objective": "Build auditable network accessibility inputs",
       "evaluations": [

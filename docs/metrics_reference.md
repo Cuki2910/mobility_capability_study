@@ -278,10 +278,13 @@ durations for every OD pair:
 - Scenario B walk-transit time = VinBus pseudo-GTFS stop routing with access, wait, line-haul,
   and egress components.
 
-Motorcycle time is externally spot-checked against 10 Android Google Maps two-wheeler OD
-pairs: MAE = 1.90 min, MAPE = 22.17%, MBE = -1.04 min, RMSE = 2.20 min
-(`outputs/validation/travel_time_validation_report.md`). This supports comparative
-accessibility analysis but is not a full GPS/real-time validation dataset.
+Motorcycle time is spot-checked against 10 Android Google Maps two-wheeler OD
+pairs: MAE = 1.90 min, MAPE = 22.19%, MBE = -1.04 min, RMSE = 2.20 min
+(`outputs/validation/travel_time_validation_report.md`). Model times are regenerated from the
+production drive graph and calibration CSV, whose SHA-256 is recorded in the report. This is a
+small-sample plausibility check, not a full GPS/real-time validation dataset. Global −20% and +20%
+speed sensitivity reproduces the primary baseline and leaves all typology labels unchanged
+(kappa = 1.000; 0/462 relabelled in both scenarios).
 
 ### 3.2 RAC_opp — opportunity competitiveness
 

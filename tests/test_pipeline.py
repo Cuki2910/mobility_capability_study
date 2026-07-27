@@ -19,7 +19,7 @@ from accessibility_inputs import (
     validate_accessibility_inputs,
 )
 from routing import composite_mai_from_graph, weighted_decay_sum, corridor_accessibility
-from calibration import apply_motorcycle_calibration, calibration_table
+from calibration import apply_motorcycle_calibration, calibration_table, load_motorcycle_calibration
 from networks import add_walking_travel_times
 from pilot import compute_pilot_metrics, pilot_summary, typology_kappa
 from routing import composite_mai_from_graph, corridor_accessibility, weighted_decay_sum
@@ -50,6 +50,30 @@ def test_calibration_table_is_reportable():
     table = calibration_table()
     assert {"highway", "base_speed_kph", "multiplier", "motorcycle_speed_kph"} <= set(table.columns)
     assert "residential" in set(table["highway"])
+
+
+def test_calibration_loader_rejects_inconsistent_precomputed_speed(tmp_path):
+    path = tmp_path / "calibration.csv"
+    pd.DataFrame(
+        {"highway": ["default"], "base_speed_kph": [24.0], "multiplier": [1.0], "motorcycle_speed_kph": [25.0]}
+    ).to_csv(path, index=False)
+    try:
+        load_motorcycle_calibration(path)
+    except ValueError as exc:
+        assert "must equal" in str(exc)
+    else:
+        raise AssertionError("inconsistent calibration must fail")
+
+
+def test_calibration_loader_rejects_nonpositive_values(tmp_path):
+    path = tmp_path / "calibration.csv"
+    pd.DataFrame({"highway": ["default"], "base_speed_kph": [0.0], "multiplier": [1.0]}).to_csv(path, index=False)
+    try:
+        load_motorcycle_calibration(path)
+    except ValueError as exc:
+        assert "finite positive" in str(exc)
+    else:
+        raise AssertionError("nonpositive calibration must fail")
 
 
 def test_walk_network_adds_travel_time():
@@ -772,7 +796,7 @@ def test_built_population_zero_access_classification():
     assert classify_land_use(pd.Series({"building_count": 0, "pop_sum": 0.2})) == "unbuilt_or_open_space"
     assert classify_land_use(pd.Series({"building_count": 0, "pop_sum": 3.0})) == "suspect_under_mapped"
 
-def test_motorcycle_speed_scenarios_change_target_road_classes():
+def test_motorcycle_speed_scenarios_apply_global_factors():
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
     from motorcycle_speed_sensitivity import adjust_motorcycle_calibration
 
@@ -783,13 +807,11 @@ def test_motorcycle_speed_scenarios_change_target_road_classes():
         "motorcycle_speed_kph": [40.0, 36.0, 10.0],
     })
 
-    slow = adjust_motorcycle_calibration(calibration, "slow_congestion")
-    fast = adjust_motorcycle_calibration(calibration, "fast_lane_splitting")
+    slower = adjust_motorcycle_calibration(calibration, "global_minus_20pct")
+    faster = adjust_motorcycle_calibration(calibration, "global_plus_20pct")
 
-    assert slow.loc[slow["highway"] == "primary", "motorcycle_speed_kph"].iloc[0] == 32.0
-    assert slow.loc[slow["highway"] == "service", "motorcycle_speed_kph"].iloc[0] == 10.0
-    assert fast.loc[fast["highway"] == "secondary", "motorcycle_speed_kph"].iloc[0] > 36.0
-    assert fast.loc[fast["highway"] == "primary", "motorcycle_speed_kph"].iloc[0] == 40.0
+    assert np.allclose(slower["motorcycle_speed_kph"], calibration["motorcycle_speed_kph"] * 0.8)
+    assert np.allclose(faster["motorcycle_speed_kph"], calibration["motorcycle_speed_kph"] * 1.2)
 
 def test_transit_impedance_penalizes_time_only():
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
