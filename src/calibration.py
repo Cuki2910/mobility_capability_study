@@ -48,7 +48,11 @@ class MotorcycleCalibration:
 
     base_speed_kph: Mapping[str, float]
     multipliers: Mapping[str, float]
-    source_note: str = "Initial literature-calibration priors; replace with cited Hanoi/Vietnam values when available."
+    source_note: str = (
+        "Scenario-calibrated modeling assumptions (defaults); not verified literature values. "
+        "Pipeline uses data/raw/motorcycle_speed_calibration.csv for all production runs. "
+        "See docs/decisions.md DEC-030 for full provenance."
+    )
 
     @classmethod
     def defaults(cls) -> "MotorcycleCalibration":

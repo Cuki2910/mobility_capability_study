@@ -53,14 +53,17 @@ so settled debates don't get silently re-opened.
    robustness comparison. See tests/test_accessibility.py::test_geometric_mean_check_is_vacuous.
 
 5. **DEC-005 — Motorcycle travel time is NOT the same as default OSM driving speed.**
-   Lane-splitting means motorcycles are often faster than cars in
-   congested Hanoi traffic. Network D must apply a literature-derived
-   speed-adjustment factor, not assume car-equivalent speeds.
+   [*Partially superceded by DEC-030: lane-splitting as a speed-advantage mechanism is not
+   directly verified by audited sources; see DEC-030 for current calibration provenance.*]
+   Network D must apply explicit per-road-class speed assumptions, not assume car-equivalent
+   speeds. The basis is scenario-calibrated assumptions informed by Hanoi motorcycle-speed
+   literature rather than verified class-specific literature values.
 
 6. **DEC-006 — Validation against Google Maps is secondary, not foundational.**
-   Literature-calibrated motorcycle speeds are the primary basis for
-   Network D travel times, specifically because Google's programmatic
-   TWO_WHEELER routing is unconfirmed for Vietnam (see docs/data_sources.md).
+   [*Partially superceded by DEC-030: 'literature-calibrated' overstates the current
+   provenance; see DEC-030 for correct characterization.*]
+   Scenario-assumed motorcycle speeds are the primary basis for Network D travel times;
+   Google Maps validation is a plausibility cross-check only.
    The model must not depend on an API that may not cover the study area.
 
 7. **DEC-007 — NAI is count-based; MAI is magnitude-weighted.**
@@ -636,3 +639,35 @@ so settled debates don't get silently re-opened.
     unsuccessful, consider widening `scripts/motorcycle_speed_sensitivity.py`
     bounds to reflect assumption uncertainty explicitly, and describe the
     calibration as scenario-based rather than literature-calibrated.
+
+    **Full forensic verdict (2026-07-27, second audit by OpenScience agent):**
+    All 10 CSV road classes are now classified as transparent assumptions:
+
+    - `motorway`/`trunk` (JICA HAIDEP): HAIDEP (final March 2007, not 2010)
+      provides road *design* speeds (100/80/60/40 km/h), not observed
+      motorcycle travel speeds. No Table 5-3 or motorcycle observation
+      confirmed. JICA removed as calibration source.
+    - `living_street` (TCVN 9817:2013): that standard covers X-ray
+      fluorescence analysis of iron ore and has no road or speed provisions.
+      Citation retracted.
+    - `DEC-005` and `DEC-006` partially superceded; lane-splitting mechanism
+      not directly evidenced by any audited source.
+
+    Verified replacement evidence (Son, Zhang & Fujiwara, 2012, DOI
+    10.7763/IJESD.2012.V3.257): 65 Hanoi motorcycle GPS users, 2011;
+    highway 36.6/48.5 km/h (peak/non-peak), arterial 16.2/33.6 km/h,
+    residential 23.5/26.7 km/h. These are broad ranges, not OSM-class values.
+    The paper provides plausibility bounds only; OSM-class mapping remains
+    an unverified assumption. Added as `data/raw/motorcycle_speed_calibration.csv`
+    context for `motorway`, `trunk`, `residential` rows.
+
+    Minh, Sano & Matsumoto (2005, DOI 10.11175/easts.6.186): maneuver-specific
+    passing-event speeds on motorcycle-lane/undivided Hanoi roads; not
+    representative road-class means. Not used.
+
+    Son et al. reference entry for paper/proposal:
+    Son, H. T., Zhang, J., & Fujiwara, A. (2012). Developing a toolbox for
+    calculating motorcycle emission and the difference of CO2 from motorcycle
+    for each type of road in Hanoi. *International Journal of Environmental
+    Science and Development, 3*(5), 412-416.
+    https://doi.org/10.7763/IJESD.2012.V3.257

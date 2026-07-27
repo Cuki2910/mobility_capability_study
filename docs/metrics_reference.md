@@ -273,7 +273,7 @@ Audit columns: `moto_mean_opp_time_min`, `wt_A_mean_opp_time_min`, `wt_B_mean_op
 Operationally, `RAC_time` uses network-based estimated travel times, not observed trip
 durations for every OD pair:
 - walking time = OSM walk-graph shortest path with walking speed assumptions;
-- motorcycle time = OSM drive-graph shortest path with literature-calibrated motorcycle speeds;
+- motorcycle time = OSM drive-graph shortest path with explicit scenario-assumed speeds informed by broad Hanoi GPS ranges (Son et al., 2012);
 - Scenario A walk-transit time = 2018 Hanoi GTFS pre-VinBus stop-proxy timing;
 - Scenario B walk-transit time = VinBus pseudo-GTFS stop routing with access, wait, line-haul,
   and egress components.
@@ -565,8 +565,10 @@ manual Android Google Maps two-wheeler OD pairs, below the 3.0 min research thre
 - Moreno, C., Allam, Z., Chabaud, D., Gall, C., & Pratlong, F. (2021). Introducing the
   "15-Minute City": Sustainability, resilience and place identity in future post-pandemic
   cities. *Smart Cities, 4*(1), 93–111. https://doi.org/10.3390/smartcities4010006
-- Nguyen, X. L., & Nguyen, H. T. (2018). Operating speed of motorcycles on urban streets in
-  Hanoi. *Journal of the Eastern Asia Society for Transportation Studies, 12*, 1421–1435.
+- Son, H. T., Zhang, J., & Fujiwara, A. (2012). Developing a toolbox for calculating motorcycle
+  emission and the difference of CO2 from motorcycle for each type of road in Hanoi.
+  *International Journal of Environmental Science and Development, 3*(5), 412–416.
+  https://doi.org/10.7763/IJESD.2012.V3.257
 - O'Brien, R. M. (2007). A caution regarding rules of thumb for variance inflation factors.
   *Quality & Quantity, 41*, 673–690. https://doi.org/10.1007/s11135-006-9018-6
 - Psyllidis, A., Gao, S., Hu, Y., Kim, E-K., McKenzie, G., Purves, R., Yuan, M., & Andris, C.
@@ -582,9 +584,7 @@ manual Android Google Maps two-wheeler OD pairs, below the 3.0 min research thre
   https://doi.org/10.1068/a38439
 - Vu Anh Tuan. (2015). Mode choice behavior and modal shift to public transport in developing
   countries: The case of Hanoi city. *Journal of the Eastern Asia Society for Transportation
-  Studies, 11*, 473–487.
-- Vu Anh Tuan, Nguyen, H., & Pham, T. (2016). Motorcycle traffic characteristics in Hanoi.
-  *Transportation Research Procedia, 15*, 651–662.
+  Studies, 11*, 473–487. https://doi.org/10.11175/easts.11.473
 - Yang, Y., Qian, Y., Zeng, J., Wei, X., & Yang, M. (2023). Walkability measurement of
   15-minute community life circle in Shanghai. *Land, 12*(1), 153.
   https://doi.org/10.3390/land12010153

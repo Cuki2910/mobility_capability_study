@@ -164,8 +164,11 @@ pytest tests/ -v   # current baseline: 85 passed
   cells and cross-check WorldPop before making strong MAI/population claims.
 - **Overture Places supplements OSM POIs; do not replace OSM.** Use union plus
   source-agreement labels for confidence and spot-check sampling.
-- **Motorcycle speed calibration** uses literature priors from JICA HAIDEP (2010)
-  and Nguyen et al. (2018). Source citations in `data/raw/motorcycle_speed_calibration.csv`.
+- **Motorcycle speed assumptions** are explicit scenario-calibrated values, not verified
+  OSM-class literature estimates. Son et al. (2012) provides broad Hanoi GPS speed ranges
+  for highway/arterial/residential contexts; mapping those ranges to OSM classes remains
+  an assumption. JICA HAIDEP and two miscited articles are not calibration sources. See
+  `data/raw/motorcycle_speed_calibration.csv` and DEC-030 in `docs/decisions.md`.
 
 ## Current status (update this section as the project progresses)
 

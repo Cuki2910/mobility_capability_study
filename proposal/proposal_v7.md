@@ -339,7 +339,7 @@ MAI/RAC collinearity is structurally high in the legacy full-RAC specification. 
 
 Mode and impedance specifications omit fares, parking, explicit transfer penalties, access/egress discomfort, and schedule unreliability. Transit-impedance sensitivity now partially bounds this by testing conservative and pessimistic wait/access/egress/reliability penalties; it is not a replacement for observed mode-choice data.
 
-Motorcycle speed sensitivity tests slow-congestion and fast-lane-splitting scenarios. Typology is stable (kappa = 0.994; 2 cells relabelled), but the paper should still frame this as a bounded robustness check rather than full behavioral validation.
+Motorcycle speed sensitivity tests slower and faster speed-scaling scenarios (legacy output labels include `slow_congestion` and `fast_lane_splitting`, but no lane-splitting mechanism is identified or tested). Typology is stable (kappa = 0.994; 2 cells relabelled), but the paper should still frame this as a bounded robustness check rather than full behavioral validation.
 
 ## 14. Work Plan
 
