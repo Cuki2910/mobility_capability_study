@@ -12,7 +12,7 @@ Transport Geography). Case study: Vinhomes Ocean Park, Hanoi.
 
 **Core hypothesis:** High neighborhood accessibility alone is insufficient
 to generate integrated sustainable mobility capability when Relative
-Accessibility Competitiveness (RAC) â€” walking-and-transit accessibility
+Accessibility Competitiveness (RAC) — walking-and-transit accessibility
 relative to motorcycle accessibility â€” remains low.
 
 Full methodology: `proposal/proposal_v7.md` (Markdown, current). `proposal/proposal_v6.docx` is the prior Word version kept for reference. This CLAUDE.md is a map to
@@ -27,9 +27,9 @@ of the proposal before touching the analysis code.
 | **MAI** | Metropolitan Accessibility Index â€” magnitude-weighted, walk+transit threshold |
 | **RAC** | Relative Accessibility Competitiveness - primary uses RAC_time; legacy full-RAC = geometric mean of RAC_time and RAC_opp retained as robustness |
 | **MCS** | Metropolitan Competitiveness Score â€” geometric mean of normalized MAI and RAC; used for classification only |
-| **SMCI** | Sustainable Mobility Capability Index = NAI_norm Ã— MAI_norm Ã— RAC_norm |
+| **SMCI** | Sustainable Mobility Capability Index = NAI_norm × MAI_norm × RAC_norm |
 | **Network A/B/C/D** | Walking / Walking+existing transit / Walking+existing transit+VinBus / Motorcycle |
-| **Scenario A/B** | A = Networks A+B (no VinBus). B = Networks A+C (with VinBus). Î”SMCI = SMCI(B) âˆ’ SMCI(A) |
+| **Scenario A/B** | A = Networks A+B (no VinBus). B = Networks A+C (with VinBus). ΔSMCI = SMCI(B) − SMCI(A) |
 | Four typologies | Integrated Capability, Fragmented Capability, Transit-Dependent, Motorcycle Lock-in |
 
 Exact formulas: `src/accessibility.py` (implemented, tested) â€” this is the
@@ -125,7 +125,7 @@ python scripts/fetch_overture_pois.py
 python scripts/merge_poi_sources.py   # after fetch_overture_pois.py
 
 # Anywhere:
-pytest tests/ -v   # must be 80 passed
+pytest tests/ -v   # current baseline: 85 passed
 ```
 
 ## Known constraints / gotchas
@@ -172,7 +172,11 @@ pytest tests/ -v   # must be 80 passed
 - [x] Proposal text finalized at v7 (`proposal/proposal_v7.md`): theory-RAC consistency,
   classification logic, collinearity check, VIF contingency executed, RAC scaling sensitivity,
   additive robustness robustness (ρ=0.803), Section 3.8 additive fix, validation hierarchy resolved.
-- [x] Analysis formulas (`src/accessibility.py`) implemented and tested. 80 pytest tests pass.
+- [x] Analysis formulas (`src/accessibility.py`) implemented and tested. 85 pytest tests pass.
+- [x] Deterministic core DAG + JSON/SQLite provenance implemented (`config/pipeline.json`,
+  `scripts/run_research_pipeline.py`, `src/provenance.py`). Current graph covers core inputs,
+  pilot metrics, VIF, population weighting, headline snapshot, and self-audit. Publication
+  sensitivities, tables, figures, document consistency, and boundary analysis are not yet graphed.
 - [x] OSM check for existing VinBus route relations (39 found 2026-06-21;
   `data/raw/vinbus_overpass_relations.json`).
 - [x] VinBus Overpass geometry dump for Ocean Park-facing refs (`E01,E02,E03,E10,OCP1,OCP2`);
@@ -186,7 +190,8 @@ pytest tests/ -v   # must be 80 passed
   `data/interim/pilot_accessibility_inputs.csv`.
 - [x] Pilot metrics (network-v1 + pseudo-GTFS + **merged POIs primary**): 4 typologies confirmed in Scenario B,
   shared-scale Delta_SMCI, additive robustness rho~0.824, high MAI/RAC VIF flagged.
-  SMCI_A=0.0449, SMCI_B=0.0920, 288/462 improved (62.3%), 0 declined.
+  SMCI_A=0.0449, SMCI_B=0.0920, 288/462 improved (62.3%), 0 declined (original commercial-proxy run;
+  superseded — current 800 m primary numbers are SMCI_A=0.0070, SMCI_B=0.0133 in Decision #27 below).
   `data/processed/pilot_metrics.csv`, `outputs/pilot_summary.csv`.
 - [x] Validation outputs: VIF flags, correlation matrix, robustness summary.
   `outputs/validation/`. Distribution diagnostics now explain SMCI zero inflation and delta groups.
@@ -195,8 +200,8 @@ pytest tests/ -v   # must be 80 passed
 - [x] POI audit + spot-check: `outputs/poi_audit.md`, `data/interim/poi_spot_check.csv`; 20/20 records reviewed (14 confirmed, 2 duplicate, 2 misclassified, 2 missing/unverified).
 - [x] Download Hanoi GTFS â€” World Bank CC-BY 4.0, 1.51 MB, Jun 2020 vintage (224 routes, 7,670 stops).
   `data/raw/hanoi_gtfs.zip`. Status = `baseline_limited` (service dates 2018, stop geometry valid).
-  MAI_A now nonzero for 162/462 cells using stop proximity. Network B timetable cÅ© â†’ váº«n lÃ 
-  baseline_limited nhÆ°ng stop geometry Ä‘Æ°á»£c dÃ¹ng cho stop_accessibility().
+  MAI_A now nonzero for 162/462 cells using stop proximity. Network B timetable is old, so status
+  remains `baseline_limited`; stop geometry is still used for `stop_accessibility()`.
 - [x] Verify WorldPop using actual raster: `data/raw/worldpop/vnm_ppp_2020.tif`, ~92.77m metadata resolution, adequate for 250m grid.
 - [x] RAC scaling sensitivity (`scripts/rac_scaling_sensitivity.py`): κ=1.0 (minmax vs log), ρ=0.9999.
   `outputs/validation/rac_scaling_summary.md`.
@@ -257,7 +262,7 @@ pytest tests/ -v   # must be 80 passed
   VIF contingency executed, RAC scaling sensitivity, Section 3.8 fix, current pilot caveats.
   Updated 2026-06-25: MAI proxy-escaped using building footprint matching (150/161 POIs, 93% matched).
   Current numbers (800 m NAI primary, Decision #27): SMCI_A=0.0070, SMCI_B=0.0133, 60.8% improved,
-  pop-weighted SMCI_B=0.0129 (bias −3.2%), 33.9% population in Motorcycle Lock-in. Pytest: 80 tests pass.
+  pop-weighted SMCI_B=0.0129 (bias −3.2%), 33.9% population in Motorcycle Lock-in. Pytest: 85 tests pass.
 - [x] Travel time validation and sensitivity analysis scripts implemented and reports generated:
   - Travel time MAE is 1.90 minutes against Google Maps checks (PASS < 3.0 min).
   - Parameter sensitivity typology classification is highly stable (weights Kappa >= 0.98, decay thresholds Kappa >= 0.83).
@@ -288,7 +293,7 @@ pytest tests/ -v   # must be 80 passed
   `src/accessibility_inputs.py` has `classify_poi_opportunity(row, opportunity_basis=...)`.
   `scripts/derive_all_observed.py` filled all four domains in `data/interim/merged_pois_observed.gpkg`:
   healthcare 18/18 (100%), higher_ed 70/70 (100%), economic 32/32 (100%), commercial/services
-  80/80 included (100%) with 8 point-only service/transport listings explicitly excluded from MAI.
+  81/81 included (100%) with 7 point-only service/transport listings explicitly excluded from MAI.
   `--opportunity-basis observed_strict` now requires source-backed magnitudes or explicit exclusion;
   current gate: `needs_source=0`, `proxy_source_tiers=0`. Audit:
   `data/interim/poi_observed_audit.csv`. economic REF calibrated to 500 jobs (cap=5.0, Decision #18
@@ -316,8 +321,9 @@ pytest tests/ -v   # must be 80 passed
 - [x] **NAI threshold localized to 800 m after professor review (2026-07-01, Decisions #26/#27):**
   Professor flagged 1200 m / 15 min as too optimistic for tropical, motorcycle-dominant Hanoi
   walking. **Primary NAI threshold is now 800 m (10-minute neighborhood, ~10 min at 80 m/min)**,
-  anchored on the international 10-min pedestrian-shed convention and Vietnam/HCMC pedestrian-shed
-  literature (800 m ≈ 10 min at 1.3 m/s); 1200 m / 15 min is demoted to optimistic upper-bound
+  used as a transparent operational assumption rather than a locally validated cutoff — no
+  Hanoi/HCMC study independently establishes 800 m as empirically optimal (Decision #29);
+  1200 m / 15 min is demoted to optimistic upper-bound
   sensitivity. Threshold audit (`outputs/validation/nai_threshold_sensitivity.md`): zero-NAI
   33/462 (1200 m) → 88/462 (800 m) → 133/462 (600 m); mean SMCI_B 0.0169 → 0.0133 → 0.0107;
   the four-typology structure is near-invariant across 600–1200 m, so the headline does not hinge
