@@ -1,4 +1,4 @@
-﻿# Agent Workflow
+# Agent Workflow
 
 Lightweight contract: Git worktrees provide isolation; tracked policy selects checks; humans merge.
 
@@ -83,3 +83,20 @@ Branch conflict: rebase/merge integration branch in the task worktree, rerun gat
 git worktree remove ..\mcs-routing
 git worktree prune
 ```
+
+## Research tooling
+
+Tool assignments for literature discovery, code execution, and handoff.
+
+| Tool | Role | Excluded from |
+|---|---|---|
+| **OpenScience** | Literature discovery, synthesis, read-only methodology audit, reviewer simulation | Editing canonical files; running pipeline scripts |
+| **Antigravity** | Approved code/document changes, tests, consistency checks, Git | Independent literature search |
+| **Zotero** | Canonical PDF, DOI, page-level notes, bibliography | — |
+| **Google Scholar / OpenAlex** | Independent citation and metadata verification | — |
+| **9router** | Local OpenAI-compatible model endpoint for OpenScience | — |
+| **Consensus.app** | Intentionally excluded — substantially overlaps OpenScience literature discovery | — |
+
+OpenScience runs against a disposable clone or separate worktree, not the main repo. Its outputs are advisory: verify citations and repository claims before copying into canonical files. OpenScience and coding agents must not edit the same files concurrently.
+
+Literature review sessions that produce verified DOIs and methodology implications should be recorded as decisions in `docs/decisions.md` (see DEC-029 for example).

@@ -2,7 +2,7 @@
 
 ## A Dual-Scale and Mode-Competitive Accessibility Framework from Vinhomes Ocean Park, Hanoi
 
-Working proposal v8 draft. Last updated: 2026-07-01.
+Proposal v7. Last updated: 2026-07-27.
 
 ## 1. Summary
 
@@ -100,7 +100,7 @@ The Neighborhood Accessibility Index (NAI) measures local walking access to dail
 NAI_i = count of qualifying POIs reachable by walking within the neighborhood threshold
 ```
 
-The pilot uses an 800 m walking-network threshold (about 10 minutes at 80 m/min) as the primary NAI catchment, and reports the 1200 m / 15-minute threshold as an optimistic upper-bound specification. The 800 m primary follows the international 10-minute-neighborhood pedestrian shed and the Vietnam/HCMC pedestrian-shed literature (≈10 minutes at 1.3 m/s), rather than mechanically converting a 15-minute budget to walking distance. In Hanoi, heat, humidity, sidewalk obstruction, crossing stress, motorcycle interaction, and shade quality make a 15-minute network catchment less comfortable than the same threshold in European 15-minute-city applications, so 1200 m is not treated as a universal standard. A threshold-response audit at 600 m, 800 m, 1000 m, and 1200 m supports the primary choice: the four-typology structure is near-invariant across the range, while the absolute SMCI level and zero-NAI share are threshold-sensitive.
+The pilot uses an 800 m walking-network threshold (about 10 minutes at 80 m/min) as the primary NAI catchment, and reports the 1200 m / 15-minute threshold as an optimistic upper-bound specification. This is an operational planning assumption rather than a locally validated behavioral cutoff: no identified Hanoi or Ho Chi Minh City study directly establishes 800 m as an empirically optimal walking distance. Hanoi evidence shows walking acceptability to transit depends on street conditions, safety, transit quality, and motorcycle competition rather than a fixed radius (Phuong et al. 2024; Hoang-Tung et al. 2021; Nguyen et al. 2020), while comparator evidence from motorcycle-taxi-dominant Bangkok finds typical station-access walking distances clustering around 428-500 m, with a sharp shift toward motorcycle-taxi use beyond 500 m (Pongprasert & Kubota 2017, 2019). Tropical heat and sun exposure add a measurable perceived walking cost even where shade is present (Melnikov et al. 2022; Jareemit & Srivanit 2022), reinforcing that a 15-minute network catchment is not equally comfortable in Hanoi as in European 15-minute-city applications. Rather than adopting either the stricter Bangkok-observed distances or a mechanical 15-minute-to-distance conversion, 800 m is retained as a transparent central operational value and tested against 600 m (conservative), 1000 m, and 1200 m (optimistic upper bound).
 
 NAI remains count-based because the neighborhood question is whether daily functions are present within a walkable catchment. The 15-minute-city concept is used as a proximity and local-completeness framework, while the empirical cutoff is localized through sensitivity testing.
 
@@ -258,7 +258,7 @@ The promoted RAC_time-only primary specification reduces collinearity below the 
 | MAI | 2.93 | OK |
 | RAC_time | 2.05 | OK |
 
-Legacy full-RAC versus promoted RAC_time-only typology agreement is strong: Cohen's kappa = 0.9116, Spearman rho(SMCI rank) = 0.9824, and 28/462 cells change label. The promoted primary is RAC_time-only; full RAC is reported as robustness.
+Legacy full-RAC versus promoted RAC_time-only typology agreement is strong: Cohen's kappa = <!-- headline:/full_rac_agreement/kappa|.4f -->0.9065<!-- /headline -->, Spearman rho(SMCI rank) = 0.9878, and <!-- headline:/full_rac_agreement/cells_relabelled|int -->30<!-- /headline -->/462 cells change label. The promoted primary is RAC_time-only; full RAC is reported as robustness.
 
 Fourth, SMCI robustness uses an additive alternative:
 
@@ -270,18 +270,18 @@ This is meaningful because it allows compensation across dimensions. A geometric
 
 Fifth, built-cell and population audits check whether zero-access results are open-space artifacts. VIDA building footprints are present in 455/462 cells, and many zero-access cells are built and populated. Zero inflation is therefore interpreted cautiously rather than dismissed.
 
-Sixth, the neighborhood walking threshold is treated as a substantive sensitivity rather than a fixed import from the 15-minute-city literature. The primary NAI catchment is 800 m (10-minute neighborhood); the threshold-response audit rebuilds NAI and downstream metrics under 600 m, 800 m, 1000 m, and 1200 m walking catchments. Zero-NAI cells fall from 133/462 at 600 m to 88/462 at the 800 m primary and 33/462 at the 1200 m optimistic upper bound, while mean SMCI_B rises from 0.0107 to 0.0133 to 0.0169. The direction of the VinBus improvement remains and the four-typology structure is near-invariant across the range, but the apparent level of neighborhood completeness is threshold-dependent; this is why the primary cutoff is justified as a Hanoi-sensitive 10-minute pedestrian shed rather than mechanically imported from a 15-minute-city benchmark.
+Sixth, the neighborhood walking threshold is treated as a substantive sensitivity rather than a fixed import from the 15-minute-city literature. The primary NAI catchment is 800 m (10-minute neighborhood), used as a transparent operational assumption rather than a locally validated behavioral cutoff (see Section 8.1); the threshold-response audit rebuilds NAI and downstream metrics under 600 m, 800 m, 1000 m, and 1200 m walking catchments. Zero-NAI cells fall from 133/462 at 600 m to 88/462 at the 800 m primary and 33/462 at the 1200 m optimistic upper bound, while mean SMCI_B rises from 0.0107 to 0.0133 to 0.0169. The direction of the VinBus improvement remains and the four-typology structure is near-invariant across the range, but the apparent level of neighborhood completeness is threshold-dependent; this is why the primary cutoff is reported as an operational central value bounded by an explicit 600-1200 m sensitivity range rather than a single validated standard.
 
 ## 11. Current Pilot Results
 
 The current pilot results, under the strict provenance-tiered opportunity specification, are:
 
 | Metric | Value |
-| --- | ---: |
-| Grid cells | 462 |
-| Mean SMCI_A | 0.0070 |
-| Mean SMCI_B | 0.0133 |
-| Mean Delta SMCI | 0.0063 |
+| --- | --- |
+| Grid cells | <!-- headline:/n_cells|int -->462<!-- /headline --> |
+| Mean SMCI A | 0.0070 |
+| Mean SMCI B | 0.0133 |
+| Mean Delta_SMCI | +0.0063 |
 | Improved cells | 281 / 462 (60.82%) |
 | Unchanged cells | 88 / 462 (19.05%) |
 | Declined cells | 93 / 462 (20.13%) |
@@ -292,14 +292,14 @@ The pilot results should be interpreted through distributional and spatial diagn
 
 The VinBus scenario improves SMCI in 281 of 462 cells (60.8%), while 88 cells (19.0%) remain unchanged and 93 cells (20.1%) decline slightly under the opportunity-weighted time-competitiveness term. Among cells with positive SMCI, the median rises from 0.0051 in Scenario A to 0.0081 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells that have at least some sustainable mobility capability. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
 
-Scenario B typology counts are:
+### Scenario B typology
 
-| Typology | Count |
-| --- | ---: |
+| Type | Cells |
+|---|---:|
 | Integrated Capability | 171 |
-| Fragmented Capability | 60 |
+| Fragmented Capability | <!-- headline:/typology_B/Fragmented Capability|int -->60<!-- /headline --> |
 | Transit-Dependent | 60 |
-| Motorcycle Lock-in | 171 |
+| Motorcycle Lock-in | <!-- headline:/typology_B/Motorcycle Lock-in|int -->171<!-- /headline --> |
 
 The equal high/low structure is expected under a rank-median typology and should not be interpreted as a discovered natural cluster distribution. The substantive interpretation depends on where those cells are located and how stable they are under robustness checks.
 
@@ -323,7 +323,7 @@ The policy question is consequently not whether the developer supplied internal 
 
 This is a single-site study. It supports theory-building and methodological contribution, not national generalization.
 
-The primary NAI threshold is 800 m (10-minute pedestrian shed), selected as a Hanoi-sensitive walking catchment; the 1200 m / 15-minute threshold is reported as an optimistic upper-bound sensitivity. The threshold-response audit (600/800/1000/1200 m) shows the four-typology structure is near-invariant across the range while absolute SMCI and zero-NAI share are threshold-sensitive, so results are reported against 800 m with 1200 m as the generous bound.
+The primary NAI threshold is 800 m (10-minute pedestrian shed), used as a transparent operational assumption; no Hanoi or Ho Chi Minh City study identified in the literature review independently validates 800 m as the empirically optimal local cutoff, and comparator Bangkok evidence suggests typical walking access may be shorter (see Section 8.1). The 1200 m / 15-minute threshold is reported as an optimistic upper-bound sensitivity. The threshold-response audit (600/800/1000/1200 m) shows the four-typology structure is near-invariant across the range while absolute SMCI and zero-NAI share are threshold-sensitive, so results are reported against 800 m with 1200 m as the generous bound.
 
 Network B uses a 2018 GTFS feed as a pre-VinBus baseline. This is methodologically deliberate but not equivalent to current conventional transit service.
 

@@ -3,13 +3,13 @@
 Why things are the way they are — read this before changing the methodology,
 so settled debates don't get silently re-opened.
 
-1. **Single case study (Vinhomes Ocean Park only), not two.**
+1. **DEC-001 — Single case study (Vinhomes Ocean Park only), not two.**
    A second site (Vinhomes Smart City) was proposed as a "reproducibility
    appendix" in an earlier draft and was cut. Running a second full site
    roughly doubles data collection and computation; explicitly deferred to
    future work to keep this feasible as one paper/thesis.
 
-2. **Classification is theory-first (median split), not pure k-means.**
+2. **DEC-002 — Classification is theory-first (median split), not pure k-means.**
    k-means run with no theoretical constraint has no reason to produce
    exactly the 4 named typologies the framework is built around (could
    return 3, 5, 6 clusters). Primary specification: median-split NAI x
@@ -26,7 +26,7 @@ so settled debates don't get silently re-opened.
    rank split is the more general and correct implementation of "median split"
    in the presence of ties at a mass point.
 
-3. **MAI and RAC are expected to be collinear — this is structural, not just empirical.**
+3. **DEC-003 — MAI and RAC are expected to be collinear — this is structural, not just empirical.**
    RAC_opp's numerator (opportunities reachable via walk+transit) is the
    same quantity used to build MAI. Motorcycle accessibility (RAC_opp's
    denominator) is expected to vary relatively little across a
@@ -44,7 +44,7 @@ so settled debates don't get silently re-opened.
    and VIF(RAC_time)=4.32, both below 5. Primary full-RAC specification is retained.
    Full output: `outputs/validation/rac_time_only_summary.md`.
 
-4. **Do NOT use a geometric-mean alternative to validate the multiplicative SMCI.**
+4. **DEC-004 — Do NOT use a geometric-mean alternative to validate the multiplicative SMCI.**
    SMCI_geo = (NAI*MAI*RAC)^(1/3) is a monotonic transform of
    SMCI_mult = NAI*MAI*RAC. Spearman rank correlation between them is
    mathematically guaranteed to be 1.0 — this was caught by actually
@@ -52,18 +52,18 @@ so settled debates don't get silently re-opened.
    text. Use the ADDITIVE alternative, (NAI+MAI+RAC)/3, for the real
    robustness comparison. See tests/test_accessibility.py::test_geometric_mean_check_is_vacuous.
 
-5. **Motorcycle travel time is NOT the same as default OSM driving speed.**
+5. **DEC-005 — Motorcycle travel time is NOT the same as default OSM driving speed.**
    Lane-splitting means motorcycles are often faster than cars in
    congested Hanoi traffic. Network D must apply a literature-derived
    speed-adjustment factor, not assume car-equivalent speeds.
 
-6. **Validation against Google Maps is secondary, not foundational.**
+6. **DEC-006 — Validation against Google Maps is secondary, not foundational.**
    Literature-calibrated motorcycle speeds are the primary basis for
    Network D travel times, specifically because Google's programmatic
    TWO_WHEELER routing is unconfirmed for Vietnam (see docs/data_sources.md).
    The model must not depend on an API that may not cover the study area.
 
-7. **NAI is count-based; MAI is magnitude-weighted.**
+7. **DEC-007 — NAI is count-based; MAI is magnitude-weighted.**
    A single OSM POI can represent an office tower or a kiosk. For daily
    neighborhood activities, presence/proximity matters more than size, so
    NAI counts facilities. For metropolitan opportunities (jobs, enrollment),
@@ -71,7 +71,7 @@ so settled debates don't get silently re-opened.
    proxy magnitudes (employment proxy, enrollment proxy, density score),
    not raw POI counts.
 
-8. **Why "electric bus" stays in the language even though propulsion type
+8. **DEC-008 — Why "electric bus" stays in the language even though propulsion type
    doesn't affect the accessibility math.**
    The green-vs-motorcycle-dependent tension is the paper's core hook
    (title, Introduction). Stripping "electric" to "transit intervention"
@@ -80,13 +80,13 @@ so settled debates don't get silently re-opened.
    connectivity), not propulsion or emissions effects — keeps the framing
    without overclaiming what the analysis measures.
 
-9. **The "green" dimension must be tested, not assumed.**
+9. **DEC-009 — The "green" dimension must be tested, not assumed.**
    NDVI and green-space accessibility are explicit variables (src/, Section
    3.5), and the Discussion plan explicitly asks whether they relate to
    SMCI/RAC at all — the paper should be able to say honestly if "green"
    turned out to be branding rather than a substantive driver.
 
-10. **2018 Hanoi GTFS is treated as the pre-VinBus conventional transit baseline, not a data gap.**
+10. **DEC-010 — 2018 Hanoi GTFS is treated as the pre-VinBus conventional transit baseline, not a data gap.**
     VinBus launched commercially in September 2021. The World Bank CC-BY feed
     (service dates 2018-01-01 to 2018-12-31, `data/raw/hanoi_gtfs.zip`) therefore
     reflects Hanoi public transit *before* the electric-bus intervention being
@@ -105,7 +105,7 @@ so settled debates don't get silently re-opened.
     and `network_b_interpretation` fields. `accessibility_inputs.py` note field
     reflects this framing.
 
-11. **Scenario A/B deltas must use shared normalization bounds.**
+11. **DEC-011 — Scenario A/B deltas must use shared normalization bounds.**
     The pilot originally normalized Scenario A and Scenario B separately inside
     `compute_smci()` and `compute_rac()`. That made `Delta_SMCI` partly a change
     in relative position between two different scales, not a clean scenario
@@ -120,7 +120,7 @@ so settled debates don't get silently re-opened.
     explicit shared-scale helpers. Regression test:
     `tests/test_pipeline.py::test_pilot_metrics_use_shared_scenario_scale_for_delta`.
 
-12. **Building footprints are the next data upgrade before stronger MAI claims.**
+12. **DEC-012 — Building footprints are the next data upgrade before stronger MAI claims.**
     WorldPop's resolution is adequate for the 250m grid, but gridded population
     products should not be treated as exact ground truth. For Ocean Park, the
     more immediate problem is separating built cells from lakes, parks, and
@@ -135,20 +135,20 @@ so settled debates don't get silently re-opened.
     Kontur Population remains a coarse sensitivity/context layer only because
     its 400m resolution is coarser than the 250m analysis grid.
 
-13. **Overture Places supplements OSM POIs; it does not replace them.**
+13. **DEC-013 — Overture Places supplements OSM POIs; it does not replace them.**
     Overture Places can increase POI coverage and provide an independent source,
     but coverage varies by market and category. The planned workflow is a union
     of OSM and Overture with source-agreement labels: OSM+Overture agreement =
     higher confidence; one-source-only records = targeted spot-check candidates.
 
-14. **Check maintained GTFS catalogs before final Network B wording.**
+14. **DEC-014 — Check maintained GTFS catalogs before final Network B wording.**
     `scripts/check_mobility_database.py --query Hanoi` checked the maintained
     MobilityDatabase CSV and found no Hanoi candidate feed in the catalog. This
     supports keeping the 2018 World Bank feed as the available pre-VinBus baseline,
     but final Methods should still mention that MobilityDatabase was checked and
     manually inspect TUMI/Datahub or official local sources before submission.
 
-15. **MAI is "Metropolitan Opportunity Accessibility", not "employment accessibility".**
+15. **DEC-015 — MAI is "Metropolitan Opportunity Accessibility", not "employment accessibility".**
     MAI v8 (2026-06-22) reframes MAI as a composite of four opportunity domains —
     economic, higher education, tertiary healthcare, metropolitan commercial/services —
     to avoid overclaiming employment counts that are not available at building resolution
@@ -201,7 +201,7 @@ so settled debates don't get silently re-opened.
     office/employment nodes. Economic domain defaulted to a commercial-POI-density proxy
     and higher-education was near-zero. **This is now partially resolved — see Decision #18.**
 
-16. **VinBus headway assumption is 15 min (published schedule); sensitivity confirms it is not a material driver.**
+16. **DEC-016 — VinBus headway assumption is 15 min (published schedule); sensitivity confirms it is not a material driver.**
     Earlier corridor-proxy Network C used no full timetable. Travel time included
     T_wait = headway / 2 (random-arrival assumption). The baseline 15 min headway comes from
     VinBus press releases for Ocean Park routes (E01, E03, OCP1). Three scenarios tested
@@ -221,7 +221,7 @@ so settled debates don't get silently re-opened.
     share is 52.4%, 51.9%, and 46.1% respectively. Typology kappa vs the 15 min baseline is
     1.000 for all scenarios, so headway still does not drive typology conclusions.
 
-17. **VinBus stop-level routing is primary; corridor proximity is sensitivity only.**
+17. **DEC-017 — VinBus stop-level routing is primary; corridor proximity is sensitivity only.**
     The earlier Network C implementation used a corridor-proximity proxy. After confirming
     10 Ocean Park-facing OSM VinBus relations and extracting 254 unique platform/stop nodes,
     Network C now uses stop-level access: grid cell to stop by walking network, wait time,
@@ -234,7 +234,7 @@ so settled debates don't get silently re-opened.
     as a sensitivity/proxy comparison. Full timetable-derived routing remains a future upgrade
     if a valid VinBus GTFS or equivalent feed becomes available.
 
-18. **Economic domain escaped from pure commercial-density proxy via OSM landuse + office tags (2026-06-25).**
+18. **DEC-018 — Economic domain escaped from pure commercial-density proxy via OSM landuse + office tags (2026-06-25).**
     The original pilot had effectively one `economic` POI (a credit fund), so the 0.40
     economic domain weight was carried almost entirely by commercial fallback — a weak proxy.
     Two open-data channels (Hướng B + C) now populate the economic and higher-education domains:
@@ -282,7 +282,7 @@ so settled debates don't get silently re-opened.
     unchanged (κ=0.865), confirming the rebalance did not disturb the typology partition.
     See `outputs/validation/mai_domain_decomposition.md`.
 
-19. **Supply-side population is integrated INTO MAI (2026-06-27), not just reported post-hoc.**
+19. **DEC-019 — Supply-side population is integrated INTO MAI (2026-06-27), not just reported post-hoc.**
     Previously WorldPop was verified and aggregated (`data/interim/grid_worldpop.csv`) but
     population only entered analysis after the fact: `MAI_B_popweighted` and
     `scripts/compute_population_weighted_smci.py` weight already-computed SMCI by residents at
@@ -327,7 +327,7 @@ so settled debates don't get silently re-opened.
     decision, baked into MAI, affects SMCI/typology) vs **demand-side** (`MAI_B_popweighted` /
     `compute_population_weighted_smci.py`, residents at origin, equity aggregate, sensitivity only).
 
-20. **RAC_time is opportunity-weighted and auditable (2026-06-27).**
+20. **DEC-020 — RAC_time is opportunity-weighted and auditable (2026-06-27).**
     To remove ambiguity, `RAC_time_raw_i` is now defined as:
 
     ```text
@@ -347,7 +347,7 @@ so settled debates don't get silently re-opened.
     This is more conservative than the earlier simple reachable-time mean and should be used
     for JTG submission.
 
-21. **MAI uses a strict source-backed opportunity hierarchy (2026-06-28; extended 2026-06-29).**
+21. **DEC-021 — MAI uses a strict source-backed opportunity hierarchy (2026-06-28; extended 2026-06-29).**
     MAI remains a four-domain Metropolitan Opportunity Accessibility measure, but destination
     weights now support direct observed/source-backed magnitudes before falling back to proxies.
     The hybrid hierarchy is: observed facility magnitude → building/area-derived proxy → tag base
@@ -386,8 +386,8 @@ so settled debates don't get silently re-opened.
     - tertiary_healthcare: **18/18 = 100%** (1 named hospital, commune-station MOH standard, area-derived)
     - higher_education: **70/70 = 100%** (MOET class-size standards by school type)
     - economic: **32/32 = 100%** (employment density × area by sector; point estimates for banks/markets)
-    - metro_commercial: **80/80 included = 100%** (37 retail/GLA-derived plus measured
-      park/leisure/agrarian polygon magnitudes; 8 point-only service/transport listings excluded
+    - metro_commercial: **81/81 included = 100%** (retail/GLA-derived plus measured
+      park/leisure/agrarian polygon magnitudes; 7 point-only service/transport listings excluded
       from MAI with audit reasons)
 
     Strict observed gate (2026-06-29): `needs_source=0`, `proxy_source_tiers=0`; audit table:
@@ -397,7 +397,7 @@ so settled debates don't get silently re-opened.
     Spearman ρ=0.9950, VIF(MAI)=3.78, and VIF(RAC)=2.00. Report:
     `outputs/validation/observed_vs_proxy_sensitivity.md`.
 
-22. **RAC_time promoted to primary after reviewer-risk metric audit (2026-06-29).**
+22. **DEC-022 — RAC_time promoted to primary after reviewer-risk metric audit (2026-06-29).**
     A red-team metric audit tested NAI diversity, category-capped NAI, RAC_time-only,
     RAC_opp-only, winsorized/log normalization, additive SMCI, absolute-threshold
     typology, alternative MAI weights, alternative decay windows including exponential
@@ -417,7 +417,7 @@ so settled debates don't get silently re-opened.
     are 170 Integrated Capability, 61 Fragmented Capability, 61 Transit-Dependent,
     and 170 Motorcycle Lock-in.
 
-23. **NAI primary threshold is 15 minutes / 1200 m (2026-06-30).**
+23. **DEC-023 — NAI primary threshold is 15 minutes / 1200 m (2026-06-30).**
     The neighborhood walking threshold is promoted from the earlier 800 m / ~10 min pilot
     setting to 1200 m network distance, equivalent to 15 minutes at 80 m/min. This aligns the
     NAI axis with the 15-minute-city framing used in the literature while preserving the
@@ -438,7 +438,7 @@ so settled debates don't get silently re-opened.
     improve under Scenario B. The change makes zero-access claims less overstated and more
     defensible for a paper using a 15-minute neighborhood concept.
 
-24. **Prior weights checked using UTM-Hanoi survey dataset (2026-06-30).**
+24. **DEC-024 — Prior weights checked using UTM-Hanoi survey dataset (2026-06-30).**
     The composite MAI's prior domain weights (0.40 economic, 0.20 higher_education,
     0.20 tertiary_healthcare, 0.20 metro_commercial) were checked against the UTM-Hanoi
     transport-policy perception dataset (`N=26,106`, doi:10.1038/s41597-024-02950-9).
@@ -457,7 +457,7 @@ so settled debates don't get silently re-opened.
     which is endogenous to current employment concentrations. The UTM-derived scheme is kept
     as sensitivity evidence and an audit trail, not promoted to the primary specification.
 
-25. **Comparison site (planned vs unplanned) is a Paper #2 design, not a pilot add-on (2026-06-30).**
+25. **DEC-025 — Comparison site (planned vs unplanned) is a Paper #2 design, not a pilot add-on (2026-06-30).**
     A matched control site — Trâu Quỳ town, Gia Lâm (organic/unplanned settlement) — is adopted
     to upgrade the design from single-site descriptive to a matched-pair spatial comparison
     against Ocean Park (master-planned). This is a *counterfactual control*, distinct from the
@@ -480,7 +480,7 @@ so settled debates don't get silently re-opened.
     Bottleneck flagged: observed-opportunity magnitudes (Decision #21) must be rebuilt from scratch
     for the control site; this is the most labor-intensive step and the main coverage-bias risk.
 
-26. **NAI threshold must be localized, not imported from European 15-minute-city defaults (2026-07-01).**
+26. **DEC-026 — NAI threshold must be localized, not imported from European 15-minute-city defaults (2026-07-01).**
     Professor feedback challenged the 1200 m / 15-minute walking catchment as too optimistic for
     Hanoi's tropical, motorcycle-dominant walking environment. Heat, humidity, sidewalk obstruction,
     crossing stress, shade availability, and motorcycle interaction mean that 15 minutes of nominal
@@ -510,7 +510,7 @@ so settled debates don't get silently re-opened.
     the paper should foreground that the megaproject's apparent neighborhood completeness depends
     on an optimistic walking assumption.
 
-27. **Primary NAI threshold selected at 800 m (10-minute neighborhood) (2026-07-01).**
+27. **DEC-027 — Primary NAI threshold selected at 800 m (10-minute neighborhood) (2026-07-01).**
     Following the Decision #26 audit and professor feedback, the primary NAI walking catchment is
     set to **800 m network distance (~10 min at 80 m/min)**. 1200 m / 15 min is demoted to an
     optimistic upper-bound sensitivity.
@@ -542,3 +542,57 @@ so settled debates don't get silently re-opened.
     baseline; `scripts/nai_threshold_sensitivity.py --reference-threshold-m` defaults to 800. The
     800 m primary reproduces `data/interim/nai_threshold_sensitivity/inputs_800m.csv` exactly
     (max abs diff 0 across all numeric columns).
+
+28. **DEC-028 — Tay Mo / Vinhomes Smart City is a candidate west-side extension, not a replacement for the east-side control (2026-07-01).**
+    The proposed Tay Mo extension is methodologically attractive because it can turn the design
+    into a **double pairwise comparison**:
+
+    - East: Vinhomes Ocean Park (planned) vs Trau Quy core (organic).
+    - West: Vinhomes Smart City (planned) vs Tay Mo core (organic).
+
+    This would test whether the planned-versus-organic capability contrast appears on both sides
+    of Hanoi, rather than only around Ocean Park. It also strengthens the policy narrative from
+    "one green megaproject case" toward "east-west megaproject enclave pattern."
+
+    Status: **candidate extension only**. The user-proposed matching claims for Tay Mo (distance
+    to Hoan Kiem, area, population, density, and spillover independence) must be measured with the
+    same pipeline before they appear as paper facts. Use network distance over the routable OSM
+    drive graph, not straight-line distance; aggregate population from WorldPop and/or official
+    ward data; and separate the inherited Tay Mo core from Vinhomes Smart City cells.
+
+    Guardrail: do not collapse Tay Mo and Smart City into one study surface. The whole point is
+    the local planned/organic contrast. Mixed boundary cells should be flagged, dropped, or analyzed
+    as a transition band.
+
+    Full pre-analysis protocol: `docs/western_extension_protocol.md`.
+
+29. **DEC-029 — 800 m NAI threshold reframed as an operational assumption, not a
+    validated local standard (2026-07-27).** A literature review (OpenScience agent
+    against a disposable repo clone, via a local OpenAI-compatible 9router endpoint)
+    checked whether Hanoi/HCMC evidence supports 800 m as an empirically optimal
+    neighborhood walking cutoff. DOIs were spot-verified against publisher/Crossref
+    records before acting on this review.
+
+    Findings: no identified Hanoi or Ho Chi Minh City study directly establishes
+    800 m as an empirically optimal walking distance. Hanoi evidence (Phuong et al.
+    2024, `10.1016/j.iatssr.2024.07.001`; Hoang-Tung et al. 2021,
+    `10.1016/j.cstp.2020.10.002`; Nguyen et al. 2020, `10.3390/su12145773`) shows
+    walking acceptability depends on street conditions, safety, transit quality, and
+    motorcycle competition, not a fixed radius. Comparator evidence from
+    motorcycle-taxi-dominant Bangkok (Pongprasert & Kubota 2017,
+    `10.1016/j.iatssr.2017.03.003`; 2019, `10.1007/s40534-018-0170-1`) finds typical
+    station-access walking distances clustering around 428-500 m, with a sharp shift
+    to motorcycle-taxi use beyond 500 m. Tropical sun exposure adds measurable
+    perceived walking cost even with shade (Melnikov et al. 2022,
+    `10.1038/s41598-022-06383-5`).
+
+    Decision: retain 800 m as primary — it remains a transparent, arithmetic 10-min
+    x 80 m/min operational catchment, and the project's own 600-1200 m
+    threshold-response audit (Decision #27) shows the four-typology structure is
+    near-invariant across that range. But the proposal's prior wording overclaimed
+    it as following an "international 10-minute-neighborhood pedestrian shed" and
+    "Vietnam/HCMC pedestrian-shed literature" at the exact 800 m value — neither
+    claim is literature-supported. `proposal/proposal_v7.md` Section 8.1, Section
+    10, and Section 13 are reworded to describe 800 m as an operational assumption
+    bounded by an explicit 600/1000/1200 m sensitivity range, not a validated local
+    standard. No change to any computed metric, threshold value, or code.
