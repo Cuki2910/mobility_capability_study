@@ -596,3 +596,43 @@ so settled debates don't get silently re-opened.
     10, and Section 13 are reworded to describe 800 m as an operational assumption
     bounded by an explicit 600/1000/1200 m sensitivity range, not a validated local
     standard. No change to any computed metric, threshold value, or code.
+
+30. **DEC-030 — Motorcycle speed calibration citations for primary/secondary/
+    tertiary/residential road classes retracted as unverifiable; values retained
+    as transparent modeling assumptions (2026-07-27).** A forensic citation
+    audit (OpenScience agent, read-only, DOI/Crossref/publisher spot-checked)
+    found that the two sources previously cited in
+    `data/raw/motorcycle_speed_calibration.csv` for non-arterial road classes do
+    not verifiably exist as cited:
+
+    - "Nguyen Xuan Long & Nguyen Hoang Tu (2018), *Journal of the Eastern Asia
+      Society for Transportation Studies* 12: 1421-1435" — the claimed page
+      range in that EASTS volume belongs to two unrelated papers (Yen et al.,
+      pp. 1414-1433; Fukumoto et al., pp. 1434-1447). No matching title, author
+      pairing, or DOI was found in J-STAGE, Crossref, Google Scholar, or
+      Semantic Scholar.
+    - "Vu Anh Tuan et al. (2016), 'Motorcycle Traffic Characteristics in
+      Hanoi', *Transportation Research Procedia* 15: 651-662" — the claimed
+      page range in that volume belongs to two unrelated papers (Riggins et
+      al., pp. 640-651; Ackaah & Bogenberger, pp. 652-663). No matching
+      record or DOI was found.
+
+    Decision: do not delete or silently keep these citations. The
+    `primary`, `secondary`, `tertiary`, and `residential` rows in
+    `data/raw/motorcycle_speed_calibration.csv` now carry an explicit
+    `UNVERIFIED CITATION` provenance note referencing this entry instead of
+    the retracted citations. Numeric speed/multiplier values are **unchanged**
+    — this is a provenance-label correction, not a recalibration, so no
+    pipeline rerun, headline number, or test was affected. `paper/paper_draft.md`
+    Section 5.5 and Table 1 now describe these road classes as
+    literature-informed modeling assumptions rather than directly cited
+    literature values; only the `motorway`/`trunk` (JICA HAIDEP 2010) rows
+    remain a literature-cited calibration.
+
+    Follow-up (not yet done): search for a verifiable primary/secondary/
+    tertiary/residential motorcycle-speed source for Hanoi or comparable
+    Vietnamese cities. If found, update the CSV, paper Section 5.5, and this
+    decision together in one commit. If a systematic replacement search is
+    unsuccessful, consider widening `scripts/motorcycle_speed_sensitivity.py`
+    bounds to reflect assumption uncertainty explicitly, and describe the
+    calibration as scenario-based rather than literature-calibrated.

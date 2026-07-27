@@ -41,7 +41,7 @@ Neighborhood-proximity research, including common implementations of the 15-minu
 
 The relevant distinction is therefore one of construct and scale, not a contest between superior and inferior metrics. This study retains a separate Neighborhood Accessibility Index (NAI) for walking access to everyday opportunities and a Metropolitan Accessibility Index (MAI) for time-decayed access to larger and more specialized opportunities. The separation makes visible cells that are locally complete but metropolitanly constrained, as well as cells with metropolitan reach but weak local walking access.
 
-Hanoi already has an important metropolitan-accessibility precedent. Ha et al. (2011) compared job accessibility in Hanoi and the Randstad using potential and competition-adjusted measures for private and public transport. That study demonstrates both the feasibility and relevance of mode-specific metropolitan accessibility analysis in Hanoi. The present study does not claim to introduce accessibility analysis to the city; it extends the local literature by coupling a metropolitan measure with a distinct neighborhood axis and a motorcycle-referenced competitiveness term.
+Hanoi already has an important metropolitan-accessibility precedent. Ha et al. (2011) compared job accessibility in Hanoi and the Randstad, calculating private- and public-transport accessibility using potential-accessibility measures adjusted for competition for jobs. Their study provides an earlier application of mode-specific metropolitan accessibility analysis to Hanoi. The present study does not claim to introduce accessibility analysis to the city; it extends the local literature by coupling a metropolitan measure with a distinct neighborhood axis and a motorcycle-referenced competitiveness term.
 
 ### 2.2 Accessibility, Capability, and Transport Exclusion
 
@@ -92,7 +92,7 @@ Within the reviewed literature, neighborhood proximity, metropolitan opportunity
 
 ## 3. Study Area
 
-The case study is Vinhomes Ocean Park in Gia Lam district, on the eastern edge of Hanoi. It is a master-planned development exceeding 250 ha, marketed around environmental quality and served by an electric bus network (VinBus). The site is analytically useful because it combines green branding and internal amenities with continued exposure to Hanoi's motorcycle-oriented travel environment.
+The case study is Vinhomes Ocean Park in Gia Lam district, on the eastern edge of Hanoi. Vinhomes reports the original development covers 420 ha (Vinhomes, n.d.), and the developer promotes it as a "green–clean–beautiful" living environment (Vinhomes, n.d.); this is developer marketing language, not a measured sustainability outcome. Official VinBus route listings identify several routes serving the site (VinBus, n.d.). The site is analytically useful because it combines this green branding and internal amenities with continued exposure to Hanoi's motorcycle-oriented travel environment.
 
 The analysis uses a 250 m grid covering Ocean Park and an approximately 2 km buffer, yielding 462 grid cells. This resolution distinguishes intra-development variation while remaining computationally tractable for network-based routing. The pilot extent is deliberately bounded; citywide application is future work.
 
@@ -114,13 +114,13 @@ All data are open or manually collected. Table 1 summarizes sources and status.
 | VIDA building footprints | Built-cell mask; population cross-check | 41,816 footprints at confidence >= 0.70 |
 | WorldPop 2020 raster | Supply-side MAI weighting; population exposure cross-check | ~92.77 m resolution; adequate for 250 m grid |
 | Manual Google Maps motorcycle checks | Network D validation | 10 named origin-destination pairs |
-| Motorcycle speed calibration | Network D speeds | JICA HAIDEP (2010); Nguyen & Nguyen (2018); Vu Anh Tuan et al. (2016) |
+| Motorcycle speed calibration | Network D speeds | Mixed: JICA HAIDEP (2010) for arterial/ring-road speeds; remaining road classes are transparent modeling assumptions (Section 5.5) |
 
 **Data provenance and caveats.**
 
-The 2018 GTFS feed predates the commercial launch of VinBus in September 2021 and is therefore used deliberately as the conventional-transit reference network (Network B), not as current service or an observed pre-intervention panel. Stop geometry is used for stop-level accessibility; timetable frequency is treated only as a relative-magnitude proxy. Maintained GTFS catalogs were checked, and no current-service Hanoi feed was identified for replacement.
+The 2018 GTFS feed predates VinBus's initial internal-route operation at Ocean Park in April 2021 (Vingroup, 2021a) and its entry into Hanoi's public passenger network in December 2021 (Vingroup, 2021b); it is therefore used deliberately as the conventional-transit reference network (Network B), not as current service or an observed pre-intervention panel. Stop geometry is used for stop-level accessibility; timetable frequency is treated only as a relative-magnitude proxy. Maintained GTFS catalogs were checked, and no current-service Hanoi feed was identified for replacement.
 
-VinBus (Network C) data are sourced from the publicly accessible VinBus route-query API. Because VinBus does not publish an official GTFS feed, we constructed a pseudo-GTFS layer from the application's JSON endpoints. The complete Hanoi network was extracted: 176 routes, 5,631 unique stop nodes with official GPS coordinates, 19,625 ordered stop-sequence records across both travel directions, and per-route headway data for most routes. Network C is therefore a modeled stop-level VinBus routing scenario with observed route headways where available, not a fully scheduled transit assignment.
+VinBus (Network C) data are sourced from the publicly accessible VinBus route-query API. No official VinBus GTFS feed was identified in the official sources searched for this study; official GTFS availability could not be established one way or the other. We therefore constructed a pseudo-GTFS layer from the application's JSON endpoints. The complete Hanoi network was extracted: 176 routes, 5,631 unique stop nodes with official GPS coordinates, 19,625 ordered stop-sequence records across both travel directions, and per-route headway data for most routes. Network C is therefore a modeled stop-level VinBus routing scenario with observed route headways where available, not a fully scheduled transit assignment.
 
 The opportunity layer merges OpenStreetMap and Overture Maps, then adds OSM landuse and office-tag enrichment for metropolitan opportunity domains. A source-agreement audit was applied: 55 Overture-only POIs were spot-checked and all 55 were confirmed, passing the promotion gate. Economic enrichment adds landuse=commercial/retail/industrial/office polygons, office tags, financial amenities, and marketplace features. The primary opportunity layer therefore contains 208 POIs/features across economic, higher-education, healthcare, and metropolitan commercial/service domains.
 
@@ -128,7 +128,7 @@ WorldPop is used in two distinct ways. First, it enters MAI as a supply-side opp
 
 ### 4.1 Data Ethics and Replicability
 
-VinBus does not publish an official GTFS feed. The pseudo-GTFS used here is derived from publicly accessible web-application API responses and contains route, stop, direction, and headway information. No private user data, authentication bypass, personal traces, or individual-level records are used.
+No official VinBus GTFS feed was identified in the official sources searched for this study. The pseudo-GTFS used here is derived from publicly accessible web-application API responses and contains route, stop, direction, and headway information. No private user data, authentication bypass, personal traces, or individual-level records are used.
 
 Licensing and terms-of-service uncertainty nevertheless remain. The derived route tables should be treated as an academic reproducibility artifact and replaced by official VinBus GTFS if one becomes available. OSM VinBus route relations are retained as a non-API sensitivity source.
 
@@ -220,7 +220,7 @@ This distinction is deliberate because `RAC_opp` shares its numerator with MAI a
 
 ### 5.5 Motorcycle Network Calibration
 
-Motorcycle Network D must not assume unmodified car-equivalent OSM speeds. Per-road-class motorcycle speeds are calibrated from Vietnamese-specific literature: JICA HAIDEP (2010) for arterial and ring-road speeds, Nguyen & Nguyen (2018) for primary/secondary urban streets, and Vu Anh Tuan et al. (2016) for tertiary and residential streets. Manual Android Google Maps checks provide a plausibility validation rather than the primary calibration source; the model does not isolate or test a lane-splitting mechanism.
+Motorcycle Network D must not assume unmodified car-equivalent OSM speeds. Per-road-class motorcycle speeds are calibrated in two tiers. Arterial and ring-road speeds (motorway, trunk classes) follow JICA HAIDEP (2010) observed operating-speed ranges. Speeds for primary, secondary, tertiary, and residential streets could not be traced to a verifiable published source during citation audit and are instead reported as transparent, literature-informed modeling assumptions, calibrated to be broadly consistent with Hanoi motorcycle-speed studies (e.g., Vu Anh Tuan, 2015) without claiming a specific per-road-class citation. Manual Android Google Maps checks provide a plausibility validation rather than the primary calibration source; the model does not isolate or test a lane-splitting mechanism. See `data/raw/motorcycle_speed_calibration.csv` for the per-class assumption values and `docs/decisions.md` for the provenance decision.
 
 ### 5.6 Sustainable Mobility Capability Index (SMCI)
 
@@ -388,19 +388,15 @@ We have developed and piloted a dual-scale, mode-competitive accessibility frame
 
 Bantis, T., & Haworth, J. (2020). Assessing transport related social exclusion using a capabilities approach to accessibility framework: A dynamic Bayesian network approach. *Journal of Transport Geography, 84*, 102673. https://doi.org/10.1016/j.jtrangeo.2020.102673
 
-Bruno, M., Monteiro Melo, H. P., Campanelli, B., et al. (2024). A universal framework for inclusive 15-minute cities. *Nature Cities, 1*, 633-641. https://doi.org/10.1038/s44284-024-00119-4
-
-Calthorpe, P. (1993). *The next American metropolis: Ecology, community, and the American dream*. Princeton Architectural Press.
+Bruno, M., Monteiro Melo, H. P., Campanelli, B., & Loreto, V. (2024). A universal framework for inclusive 15-minute cities. *Nature Cities, 1*(10), 633-641. https://doi.org/10.1038/s44284-024-00119-4
 
 Caprotti, F. (2014). Eco-urbanism and the eco-city, or, denying the right to the city? *Antipode, 46*(5), 1285-1303. https://doi.org/10.1111/anti.12087
 
-Caprotti, F. (2015). Eco for whom? Envisioning eco-urbanism in the Sino-Singapore Tianjin Eco-city, China. *International Journal of Urban and Regional Research, 39*(3), 495-517. https://doi.org/10.1111/1468-2427.12233
-
-Cervero, R., & Kockelman, K. (1997). Travel demand and the 3Ds: Density, diversity, and design. *Transportation Research Part D: Transport and Environment, 2*(3), 199-219. https://doi.org/10.1016/S1361-9209(97)00009-6
+Caprotti, F., Springer, C., & Harmer, N. (2015). 'Eco' for whom? Envisioning eco-urbanism in the Sino-Singapore Tianjin eco-city, China. *International Journal of Urban and Regional Research, 39*(3), 495-517. https://doi.org/10.1111/1468-2427.12233
 
 Cugurullo, F. (2016). Urban eco-modernisation and the policy context of new eco-city projects: Where Masdar City fails and why. *Urban Studies, 53*(11), 2417-2433. https://doi.org/10.1177/0042098015588727
 
-Đào Đức Hiếu, et al. (2024). Thu hồi đất để xây dựng khu đô thị: Nghiên cứu tại dự án Vinhomes Ocean Park, huyện Gia Lâm, thành phố Hà Nội. *Tạp chí Khoa học và Công nghệ Lâm nghiệp, 13*(3), 156-167. https://doi.org/10.55250/jo.vnuf.13.3.2024.156-167
+Đào Đức Hiếu, Đỗ Thị Tám, Nguyễn Thị Hồng Hạnh, Trương Đỗ Thuỳ Linh, & Lê Xuân Sang. (2024). Thu hồi đất để xây dựng khu đô thị: Nghiên cứu tại dự án Vinhomes Ocean Park trên địa bàn huyện Gia Lâm, thành phố Hà Nội. *Tạp chí Khoa học và Công nghệ Lâm nghiệp, 13*(3), 156-167. https://doi.org/10.55250/jo.vnuf.13.3.2024.156-167
 
 Geurs, K. T., & van Wee, B. (2004). Accessibility evaluation of land-use and transport strategies: Review and research directions. *Journal of Transport Geography, 12*(2), 127-140. https://doi.org/10.1016/j.jtrangeo.2003.10.005
 
@@ -420,9 +416,9 @@ Kaszczyszyn, P., & Sypion-Dutkowska, N. (2019). Walking access to public transpo
 
 Khuat, V. H. (2006). *Traffic management in motorcycle dependent cities* (Doctoral dissertation). Darmstadt University of Technology.
 
-Kieu, M., An, K., Hoang-Tung, N., et al. (2024). An open dataset on individual perceptions of transport policies. *Scientific Data, 11*, 104. https://doi.org/10.1038/s41597-024-02950-9
+Kieu, M., Comber, A., Nguyen Thi Thuy, H., Bui Quang, T., Hoang Huu, P., & Malleson, N. (2024). An open dataset on individual perceptions of transport policies. *Scientific Data, 11*(1), 104. https://doi.org/10.1038/s41597-024-02950-9
 
-Kieu, M., Hoang-Tung, N., An, K., et al. (2023). Factors affecting perceptions in transport—A deep dive into the motorbike ban in Hanoi, Vietnam. *Case Studies on Transport Policy, 11*, 100958. https://doi.org/10.1016/j.cstp.2023.100958
+Kieu, M., Wanjau, E., Comber, A., Bratkova, K., Nguyen Thi Thuy, H., Bui Quang, T., Hoang Huu, P., & Malleson, N. (2023). Factors affecting perceptions in transport—A deep dive into the motorbike ban in Hanoi, Vietnam. *Case Studies on Transport Policy, 11*, 100958. https://doi.org/10.1016/j.cstp.2023.100958
 
 Labbé, D., & Boudreau, J.-A. (2011). Understanding the causes of urban fragmentation in Hanoi: The case of new urban areas. *International Development Planning Review, 33*(3), 273-291. https://doi.org/10.3828/idpr.2011.15
 
@@ -436,22 +432,28 @@ Moreno, C., Allam, Z., Chabaud, D., Gall, C., & Pratlong, F. (2021). Introducing
 
 Munda, G., & Nardo, M. (2009). Noncompensatory/nonlinear composite indicators for ranking countries: A defensible setting. *Applied Economics, 41*(12), 1513-1523. https://doi.org/10.1080/00036840601019364
 
-Nguyen, X. L., & Nguyen, H. T. (2018). Operating speed of motorcycles on urban streets in Hanoi. *Journal of the Eastern Asia Society for Transportation Studies, 12*, 1421-1435.
-
 OECD/European Union/EC-JRC. (2008). *Handbook on constructing composite indicators: Methodology and user guide*. OECD Publishing. https://doi.org/10.1787/9789264043466-en
+
+Pereira, R. H. M., Saraiva, M., Herszenhut, D., Braga, C. K. V., & Conway, M. W. (2021). r5r: Rapid realistic routing on multimodal transport networks with R5 in R. *Findings*. https://doi.org/10.32866/001c.21262
 
 Psyllidis, A., Gao, S., Hu, Y., Kim, E-K., McKenzie, G., Purves, R., Yuan, M., & Andris, C. (2022). Points of Interest (POI): A commentary on the state of the art, challenges, and prospects for the future. *Computational Urban Science, 2*(1), 20. https://doi.org/10.1007/s43762-022-00047-w
 
 Shatkin, G. (2008). The city and the bottom line: Urban megaprojects and the privatization of planning in Southeast Asia. *Environment and Planning A, 40*(2), 383-401. https://doi.org/10.1068/a38439
 
+Stępniak, M., Pritchard, J. P., Geurs, K. T., & Goliszek, S. (2019). The impact of temporal resolution on public transport accessibility measurement: Review and case study in Poland. *Journal of Transport Geography, 75*, 8-24. https://doi.org/10.1016/j.jtrangeo.2019.01.007
+
 Vecchio, G., & Martens, K. (2021). Accessibility and the capabilities approach: A review of the literature and proposal for conceptual advancements. *Transport Reviews, 41*(6), 833-854. https://doi.org/10.1080/01441647.2021.1931551
 
-Vu Anh Tuan. (2015). Mode choice behavior and modal shift to public transport in developing countries: The case of Hanoi city. *Journal of the Eastern Asia Society for Transportation Studies, 11*, 473-487.
+Vingroup. (2021a, April 8). *VinBus chính thức vận hành* [VinBus officially begins operation]. https://vingroup.net/vi/tin-tuc-su-kien/bai-viet/2324/vinbus-chinh-thuc-van-hanh-
 
-Vu Anh Tuan, Nguyen, H., & Pham, T. (2016). Motorcycle traffic characteristics in Hanoi. *Transportation Research Procedia, 15*, 651-662.
+Vingroup. (2021b, December 2). *Xe buýt điện VinBus chính thức tham gia mạng lưới vận tải hành khách công cộng* [Electric VinBus buses officially join the public passenger transport network]. https://vingroup.net/vi/tin-tuc-su-kien/bai-viet/2449/xe-buyt-dien-vinbus-chinh-thuc-tham-gia-
+
+VinBus. (n.d.). *Mạng lưới tuyến* [Route network]. Retrieved 2026, from https://vinbus.vn/gioi-thieu/mang-luoi-tuyen
+
+Vinhomes. (n.d.). *Tổng quan dự án Vinhomes Ocean Park* [Vinhomes Ocean Park project overview]. Retrieved 2026, from https://vinhomes.vn/vi/tong-quan-du-an-vinhomes-ocean-park
+
+Vu Anh Tuan. (2015). Mode choice behavior and modal shift to public transport in developing countries—the case of Hanoi City. *Journal of the Eastern Asia Society for Transportation Studies, 11*(0), 473-487. https://doi.org/10.11175/easts.11.473
 
 ---
 
 *Data, code, formulas, and validation outputs are maintained in the project repository (`src/`, `outputs/`, `docs/`). All indices are implemented and unit-tested in `src/accessibility.py` and the pipeline test suite. Pilot results derive from `data/processed/pilot_metrics.csv`.*
-
-> **Reference-verification note (delete before submission).** DOI and bibliographic metadata for the new Section 2 sources were checked against publisher, Crossref, institutional, or open full-text records. Ha et al. (2011) and some composite-index papers were not fully accessible during this review, so claims using them are limited to verified abstracts and metadata. Exact author lists for sources shown as “et al.”, and metadata for Calthorpe (1993), Khuat (2006), Nguyen & Nguyen (2018), Vu Anh Tuan (2015), and Vu Anh Tuan et al. (2016), require final reference-manager verification before submission.
