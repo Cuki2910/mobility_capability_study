@@ -18,6 +18,10 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
+
 RAW_DIR = Path("data/raw")
 INTERIM_DIR = Path("data/interim")
 
@@ -45,13 +49,23 @@ OFFICE_TAGS = {
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument("--center-lat", type=float, default=20.9930)
     parser.add_argument("--center-lon", type=float, default=105.9450)
     parser.add_argument("--half-box-km", type=float, default=2.5)
     parser.add_argument("--min-area-m2", type=float, default=500.0,
                         help="Minimum landuse polygon area to include (m²). Filters out tag errors.")
     parser.add_argument("--request-timeout", type=int, default=180)
+    parser.add_argument("--raw-output", type=Path, default=RAW_DIR / "osm_landuse_polygons.gpkg")
+    parser.add_argument("--output", type=Path, default=INTERIM_DIR / "landuse_poi_synthetic.gpkg")
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "center_lat": "center.lat",
+        "center_lon": "center.lon",
+        "half_box_km": "center.half_box_km",
+        "raw_output": "paths.raw_landuse_polygons",
+        "output": "paths.landuse_poi_synthetic",
+    })
 
     import geopandas as gpd
     import osmnx as ox
@@ -67,8 +81,17 @@ def main() -> int:
     south = args.center_lat - args.half_box_km * deg_per_km
     north = args.center_lat + args.half_box_km * deg_per_km
 
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
-    INTERIM_DIR.mkdir(parents=True, exist_ok=True)
+    if args.dry_run:
+        print_resolved_paths("OSM landuse fetch dry-run", {
+            "site_id": config.site_id if config else "pilot",
+            "bbox_west_south_east_north": (west, south, east, north),
+            "raw_output": args.raw_output,
+            "output": args.output,
+        })
+        return 0
+
+    args.raw_output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
 
     # --- Hướng B: landuse polygons ---
     print("Fetching landuse polygons (commercial/retail/industrial/office)...", flush=True)
@@ -120,7 +143,7 @@ def main() -> int:
         print(f"  landuse polygons after area filter: {len(landuse_poly)}", flush=True)
 
         # Save raw polygons
-        landuse_poly.to_crs("EPSG:4326").to_file(RAW_DIR / "osm_landuse_polygons.gpkg", driver="GPKG")
+        landuse_poly.to_crs("EPSG:4326").to_file(args.raw_output, driver="GPKG")
 
         for _, row in landuse_poly.iterrows():
             lu = str(row.get("landuse") or "").strip().lower()
@@ -219,9 +242,8 @@ def main() -> int:
         return 1
 
     out = gpd.GeoDataFrame(synthetic_rows, geometry="geometry", crs="EPSG:4326")
-    out_path = INTERIM_DIR / "landuse_poi_synthetic.gpkg"
-    out.to_file(out_path, driver="GPKG")
-    print(f"\nWrote {out_path} ({len(out)} synthetic economic POIs)")
+    out.to_file(args.output, driver="GPKG")
+    print(f"\nWrote {args.output} ({len(out)} synthetic economic POIs)")
     print(f"  domain distribution: {out['_econ_domain'].value_counts().to_dict()}")
     print(f"  source distribution: {out['source'].value_counts().to_dict()}")
     return 0

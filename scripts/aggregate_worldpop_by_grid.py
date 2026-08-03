@@ -14,7 +14,12 @@ Run:
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
 
 import geopandas as gpd
 import numpy as np
@@ -98,6 +103,7 @@ def summary_stats(df: pd.DataFrame) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument("--raster", type=Path,
                         default=Path("data/raw/worldpop/vnm_ppp_2020.tif"))
     parser.add_argument("--grid",   type=Path,
@@ -106,6 +112,21 @@ def main() -> int:
                         default=Path("data/interim/grid_worldpop.csv"))
     parser.add_argument("--cell-id-col", default="cell_id")
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "raster": "paths.worldpop_raster",
+        "grid": "paths.grid",
+        "output": "paths.worldpop_csv",
+    })
+
+    if args.dry_run:
+        print_resolved_paths("WorldPop aggregation dry-run", {
+            "site_id": config.site_id if config else "pilot",
+            "raster": args.raster,
+            "grid": args.grid,
+            "output": args.output,
+            "cell_id_col": args.cell_id_col,
+        })
+        return 0
 
     if not args.raster.exists():
         raise FileNotFoundError(f"WorldPop raster not found: {args.raster}")
