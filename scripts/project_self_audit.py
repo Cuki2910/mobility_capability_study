@@ -1,11 +1,16 @@
-﻿"""Generate a self-audit and critique report for the Ocean Park pilot."""
+"""Generate a self-audit and critique report for the Ocean Park pilot."""
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.headline_metrics import load_headline_metrics
 
 
 def _read_json(path: Path) -> dict:
@@ -82,7 +87,24 @@ def build_audit() -> dict:
     emulator = android_emulator_status(Path("outputs/validation/android_emulator_status.md"))
     dist = distribution_status()
 
-    summary = pd.read_csv("outputs/pilot_summary.csv", index_col=0)["value"].to_dict() if _exists("outputs/pilot_summary.csv") else {}
+    headline_path = Path("outputs/headline_metrics.json")
+    headline = load_headline_metrics(headline_path)
+    source_paths = [Path(path) for path in headline["source_files"]]
+    missing_headline_sources = [str(path) for path in source_paths if not path.exists()]
+    headline_mtime = headline_path.stat().st_mtime
+    stale_headline_sources = [
+        str(path) for path in source_paths
+        if path.exists() and path.stat().st_mtime > headline_mtime
+    ]
+    publication_outputs = [
+        Path("paper/paper_draft.md"),
+        Path("proposal/proposal_v7.md"),
+        Path("outputs/supervisor_memo.md"),
+    ]
+    missing_publication_outputs = [str(path) for path in publication_outputs if not path.exists()]
+    headline_complete = not missing_headline_sources
+    publication_outputs_fresh = not stale_headline_sources and not missing_publication_outputs
+
     vif = pd.read_csv("outputs/validation/vif_flags.csv") if _exists("outputs/validation/vif_flags.csv") else pd.DataFrame()
     high_vif = bool(vif["flag_high_vif"].any()) if not vif.empty and "flag_high_vif" in vif else None
     pre_vinbus = bool(gtfs.get("pre_vinbus_baseline"))
@@ -165,11 +187,19 @@ def build_audit() -> dict:
         next_actions.insert(0, "Add Overture Places as a POI supplement and source-agreement confidence layer.")
 
     return {
+        "checks": {
+            "headline_complete": headline_complete,
+            "publication_outputs_fresh": publication_outputs_fresh,
+            "docs_consistent": None,
+            "missing_headline_sources": missing_headline_sources,
+            "stale_headline_sources": stale_headline_sources,
+            "missing_publication_outputs": missing_publication_outputs,
+        },
         "snapshot": {
-            "grid_cells": int(summary.get("n_cells", manifest.get("counts", {}).get("grid_cells", 0)) or 0),
-            "mean_SMCI_A": float(summary.get("mean_SMCI_A", 0.0) or 0.0),
-            "mean_SMCI_B": float(summary.get("mean_SMCI_B", 0.0) or 0.0),
-            "share_improved": float(summary.get("share_improved", 0.0) or 0.0),
+            "grid_cells": int(headline["n_cells"]),
+            "mean_SMCI_A": float(headline["smci"]["mean_A"]),
+            "mean_SMCI_B": float(headline["smci"]["mean_B"]),
+            "share_improved": float(headline["delta_groups"]["improved"] / headline["n_cells"]),
             "gtfs_status": gtfs.get("status", "missing"),
             "pre_vinbus_baseline": pre_vinbus,
             "poi_spot_checks": {"total": poi_total, "completed": poi_done, "breakdown": poi_breakdown},
@@ -190,7 +220,10 @@ def build_audit() -> dict:
 
 
 def write_markdown(audit: dict, output: Path) -> None:
-    lines = ["# Project Self-Audit", "", "## Snapshot", ""]
+    lines = ["# Project Self-Audit", "", "## Gate Checks", ""]
+    for key, value in audit["checks"].items():
+        lines.append(f"- {key}: {value}")
+    lines += ["", "## Snapshot", ""]
     for key, value in audit["snapshot"].items():
         lines.append(f"- {key}: {value}")
     for section in ("strengths", "blockers", "warnings", "next_actions"):
