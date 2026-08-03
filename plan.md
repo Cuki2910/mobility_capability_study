@@ -48,15 +48,15 @@ null or unstable result remains a reported result, not a reason to tune inputs.
 - [x] Use Network A and Network D only; do not alter Network B/C or GTFS inputs.
 - [x] Identify graph edges and nodes that cross the Ocean Park boundary.
 - [x] Audit candidate crossings against OSM access, barrier, highway, and
-      footway tags; manually inspect influential crossings on a map.
-- [x] Compute legal crossings per kilometre of boundary and cross-boundary edge
+      footway tags.
+- [ ] Manually inspect influential crossings/gates on an OSM or field-reference map.
+- [x] Compute modeled crossings per kilometre of boundary and cross-boundary edge
       density for walking and motorcycle networks separately.
 - [x] Construct reproducible inside-to-outside OD pairs near the boundary.
 - [x] Compute network-to-Euclidean detour ratios by mode for those OD pairs.
 - [x] Calculate fixed-seed approximate edge betweenness for boundary crossings
       as a structural diagnostic; do not present it as observed travel flow.
 - [x] Map crossings and LISA clusters; detours and crossing centrality are exported as tabular diagnostics.
-      cluster map and descriptive boundary-band output.
 - [x] Add synthetic graph tests for directed motorcycle edges, blocked crossings,
       boundary intersection detection, and detour calculation.
 
@@ -66,8 +66,8 @@ causes accessibility differences.
 
 ## Track 3 - Dasymetric Population Sensitivity
 
-- [x] Confirm VIDA footprint provenance, confidence threshold, geometry quality,
-      and available height/use attributes.
+- [x] Record VIDA footprint provenance, confidence threshold, and the absence of
+      reliable height/use attributes for a building-level population claim.
 - [x] Define a population-preserving redistribution rule: residential floor area
       if available; footprint area only as a disclosed fallback.
 - [x] Reallocate WorldPop only within its source units, then reaggregate to the
