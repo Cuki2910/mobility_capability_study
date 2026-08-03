@@ -1,6 +1,8 @@
 osmnx>=1.9
 networkx>=3.0
 geopandas>=0.14
+libpysal>=4.12
+esda>=2.7
 shapely>=2.0
 pandas>=2.0
 numpy>=1.26

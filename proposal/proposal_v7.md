@@ -272,6 +272,12 @@ Fifth, built-cell and population audits check whether zero-access results are op
 
 Sixth, the neighborhood walking threshold is treated as a substantive sensitivity rather than a fixed import from the 15-minute-city literature. The primary NAI catchment is 800 m (10-minute neighborhood), used as a transparent operational assumption rather than a locally validated behavioral cutoff (see Section 8.1); the threshold-response audit rebuilds NAI and downstream metrics under 600 m, 800 m, 1000 m, and 1200 m walking catchments. Zero-NAI cells fall from 133/462 at 600 m to 88/462 at the 800 m primary and 33/462 at the 1200 m optimistic upper bound, while mean SMCI_B rises from 0.0107 to 0.0133 to 0.0169. The direction of the VinBus improvement remains and the four-typology structure is near-invariant across the range, but the apparent level of neighborhood completeness is threshold-dependent; this is why the primary cutoff is reported as an operational central value bounded by an explicit 600-1200 m sensitivity range rather than a single validated standard.
 
+Seventh, spatial structure is evaluated as an additive diagnostic, not as a replacement for the index. Global Moran's I uses 9,999 permutations, while Local Moran's I (LISA) applies a Benjamini-Hochberg correction across cells. Under Queen contiguity, Scenario B SMCI has strong positive global autocorrelation (I = 0.7496, permutation p = 0.0001), with 58 High-High and 111 Low-Low FDR-significant cells; the same high/low clustering pattern also appears under Rook and 8-nearest-neighbour sensitivity specifications. Delta_SMCI is likewise spatially clustered (I = 0.7104, p = 0.0001). These diagnostics identify concentration and boundary outliers; they do not establish that the planning boundary causes the pattern.
+
+Eighth, a boundary-permeability audit separates topological evidence from causal interpretation. The walking graph contains 59 physical edge crossings of the 10.11 km Ocean Park boundary (5.84 crossings/km), while the motorcycle graph contains 31 (3.07 crossings/km). For paired cells within 250 m on opposite sides, all 39 modeled pairs are connected, but median network-to-Euclidean detours are 2.10 for walking and 2.36 for motorcycle. OSM access/barrier tags do not flag a restriction on these crossing edges; missing tags are not evidence of unrestricted real-world access. Approximate fixed-seed edge betweenness is consequently reported only as a structural routing diagnostic.
+
+Ninth, WorldPop demand-side exposure is tested with a building-footprint-constrained, population-preserving dasymetric allocation. The allocation retains the study population (difference from the baseline aggregate is -0.0003 persons from floating-point precision) and leaves every core index and typology unchanged. Population-weighted SMCI_B changes from 0.012862 to 0.012906, while the Motorcycle Lock-in population share changes from 33.89% to 33.63%. Because VIDA footprints do not provide dwelling counts, floor area, height, or residential use, this is reported as a sensitivity result rather than building-level population truth.
+
 ## 11. Current Pilot Results
 
 The current pilot results, under the strict provenance-tiered opportunity specification, are:
@@ -317,6 +323,8 @@ The planned Ocean Park core appears to perform strongly. Using the Ocean Park 1 
 
 The critical insight is that this internal strength is spatially bounded. Across the wider Ocean Park-plus-context surface, Scenario B still contains 170 Motorcycle Lock-in cells and 61 Fragmented Capability cells. A dedicated boundary-discontinuity output should quantify the inside/outside gradient around the project edge. The expected result is not simply a weak or strong project, but a capability discontinuity: Ocean Park can function as a green mobility enclave rather than automatically producing urban-scale sustainable mobility.
 
+The spatial diagnostics reinforce, but do not overstate, this interpretation. FDR-corrected LISA finds robust high-high and low-low SMCI concentration, and the descriptive boundary audit finds a near-boundary inside-outside difference. The permeability audit shows that modeled cross-boundary connectivity exists but can involve substantial detours. Together, these results distinguish a spatially bounded capability pattern from a claim that gates or the project boundary alone cause it.
+
 The policy question is consequently not whether the developer supplied internal amenities. From a developer KPI, the planned core performs well. From a public authority and transport-geography perspective, the question is whether a green megaproject's mobility benefits cross its boundary and integrate with the wider city. If sustainable mobility capability stops at the project edge, the outcome is enclave accessibility, not metropolitan sustainability.
 
 ## 13. Limitations
@@ -334,6 +342,10 @@ MAI is fully source-backed for included pilot destinations under the strict spec
 POI completeness remains uncertain despite OSM checks, Overture gating, and economic enrichment.
 
 Motorcycle validation uses 10 manual OD pairs. It is a useful plausibility check, not a full calibration dataset.
+
+Spatial autocorrelation is expected where nearby cells share overlapping walking catchments, destinations, and network paths. LISA therefore supports a claim about spatial concentration, not independent-cell inference or a causal boundary effect. The OSM network has incomplete access and barrier tagging, so crossing counts and detours are modeled topology rather than a field audit of every gate or sidewalk.
+
+The dasymetric exposure sensitivity preserves WorldPop population at the study scale, but its building-footprint weights cannot distinguish residents from commercial uses or infer high-rise occupancy. It must not be interpreted as a building-level population estimate.
 
 MAI/RAC collinearity is structurally high in the legacy full-RAC specification. The promoted RAC_time-only primary reduces VIF below 5 and keeps high agreement with the full-RAC typology, so the issue is handled directly rather than hidden.
 

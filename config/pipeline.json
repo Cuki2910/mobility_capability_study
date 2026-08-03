@@ -284,6 +284,187 @@
           "suffix": ".md"
         }
       }
+    },
+    "freeze_geospatial_baseline": {
+      "command": [
+        "python",
+        "scripts/freeze_geospatial_baseline.py"
+      ],
+      "depends_on": [
+        "run_pilot_metrics"
+      ],
+      "inputs": [
+        "data/interim/pilot_grid.gpkg",
+        "data/interim/ocean_park_1_boundary.geojson",
+        "data/processed/pilot_metrics.csv",
+        "data/interim/grid_worldpop.csv",
+        "data/raw/pilot_walk_network.graphml",
+        "data/raw/pilot_drive_network.graphml",
+        "outputs/headline_metrics.json"
+      ],
+      "outputs": [
+        "outputs/validation/geospatial_extension_baseline.json",
+        "outputs/validation/geospatial_extension_baseline.md"
+      ],
+      "decisions": [
+        "DEC-032"
+      ],
+      "objective": "Lock primary inputs before additive geospatial diagnostics",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "validation"
+      ],
+      "artifact_contract": {
+        "outputs/validation/geospatial_extension_baseline.json": {
+          "non_empty": true,
+          "suffix": ".json"
+        },
+        "outputs/validation/geospatial_extension_baseline.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "spatial_autocorrelation": {
+      "command": [
+        "python",
+        "scripts/analyze_spatial_autocorrelation.py"
+      ],
+      "depends_on": [
+        "freeze_geospatial_baseline"
+      ],
+      "inputs": [
+        "data/interim/pilot_grid.gpkg",
+        "data/processed/pilot_metrics.csv"
+      ],
+      "outputs": [
+        "outputs/results/spatial_autocorrelation_cells.gpkg",
+        "outputs/validation/spatial_autocorrelation_global.csv",
+        "outputs/validation/spatial_autocorrelation.md"
+      ],
+      "decisions": [
+        "DEC-032"
+      ],
+      "objective": "Diagnose global and local spatial clustering without changing SMCI",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "heavy"
+      },
+      "tags": [
+        "validation"
+      ],
+      "artifact_contract": {
+        "outputs/results/spatial_autocorrelation_cells.gpkg": {
+          "non_empty": true,
+          "suffix": ".gpkg"
+        },
+        "outputs/validation/spatial_autocorrelation_global.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        },
+        "outputs/validation/spatial_autocorrelation.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "boundary_permeability": {
+      "command": [
+        "python",
+        "scripts/analyze_boundary_permeability.py"
+      ],
+      "depends_on": [
+        "freeze_geospatial_baseline"
+      ],
+      "inputs": [
+        "data/interim/pilot_grid.gpkg",
+        "data/interim/ocean_park_1_boundary.geojson",
+        "data/raw/pilot_walk_network.graphml",
+        "data/raw/pilot_drive_network.graphml"
+      ],
+      "outputs": [
+        "outputs/results/boundary_permeability_crossings.gpkg",
+        "outputs/results/boundary_permeability_detours.csv",
+        "outputs/validation/boundary_permeability_summary.csv",
+        "outputs/validation/boundary_permeability.md"
+      ],
+      "decisions": [
+        "DEC-032"
+      ],
+      "objective": "Measure modeled graph crossings and detours across the project boundary",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "heavy"
+      },
+      "tags": [
+        "validation"
+      ],
+      "artifact_contract": {
+        "outputs/results/boundary_permeability_crossings.gpkg": {
+          "non_empty": true,
+          "suffix": ".gpkg"
+        },
+        "outputs/validation/boundary_permeability.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "dasymetric_population_sensitivity": {
+      "command": [
+        "python",
+        "scripts/dasymetric_population_sensitivity.py"
+      ],
+      "depends_on": [
+        "freeze_geospatial_baseline"
+      ],
+      "inputs": [
+        "data/raw/worldpop/vnm_ppp_2020.tif",
+        "data/raw/building_footprints.gpkg",
+        "data/interim/pilot_grid.gpkg",
+        "data/interim/grid_worldpop.csv",
+        "data/processed/pilot_metrics.csv"
+      ],
+      "outputs": [
+        "data/interim/grid_worldpop_dasymetric.csv",
+        "outputs/validation/dasymetric_population_sensitivity.md"
+      ],
+      "decisions": [
+        "DEC-032"
+      ],
+      "objective": "Evaluate building-constrained population exposure without changing core metrics",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "heavy"
+      },
+      "tags": [
+        "validation"
+      ],
+      "artifact_contract": {
+        "data/interim/grid_worldpop_dasymetric.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        },
+        "outputs/validation/dasymetric_population_sensitivity.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
     }
   }
 }

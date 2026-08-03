@@ -1,0 +1,3 @@
+mode,boundary_length_km,directed_crossing_edges,physical_crossings,physical_crossings_per_km,restricted_crossings,components,components_spanning_boundary,restriction_tag_coverage
+walking,10.107718077232361,118,59,5.837123626637107,0,1,1,0.0
+motorcycle,10.107718077232361,40,31,3.066963261453395,0,1,1,0.0

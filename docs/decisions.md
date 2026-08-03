@@ -690,3 +690,27 @@ so settled debates don't get silently re-opened.
     routing metadata. Diagnostics are MAE=1.90 min, MAPE=22.19%, MBE=-1.04 min, RMSE=2.20 min;
     these are a small-sample plausibility check, not external calibration validation. The
     3-minute threshold is explicitly project-defined, not a literature standard.
+
+32. **DEC-032 - Spatial diagnostics are additive validation layers, not changes to the SMCI baseline (2026-08-03).**
+    Local Moran's I (LISA), boundary-permeability diagnostics, and a building-constrained
+    dasymetric population sensitivity are added to strengthen the spatial interpretation of the
+    Ocean Park pilot. None changes NAI, MAI, RAC, MCS, SMCI, typology, shared Scenario A/B
+    normalization, or canonical headline metrics.
+
+    The LISA protocol runs Global Moran's I and Local Moran's I for `SMCI_B`, `Delta_SMCI`,
+    `NAI`, `MAI_B`, and primary `RAC_B` using 9,999 permutations, fixed seed 2026,
+    row-standardized Queen weights, and Benjamini-Hochberg FDR correction. Rook and 8-nearest-
+    neighbour weights are mandatory sensitivities. LISA supports claims about spatial clustering,
+    not causal effects of the Ocean Park boundary.
+
+    Permeability uses Network A and Network D only. It reports graph-edge crossings, access/barrier
+    tag flags, near-boundary network-to-Euclidean detours, and fixed-seed approximate edge
+    betweenness. Missing OSM restriction tags are explicitly treated as missing evidence, not proof
+    of open access. The first run finds 59 walking and 31 motorcycle physical crossings, with
+    median detours of 2.10 and 2.36 respectively for 39 paired near-boundary cells.
+
+    Dasymetric allocation redistributes WorldPop only within source pixels in proportion to
+    intersecting VIDA footprint area, with an area fallback for pixels without a footprint. It
+    conserves the pilot total population to floating-point precision (-0.0003 people) and is used
+    only for population-weighted SMCI and typology exposure sensitivity. It is not a residential
+    building population estimate because footprints lack use, height, floor area, and occupancy.
