@@ -88,6 +88,7 @@ def write_report(strict_inputs: pd.DataFrame, metrics: dict[str, pd.DataFrame], 
     summary = pd.DataFrame(rows)
 
     output.parent.mkdir(parents=True, exist_ok=True)
+    strict_inputs.to_csv(output.parent / "pilot_accessibility_inputs_strict.csv", index=False)
     summary_csv = output.with_suffix(".csv")
     summary.to_csv(summary_csv, index=False)
 
