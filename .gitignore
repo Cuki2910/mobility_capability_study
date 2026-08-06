@@ -19,3 +19,12 @@ __pycache__/
 *.gpkg
 references/*.pdf
 references/*.txt
+outputs/lineage/*.sqlite
+.chrome-smoke-profile*/
+outputs/maps/*_dom.txt
+outputs/maps/*_smoke.png
+op_stats.txt
+
+.agent/ownership.json
+
+Graph-Engineering-Anthropic-Karpathy-Loop.pdf

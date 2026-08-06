@@ -2,9 +2,19 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
-import pandas as pd
+from datetime import datetime, timezone
+import sys
+
+import networkx as nx
 import numpy as np
+import osmnx as ox
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.networks import build_motorcycle_network
 
 
 def main() -> int:
@@ -19,13 +29,26 @@ def main() -> int:
         type=Path,
         default=Path("outputs/validation/travel_time_validation_report.md"),
     )
+    parser.add_argument("--drive-graph", type=Path, default=Path("data/raw/pilot_drive_network.graphml"))
+    parser.add_argument("--calibration", type=Path, default=Path("data/raw/motorcycle_speed_calibration.csv"))
     args = parser.parse_args()
 
     if not args.csv.exists():
-        print(f"Error: {args.csv} not found. Running placeholder setup.")
+        print(f"Error: {args.csv} not found.")
         return 1
+    if not args.drive_graph.exists() or not args.calibration.exists():
+        raise FileNotFoundError("Production drive graph and calibration CSV are required")
 
     df = pd.read_csv(args.csv)
+    graph = build_motorcycle_network(args.drive_graph, speed_factor_csv=args.calibration)
+    model_times = []
+    for _, row in df.iterrows():
+        origin = ox.distance.nearest_nodes(graph, float(row["origin_lon"]), float(row["origin_lat"]))
+        destination = ox.distance.nearest_nodes(graph, float(row["destination_lon"]), float(row["destination_lat"]))
+        seconds = nx.shortest_path_length(graph, origin, destination, weight="motorcycle_travel_time_s")
+        model_times.append(float(seconds) / 60.0)
+    df["model_motorcycle_minutes"] = model_times
+    df.to_csv(args.csv, index=False)
     
     # Filter only rows with completed checks
     valid = df[df["google_maps_android_minutes"].notna() & (df["google_maps_android_minutes"] > 0)].copy()
@@ -43,12 +66,25 @@ def main() -> int:
     mbe = float(valid["bias_error"].mean())
     rmse = float(np.sqrt((valid["bias_error"] ** 2).mean()))
 
+    calibration_sha256 = hashlib.sha256(args.calibration.read_bytes()).hexdigest()
+    generated_at = datetime.now(timezone.utc).isoformat()
+
     # Build validation report
     lines = [
-        "# Travel Time Validation Report (Motorcycle Mode)",
+        "# Travel Time Plausibility Report (Motorcycle Mode)",
         "",
-        "Validation against manual Google Maps consumer app measurements (two-wheeler mode) in Hanoi/Ocean Park.",
+        "Comparison against manual Google Maps consumer-app measurements (two-wheeler mode) in Hanoi/Ocean Park.",
+        "This is a small-sample plausibility check, not external calibration validation.",
         f"Computed over **{len(valid)}** sample Origin-Destination (OD) pairs.",
+        "",
+        "## Reproducibility Metadata",
+        "",
+        f"- Generated UTC: `{generated_at}`",
+        f"- Drive graph: `{args.drive_graph}`",
+        f"- Calibration CSV: `{args.calibration}`",
+        f"- Calibration SHA-256: `{calibration_sha256}`",
+        "- Route weight: `motorcycle_travel_time_s`",
+        "- Model times: regenerated from production routing during this run",
         "",
         "## Overall Error Statistics",
         "",
@@ -75,12 +111,12 @@ def main() -> int:
         )
 
     lines.append("")
-    lines.append("## Verification Verdict")
+    lines.append("## Project-Defined Screening Flag")
     lines.append("")
     if mae < 3.0:
-        lines.append("🟢 **PASS:** Mean Absolute Error is below the acceptable research threshold of 3.0 minutes.")
+        lines.append("**Within project screening bound:** MAE is below the internally defined 3.0-minute diagnostic threshold. This threshold is not an external research standard.")
     else:
-        lines.append("🔴 **FAIL:** Mean Absolute Error exceeds the acceptable research threshold of 3.0 minutes. Model speed adjustment factors require recalibration.")
+        lines.append("**Outside project screening bound:** MAE exceeds the internally defined 3.0-minute diagnostic threshold. This threshold is not an external research standard.")
 
     args.output.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"Wrote travel time validation report to {args.output}")

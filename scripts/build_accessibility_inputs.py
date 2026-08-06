@@ -7,14 +7,16 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
 from src.accessibility_inputs import build_network_accessibility_inputs, build_spatial_accessibility_inputs
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument("--mode", choices=["proxy", "network"], default="proxy")
     parser.add_argument("--grid", type=Path, default=Path("data/interim/pilot_grid.gpkg"))
-    parser.add_argument("--pois", type=Path, default=Path("data/interim/merged_pois.gpkg"))
+    parser.add_argument("--pois", type=Path, default=Path("data/interim/merged_pois_observed.gpkg"))
     parser.add_argument("--walk-graph", type=Path, default=Path("data/raw/pilot_walk_network.graphml"))
     parser.add_argument("--drive-graph", type=Path, default=Path("data/raw/pilot_drive_network.graphml"))
     parser.add_argument("--vinbus-geometry", type=Path, default=Path("data/raw/vinbus_overpass_relations_geom.json"))
@@ -49,13 +51,48 @@ def main() -> int:
     parser.add_argument(
         "--opportunity-basis",
         choices=["proxy", "observed", "observed_strict"],
-        default="proxy",
-        help="MAI opportunity weights: proxy reproduces current baseline; observed uses "
-        "Decision #21 hybrid hierarchy; observed_strict requires source-backed magnitudes "
-        "or explicit exclusion for every included POI.",
+        default="observed_strict",
+        help="MAI opportunity weights: observed_strict (DEFAULT, the canonical primary spec, "
+        "Decision #21/#22) requires source-backed magnitudes or explicit exclusion for every "
+        "included POI and needs --pois data/interim/merged_pois_observed.gpkg; observed uses "
+        "the Decision #21 hybrid hierarchy; proxy reproduces the legacy regression baseline "
+        "(use --pois data/interim/merged_pois.gpkg with it).",
     )
     parser.add_argument("--output", type=Path, default=Path("data/interim/pilot_accessibility_inputs.csv"))
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "mode": "pipeline.default_mode",
+        "grid": "paths.grid",
+        "pois": "paths.accessibility_pois",
+        "walk_graph": "paths.walk_graph",
+        "drive_graph": "paths.drive_graph",
+        "gtfs_status": "pipeline.gtfs_status",
+        "walking_threshold_m": "thresholds.walking_threshold_m",
+        "motorcycle_threshold_m": "thresholds.motorcycle_threshold_m",
+        "headway_min": "pipeline.headway_min",
+        "vinbus_mode": "pipeline.vinbus_mode",
+        "bus_speed_kph": "pipeline.bus_speed_kph",
+        "buildings": "paths.building_footprints",
+        "worldpop_csv": "paths.worldpop_csv",
+        "opportunity_basis": "pipeline.default_opportunity_basis",
+        "output": "paths.accessibility_inputs",
+    })
+
+    if args.dry_run:
+        print_resolved_paths("Accessibility input build dry-run", {
+            "site_id": config.site_id if config else "pilot",
+            "mode": args.mode,
+            "grid": args.grid,
+            "pois": args.pois,
+            "walk_graph": args.walk_graph,
+            "drive_graph": args.drive_graph,
+            "buildings": args.buildings,
+            "worldpop_csv": args.worldpop_csv,
+            "opportunity_basis": args.opportunity_basis,
+            "walking_threshold_m": args.walking_threshold_m,
+            "output": args.output,
+        })
+        return 0
 
     if not args.grid.exists():
         raise FileNotFoundError(f"Missing {args.grid}. Run scripts/fetch_osm_data.py first.")
@@ -71,7 +108,12 @@ def main() -> int:
     if args.mode == "network":
         if not args.walk_graph.exists() or not args.drive_graph.exists():
             raise FileNotFoundError("Missing graphml files. Run scripts/fetch_osm_data.py first.")
-        speed_csv = args.speed_factor_csv if args.speed_factor_csv.exists() else None
+        if not args.speed_factor_csv.exists():
+            raise FileNotFoundError(
+                f"Missing motorcycle calibration CSV: {args.speed_factor_csv}. "
+                "Network-mode production does not permit implicit defaults (DEC-030)."
+            )
+        speed_csv = args.speed_factor_csv
         inputs = build_network_accessibility_inputs(
             args.grid,
             args.pois,

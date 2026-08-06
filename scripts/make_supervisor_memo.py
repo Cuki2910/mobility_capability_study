@@ -1,12 +1,17 @@
-﻿"""Generate supervisor memo from real pilot outputs."""
+"""Generate supervisor memo from real pilot outputs."""
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 from pandas.errors import EmptyDataError
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.headline_metrics import load_headline_metrics
 
 
 def _read_json(path: Path) -> dict:
@@ -75,7 +80,7 @@ def build_memo(metrics_path: Path, summary_path: Path, output_path: Path) -> str
         raise FileNotFoundError(f"Missing {summary_path}; run scripts/run_pilot_metrics.py first")
 
     metrics = pd.read_csv(metrics_path)
-    summary = pd.read_csv(summary_path, index_col=0)["value"].to_dict()
+    headline = load_headline_metrics(Path("outputs/headline_metrics.json"))
     gtfs = _read_json(Path("data/interim/hanoi_gtfs_status.json"))
     pop = _read_json(Path("data/interim/population_proxy_resolution.json"))
     manifest = _read_json(Path("data/interim/pilot_data_manifest.json"))
@@ -92,7 +97,7 @@ def build_memo(metrics_path: Path, summary_path: Path, output_path: Path) -> str
     maps_dir = Path("outputs/maps")
     figures_dir = Path("outputs/figures")
 
-    typology_counts = metrics["typology_B"].value_counts().to_dict() if "typology_B" in metrics else {}
+    typology_counts = headline["typology_B"]
     pop_source = f"raster {pop.get('raster')}" if pop.get("raster") else "manual/parameter resolution input, not a downloaded raster"
     gtfs_vintage = gtfs.get("gtfs_vintage")
     pre_vinbus = gtfs.get("pre_vinbus_baseline", False)
@@ -152,17 +157,17 @@ def build_memo(metrics_path: Path, summary_path: Path, output_path: Path) -> str
         high = vif[vif.get("flag_high_vif", False) == True]
         if not high.empty:
             parts = [f"{row['variable']}={float(row['VIF']):.2f}" for _, row in high.iterrows()]
-            caveats.append("High VIF detected (" + ", ".join(parts) + "); report RAC_time-only sensitivity as robustness evidence.")
+            caveats.append("High VIF detected (" + ", ".join(parts) + "); use promoted RAC_time primary and report full-RAC as robustness.")
 
     lines = [
         "# Supervisor Memo: Ocean Park Pilot",
         "",
         "## Result Snapshot",
-        f"- Grid cells: {int(float(summary.get('n_cells', len(metrics))))}",
-        f"- Mean SMCI Scenario A: {float(summary.get('mean_SMCI_A', 0.0)):.4f}",
-        f"- Mean SMCI Scenario B: {float(summary.get('mean_SMCI_B', 0.0)):.4f}",
-        f"- Mean Delta_SMCI: {float(summary.get('mean_Delta_SMCI', 0.0)):.4f}",
-        f"- Share improved: {float(summary.get('share_improved', 0.0)):.2%}",
+        f"- Grid cells: <!-- headline:/n_cells|int -->{headline['n_cells']}<!-- /headline -->",
+        f"- Mean SMCI Scenario A: <!-- headline:/smci/mean_A|.4f -->{headline['smci']['mean_A']:.4f}<!-- /headline -->",
+        f"- Mean SMCI Scenario B: <!-- headline:/smci/mean_B|.4f -->{headline['smci']['mean_B']:.4f}<!-- /headline -->",
+        f"- Mean Delta_SMCI: {headline['smci']['mean_delta']:.4f}",
+        f"- Share improved: <!-- headline:/delta_groups/improved|int -->{headline['delta_groups']['improved']}<!-- /headline --> cells ({headline['delta_groups']['improved'] / headline['n_cells']:.2%})",
     ]
     if delta:
         lines.append(

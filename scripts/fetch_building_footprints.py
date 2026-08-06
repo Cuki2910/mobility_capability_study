@@ -22,6 +22,10 @@ import argparse
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
+
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import box
@@ -162,11 +166,11 @@ def fetch_vida_buildings(
     if "confidence" in buildings.columns:
         before = len(buildings)
         buildings = buildings[buildings["confidence"] >= min_confidence].copy()
-        print(f"Confidence filter (>={min_confidence}): {before} → {len(buildings)} buildings")
+        print(f"Confidence filter (>={min_confidence}): {before} -> {len(buildings)} buildings")
     elif "confidence_score" in buildings.columns:
         before = len(buildings)
         buildings = buildings[buildings["confidence_score"] >= min_confidence].copy()
-        print(f"Confidence filter (>={min_confidence}): {before} → {len(buildings)} buildings")
+        print(f"Confidence filter (>={min_confidence}): {before} -> {len(buildings)} buildings")
 
     # Standardise columns
     keep_cols = [c for c in ["geometry", "source", "confidence", "confidence_score", "full_plus_code"] if c in buildings.columns]
@@ -180,10 +184,28 @@ def fetch_vida_buildings(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument("--grid",       type=Path, default=Path("data/interim/pilot_grid.gpkg"))
     parser.add_argument("--output",     type=Path, default=Path("data/raw/building_footprints.gpkg"))
     parser.add_argument("--confidence", type=float, default=MIN_CONFIDENCE)
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "grid": "paths.grid",
+        "output": "paths.building_footprints",
+    })
+
+    if args.dry_run:
+        values = {
+            "site_id": config.site_id if config else "pilot",
+            "grid": args.grid,
+            "output": args.output,
+            "confidence": args.confidence,
+        }
+        values["bbox_west_south_east_north"] = (
+            get_study_bbox(args.grid) if args.grid.exists() else "unavailable until grid exists"
+        )
+        print_resolved_paths("Building footprint fetch dry-run", values)
+        return 0
 
     if not args.grid.exists():
         raise FileNotFoundError(f"Grid not found: {args.grid}")

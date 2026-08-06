@@ -20,6 +20,10 @@ import argparse
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
+
 import geopandas as gpd
 from shapely.geometry import box
 
@@ -129,9 +133,26 @@ def fetch_overture_places(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument("--grid",   type=Path, default=Path("data/interim/pilot_grid.gpkg"))
     parser.add_argument("--output", type=Path, default=Path("data/raw/overture_pois.gpkg"))
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "grid": "paths.grid",
+        "output": "paths.overture_pois",
+    })
+
+    if args.dry_run:
+        values = {
+            "site_id": config.site_id if config else "pilot",
+            "grid": args.grid,
+            "output": args.output,
+        }
+        values["bbox_west_south_east_north"] = (
+            get_study_bbox(args.grid) if args.grid.exists() else "unavailable until grid exists"
+        )
+        print_resolved_paths("Overture fetch dry-run", values)
+        return 0
 
     if not args.grid.exists():
         raise FileNotFoundError(f"Grid not found: {args.grid}")

@@ -2,18 +2,18 @@
 
 ## Result Snapshot
 - Grid cells: 462
-- Mean SMCI Scenario A: 0.0497
-- Mean SMCI Scenario B: 0.0881
-- Mean Delta_SMCI: 0.0384
-- Share improved: 67.10%
-- Improved / unchanged / declined cells: 240 (51.95%) / 222 (48.05%) / 0 (0.00%)
-- Distribution note: Mean SMCI is small mainly because RAC_B is compressed by an extreme max (mean normalized RAC_B=0.5245; p99=0.8014; max=0.9033) and zero-valued components make multiplicative SMCI exactly zero for many cells.
+- Mean SMCI Scenario A: 0.0070
+- Mean SMCI Scenario B: 0.0133
+- Mean Delta_SMCI: 0.0063
+- Share improved: 60.82%
+- Improved / unchanged / declined cells: 281 (60.82%) / 88 (19.05%) / 93 (20.13%)
+- Distribution note: Mean SMCI is small mainly because RAC_B is compressed by an extreme max (mean normalized RAC_B=0.0819; p99=0.2116; max=1.0000) and zero-valued components make multiplicative SMCI exactly zero for many cells.
 
 ## Typology Counts, Scenario B
-- Motorcycle Lock-in: 160
-- Integrated Capability: 160
-- Fragmented Capability: 71
-- Transit-Dependent: 71
+- Motorcycle Lock-in: 171
+- Integrated Capability: 171
+- Fragmented Capability: 60
+- Transit-Dependent: 60
 
 ## Confirmed Real Data
 - OSM pilot graph/POI/grid manifest present: True.
@@ -41,7 +41,6 @@
 - Google TWO_WHEELER bulk API remains unavailable/unconfirmed; validation uses manual Android consumer-app checks.
 - Building footprints and WorldPop are used as audit layers, not yet as primary MAI weights.
 - Overture POI gate passed; keep the user-confirmed spot-check CSV as audit trail for the merged primary POI layer.
-- High VIF detected (MAI=20.18, RAC=22.79); report RAC_time-only sensitivity as robustness evidence.
 
 ## Next Decisions
 - Spot-check 55 Overture-only POIs and decide whether merged POIs can become primary.

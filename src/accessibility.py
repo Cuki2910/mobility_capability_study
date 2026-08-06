@@ -12,10 +12,17 @@ these formulas inline elsewhere.
 import numpy as np
 
 # MAI v8 domain weights (Decision #12). Keys match classify_poi_opportunity_domain() output.
+# "default" is a theory-informed prior (employment-centrality), not raw revealed-demand.
+# "utm_derived" is survey-informed from UTM-Hanoi trip-purpose counts and retained
+# as sensitivity unless the paper explicitly decides to promote it.
+# Robustness across schemes is strong (metric audit: equal/job_heavy/econ_light all κ≥0.92).
 MAI_DOMAIN_WEIGHTS = {
     "default":   {"economic": 0.40, "higher_education": 0.20, "tertiary_healthcare": 0.20, "metro_commercial": 0.20},
     "equal":     {"economic": 0.25, "higher_education": 0.25, "tertiary_healthcare": 0.25, "metro_commercial": 0.25},
     "job_heavy": {"economic": 0.50, "higher_education": 0.15, "tertiary_healthcare": 0.15, "metro_commercial": 0.20},
+    "econ_light": {"economic": 0.20, "higher_education": 0.30, "tertiary_healthcare": 0.30, "metro_commercial": 0.20},
+    "service_health_heavy": {"economic": 0.25, "higher_education": 0.25, "tertiary_healthcare": 0.30, "metro_commercial": 0.20},
+    "utm_derived": {"economic": 0.6885, "higher_education": 0.2043, "tertiary_healthcare": 0.0198, "metro_commercial": 0.0874},
 }
 
 
@@ -34,6 +41,18 @@ def time_decay_linear(t_min: np.ndarray, t_full: float = 30.0, t_zero: float = 6
         t <= t_full, 1.0,
         np.where(t <= t_zero, (t_zero - t) / (t_zero - t_full), 0.0),
     )
+
+def time_decay_exponential(t_min: np.ndarray, half_life_min: float = 30.0, t_zero: float = 60.0) -> np.ndarray:
+    """
+    Exponential MAI decay robustness variant.
+
+    Uses a half-life so access decays smoothly instead of breaking at t_full,
+    while still truncating beyond t_zero to preserve the metropolitan catchment.
+    """
+    t = np.asarray(t_min, dtype=float)
+    half_life = max(float(half_life_min), 1e-9)
+    decay = np.exp(-np.log(2.0) * t / half_life)
+    return np.where(t <= t_zero, decay, 0.0)
 
 
 def norm01(x: np.ndarray) -> np.ndarray:
@@ -102,7 +121,12 @@ def compute_rac_shared(
 def compute_smci(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
     """
     Sustainable Mobility Capability Index (Section 3.8), PRIMARY specification.
-    SMCI = NAI_norm * MAI_norm * RAC_norm  (multiplicative — a "weakest link" index).
+    SMCI = NAI_norm * MAI_norm * RAC_norm
+    (multiplicative, weak-link-sensitive, with zero annihilation).
+
+    A zero normalized component sets the product to zero; among positive
+    values, partial compensation remains possible. This is not a strict
+    minimum or fully non-compensatory operator.
 
     NOTE — lesson learned 2026-06-21 (see docs/decisions.md #4):
     Do NOT validate this against a geometric-mean alternative

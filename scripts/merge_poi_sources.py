@@ -16,7 +16,12 @@ Outputs:
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
 
 import geopandas as gpd
 import pandas as pd
@@ -109,11 +114,28 @@ def write_summary(merged: gpd.GeoDataFrame, osm_count: int, overture_count: int,
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument("--osm",      type=Path, default=Path("data/interim/pilot_pois.gpkg"))
     parser.add_argument("--overture", type=Path, default=Path("data/raw/overture_pois.gpkg"))
     parser.add_argument("--output",   type=Path, default=Path("data/interim/merged_pois.gpkg"))
     parser.add_argument("--summary",  type=Path, default=Path("outputs/poi_merge_summary.md"))
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "osm": "paths.osm_pois",
+        "overture": "paths.overture_pois",
+        "output": "paths.merged_pois",
+        "summary": "paths.poi_merge_summary",
+    })
+
+    if args.dry_run:
+        print_resolved_paths("POI merge dry-run", {
+            "site_id": config.site_id if config else "pilot",
+            "osm": args.osm,
+            "overture": args.overture,
+            "output": args.output,
+            "summary": args.summary,
+        })
+        return 0
 
     if not args.osm.exists():
         raise FileNotFoundError(f"OSM POIs not found: {args.osm}")

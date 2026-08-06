@@ -9,10 +9,23 @@ import pandas as pd
 
 try:
     from .networks import build_motorcycle_network, build_walk_network
-    from .accessibility import MAI_DOMAIN_WEIGHTS, time_decay_linear
+    from .accessibility import MAI_DOMAIN_WEIGHTS, time_decay_exponential, time_decay_linear
 except ImportError:  # pragma: no cover
     from networks import build_motorcycle_network, build_walk_network
-    from accessibility import MAI_DOMAIN_WEIGHTS, time_decay_linear
+    from accessibility import MAI_DOMAIN_WEIGHTS, time_decay_exponential, time_decay_linear
+
+def decay_weight(
+    t_min: float | np.ndarray,
+    t_full_min: float = 30.0,
+    t_zero_min: float = 60.0,
+    decay_kind: str = "linear",
+) -> np.ndarray:
+    """Dispatch MAI decay variants while preserving linear as primary default."""
+    if decay_kind == "linear":
+        return time_decay_linear(np.asarray(t_min, dtype=float), t_full_min, t_zero_min)
+    if decay_kind == "exponential":
+        return time_decay_exponential(np.asarray(t_min, dtype=float), half_life_min=t_full_min, t_zero=t_zero_min)
+    raise ValueError("decay_kind must be 'linear' or 'exponential'")
 
 
 def load_timed_graph(
@@ -211,6 +224,7 @@ def vinbus_stop_accessibility_pseudo_gtfs(
     bus_speed_kph: float = 20.0,
     t_full_min: float = 30.0,
     t_zero_min: float = 60.0,
+    decay_kind: str = "linear",
     domain_weights: dict[str, float] | None = None,
     time_of_day: str = "peak",
     return_components: bool = False,
@@ -336,7 +350,7 @@ def vinbus_stop_accessibility_pseudo_gtfs(
             if total_s is None:
                 continue
             domain = poi_domains[i]
-            decay = float(time_decay_linear(np.array([total_s / 60.0]), t_full_min, t_zero_min)[0])
+            decay = float(decay_weight(np.array([total_s / 60.0]), t_full_min, t_zero_min, decay_kind)[0])
             score += domain_weights.get(domain, 0.0) * poi_opp_weights[i] * decay
             reachable_times.append(total_s)
         scores.append(score)
@@ -504,6 +518,7 @@ def vinbus_stop_accessibility(
     bus_speed_kph: float = 20.0,
     t_full_min: float = 30.0,
     t_zero_min: float = 60.0,
+    decay_kind: str = "linear",
     domain_weights: dict[str, float] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Compute Network C stop-level VinBus access using walk access + bus line-haul proxy."""
@@ -586,7 +601,7 @@ def vinbus_stop_accessibility(
             if total_s is None:
                 continue
             domain = poi_domains[i]
-            decay = float(time_decay_linear(np.array([total_s / 60.0]), t_full_min, t_zero_min)[0])
+            decay = float(decay_weight(np.array([total_s / 60.0]), t_full_min, t_zero_min, decay_kind)[0])
             score += domain_weights.get(domain, 0.0) * poi_opp_weights[i] * decay
             reachable_times.append(total_s)
         scores.append(score)
@@ -668,6 +683,7 @@ def weighted_decay_sum(
     weight_attr: str,
     t_full_min: float = 30.0,
     t_zero_min: float = 60.0,
+    decay_kind: str = "linear",
 ) -> np.ndarray:
     """
     MAI v8 access score for one domain and one mode (Decision #12).
@@ -687,7 +703,7 @@ def weighted_decay_sum(
         total = 0.0
         for node, t_s in lengths.items():
             if node in dest_weight:
-                total += dest_weight[node] * float(time_decay_linear(np.array([t_s / 60.0]), t_full_min, t_zero_min)[0])
+                total += dest_weight[node] * float(decay_weight(np.array([t_s / 60.0]), t_full_min, t_zero_min, decay_kind)[0])
         scores.append(total)
     return np.asarray(scores, dtype=float)
 
@@ -746,6 +762,7 @@ def composite_mai_from_graph(
     domain_weights: dict[str, float] | None = None,
     t_full_min: float = 30.0,
     t_zero_min: float = 60.0,
+    decay_kind: str = "linear",
     return_per_domain: bool = False,
 ) -> np.ndarray | tuple[np.ndarray, dict[str, np.ndarray]]:
     """
@@ -770,7 +787,7 @@ def composite_mai_from_graph(
         d_nodes = [destination_nodes[i] for i in idx]
         d_weights = [poi_opp_weights[i] for i in idx]
         per_domain[domain] = weighted_decay_sum(
-            graph, origin_nodes, d_nodes, d_weights, weight_attr, t_full_min, t_zero_min
+            graph, origin_nodes, d_nodes, d_weights, weight_attr, t_full_min, t_zero_min, decay_kind
         )
 
     mai = np.zeros(len(origin_nodes), dtype=float)

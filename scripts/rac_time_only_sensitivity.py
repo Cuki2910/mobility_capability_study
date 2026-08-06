@@ -88,13 +88,17 @@ TYPOLOGIES = [
 def run_sensitivity(metrics: pd.DataFrame) -> str:
     nai        = metrics["NAI"].to_numpy(dtype=float)
     mai_b      = metrics["MAI_B"].to_numpy(dtype=float)
-    rac_time_b = metrics["RAC_time_B"].to_numpy(dtype=float)  # already normalized in pilot
-    rac_b_norm = metrics["RAC_B_norm"].to_numpy(dtype=float)  # full composite (time+opp)
-
     nai_norm  = _minmax(nai)
     mai_b_norm = metrics["MAI_B_norm"].to_numpy(dtype=float)
 
-    # ---- Spec A: primary (full RAC = sqrt(time * opp), already in metrics) ----
+    # ---- Spec A: legacy full RAC = sqrt(time * opp) ----
+    if {"RAC_full_A", "RAC_full_B"} <= set(metrics.columns):
+        _, rac_b_norm = _minmax_shared(
+            metrics["RAC_full_A"].to_numpy(dtype=float),
+            metrics["RAC_full_B"].to_numpy(dtype=float),
+        )
+    else:
+        rac_b_norm = metrics["RAC_B_norm"].to_numpy(dtype=float)
     mcs_primary   = np.sqrt(mai_b_norm * rac_b_norm)
     smci_primary  = nai_norm * mai_b_norm * rac_b_norm
     typ_primary   = _theory_first_typology(nai, mcs_primary)
@@ -157,7 +161,7 @@ def run_sensitivity(metrics: pd.DataFrame) -> str:
 
     def _shift_table(df: pd.DataFrame) -> list[str]:
         pivot = df.pivot(index="from_primary", columns="to_timonly", values="n_cells").fillna(0).astype(int)
-        header = "| From (primary) \\ To (RAC_time) | " + " | ".join(TYPOLOGIES) + " |"
+        header = "| From (legacy full RAC) \\ To (RAC_time primary) | " + " | ".join(TYPOLOGIES) + " |"
         sep    = "|---|" + "---|" * len(TYPOLOGIES)
         lines  = [header, sep]
         for t_from in TYPOLOGIES:
@@ -169,17 +173,17 @@ def run_sensitivity(metrics: pd.DataFrame) -> str:
     n_changed = int((typ_primary != typ_timonly).sum())
     primary_vif = vif_primary.set_index("variable")["VIF"]
     md_lines = [
-        "# RAC_time-only Sensitivity (VIF Contingency)",
+        "# RAC_time-only Sensitivity (Promoted Primary)",
         "",
         f"**Motivation:** VIF(MAI)={primary_vif['MAI']:.2f} and VIF(RAC)={primary_vif['RAC']:.2f} in the pilot both exceed the",
         "threshold of 5. This is structural: RAC_opp numerator = MAI_transit (decisions.md #3).",
-        "The contingency is to replace RAC = sqrt(RAC_time × RAC_opp) with RAC_time alone.",
+        "The promoted primary replaces RAC = sqrt(RAC_time x RAC_opp) with RAC_time alone.",
         "",
-        "## VIF — Primary Specification (full RAC)",
+        "## VIF - Legacy Full-RAC Specification",
         "",
         *_vif_table(vif_primary),
         "",
-        "## VIF — RAC_time-only Specification",
+        "## VIF - Promoted RAC_time-only Specification",
         "",
         *_vif_table(vif_timonly),
         "",
@@ -191,7 +195,7 @@ def run_sensitivity(metrics: pd.DataFrame) -> str:
         "",
         "## Typology Shift Matrix",
         "",
-        "Rows = primary label; columns = RAC_time-only label. Diagonal = no change.",
+        "Rows = legacy full-RAC label; columns = promoted RAC_time-only label. Diagonal = no change.",
         "",
         *_shift_table(shift_df),
         "",
@@ -206,8 +210,8 @@ def run_sensitivity(metrics: pd.DataFrame) -> str:
             "RAC in the primary specification, the classification outcome is not driven by",
             "the shared MAI_transit component in RAC_opp.",
             "",
-            "**Recommendation:** report the primary (full RAC) specification as the main",
-            "result. Report RAC_time-only as a VIF robustness check in the validation section.",
+            "**Recommendation:** use RAC_time-only as the primary reviewer-safe RAC specification.",
+            "Report full RAC as a construct-rich robustness check.",
         ]
     else:
         md_lines += [

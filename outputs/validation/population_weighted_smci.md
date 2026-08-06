@@ -10,16 +10,16 @@ Cells with non-zero population: 462 / 462
 
 | Metric | Unweighted | Population-weighted | Bias |
 |---|---|---|---|
-| Mean SMCI_B | 0.0435 | 0.0423 | -2.7% |
-| Mean SMCI_A | 0.0322 | 0.0320 | — |
-| Mean Delta SMCI | 0.0113 | 0.0103 | — |
-| Share improved | 64.50% | 67.87% | — |
+| Mean SMCI_B | 0.0133 | 0.0129 | -3.2% |
+| Mean SMCI_A | 0.0070 | 0.0070 | — |
+| Mean Delta SMCI | 0.0063 | 0.0059 | — |
+| Share improved | 60.82% | 63.48% | — |
 
-Population-weighted mean SMCI_B is lower than the unweighted mean by 2.7%.
+Population-weighted mean SMCI_B is lower than the unweighted mean by 3.2%.
 
 ## Population–SMCI Rank Correlation
 
-Spearman ρ(population, SMCI_B) = -0.0173 (p = 7.110e-01)
+Spearman ρ(population, SMCI_B) = -0.0074 (p = 8.746e-01)
 
 Near-zero correlation: population is roughly evenly distributed across SMCI levels.
 Unweighted and population-weighted means are similar.
@@ -28,10 +28,10 @@ Unweighted and population-weighted means are similar.
 
 | Typology | Population share |
 |---|---:|
-| Integrated Capability | 31.1% |
-| Fragmented Capability | 19.6% |
-| Transit-Dependent | 16.0% |
-| Motorcycle Lock-in | 33.4% |
+| Integrated Capability | 34.7% |
+| Fragmented Capability | 16.0% |
+| Transit-Dependent | 15.4% |
+| Motorcycle Lock-in | 33.9% |
 
 ## Interpretation
 

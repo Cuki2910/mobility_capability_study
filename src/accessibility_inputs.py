@@ -116,7 +116,7 @@ OBSERVED_OPPORTUNITY_REFS = {
     #
     # tertiary_healthcare: 50-bed district clinic = ref; 288-bed hospital → 5.76 (< cap 30)
     "tertiary_healthcare": {"column": "obs_beds", "unit": "beds", "ref": 50.0, "lo": 0.4, "hi": 30.0},
-    # higher_education: 1000-student secondary school = ref; large campus → ≤20
+    # higher_education: 1000-student education campus/reference facility = ref; large campus -> <=20
     "higher_education": {"column": "obs_enrollment", "unit": "students", "ref": 1000.0, "lo": 0.5, "hi": 20.0},
     # economic: ref=500 jobs (small industrial cluster); cap=5 mirrors Decision #18 landuse cap.
     # Without this, a 30,000-worker KCN would hit cap=30 and dominate the full MAI domain.
@@ -605,11 +605,13 @@ def build_network_accessibility_inputs(
     buildings_path: str | Path | None = "data/raw/building_footprints.gpkg",
     t_full_min: float = 30.0,
     t_zero_min: float = 60.0,
+    decay_kind: str = "linear",
     domain_weights: dict[str, float] | None = None,
     pop_weighting: bool = True,
     worldpop_csv: str | Path | None = "data/interim/grid_worldpop.csv",
     pop_mult_bounds: tuple[float, float] = (0.5, 2.0),
     opportunity_basis: str = "proxy",
+    drop_top_opportunity_pct: float = 0.0,
 ) -> pd.DataFrame:
     """
     Build pilot inputs using MAI v8: composite Metropolitan Opportunity Accessibility
@@ -753,6 +755,18 @@ def build_network_accessibility_inputs(
             print(f"Warning: pop-weighting failed, using unweighted MAI: {e}")
             pop_mult = np.ones(len(pois), dtype=float)
     poi_opp_weights_eff = [w * float(m) for w, m in zip(poi_opp_weights, pop_mult)]
+    if drop_top_opportunity_pct > 0:
+        pct = float(drop_top_opportunity_pct)
+        if not 0 < pct < 100:
+            raise ValueError("drop_top_opportunity_pct must be in (0, 100)")
+        weights_arr = np.asarray(poi_opp_weights_eff, dtype=float)
+        positive = np.where(weights_arr > 0)[0]
+        n_drop = max(1, int(np.ceil(len(positive) * pct / 100.0))) if len(positive) else 0
+        if n_drop:
+            top_idx = positive[np.argsort(weights_arr[positive])[-n_drop:]]
+            weights_arr[top_idx] = 0.0
+            poi_opp_weights_eff = weights_arr.tolist()
+            print(f"Top-opportunity leverage sensitivity: dropped top {n_drop} POIs ({pct:g}%).")
     observed_flags = np.array([src in OBSERVED_SOURCE_VALUES for src in poi_opp_sources], dtype=bool)
     poi_weight_arr = np.asarray(poi_opp_weights_eff, dtype=float)
     coverage_cols: dict[str, float] = {}
@@ -784,6 +798,7 @@ def build_network_accessibility_inputs(
         drive_graph, grid_drive_nodes, poi_drive_nodes,
         poi_domains, poi_opp_weights_eff, drive_weight,
         t_full_min=t_full_min, t_zero_min=t_zero_min,
+        decay_kind=decay_kind,
         domain_weights=domain_weights,
     )
 
@@ -805,6 +820,7 @@ def build_network_accessibility_inputs(
             walk_graph, grid_walk_nodes, poi_walk_nodes,
             poi_domains, poi_opp_weights_eff, walk_weight,
             t_full_min=t_full_min, t_zero_min=t_zero_min,
+            decay_kind=decay_kind,
             domain_weights=domain_weights,
         )
         wt_a_mean_opp_time = opportunity_weighted_mean_time(
@@ -843,6 +859,7 @@ def build_network_accessibility_inputs(
             bus_speed_kph=bus_speed_kph,
             t_full_min=t_full_min,
             t_zero_min=t_zero_min,
+            decay_kind=decay_kind,
             domain_weights=domain_weights,
             return_components=True,
         )
@@ -865,6 +882,7 @@ def build_network_accessibility_inputs(
             bus_speed_kph=bus_speed_kph,
             t_full_min=t_full_min,
             t_zero_min=t_zero_min,
+            decay_kind=decay_kind,
             domain_weights=domain_weights,
         )
         mai_b = np.maximum(mai_a, vinbus_mai)

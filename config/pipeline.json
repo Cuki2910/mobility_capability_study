@@ -1,0 +1,470 @@
+{
+  "schema_version": 2,
+  "nodes": {
+    "audit_pois": {
+      "command": [
+        "python",
+        "scripts/audit_pois.py"
+      ],
+      "depends_on": [],
+      "inputs": [
+        "data/interim/pilot_pois.gpkg"
+      ],
+      "outputs": [
+        "outputs/poi_audit.csv",
+        "outputs/poi_audit.md"
+      ],
+      "decisions": [
+        "DEC-020"
+      ],
+      "objective": "Validate pilot POI quality before accessibility construction",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "outputs/poi_audit.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        },
+        "outputs/poi_audit.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "build_accessibility_inputs": {
+      "command": [
+        "python",
+        "scripts/build_accessibility_inputs.py",
+        "--mode",
+        "network",
+        "--gtfs-status",
+        "baseline_limited"
+      ],
+      "depends_on": [
+        "audit_pois"
+      ],
+      "inputs": [
+        "data/interim/pilot_grid.gpkg",
+        "data/interim/merged_pois_observed.gpkg",
+        "data/raw/pilot_walk_network.graphml",
+        "data/raw/pilot_drive_network.graphml",
+        "data/raw/motorcycle_speed_calibration.csv",
+        "data/raw/hanoi_gtfs.zip",
+        "data/raw/vinbus_pseudo_gtfs_fixed"
+      ],
+      "outputs": [
+        "data/interim/pilot_accessibility_inputs.csv"
+      ],
+      "decisions": [
+        "DEC-017",
+        "DEC-020",
+        "DEC-021",
+        "DEC-027",
+        "DEC-030"
+      ],
+      "objective": "Build auditable network accessibility inputs",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "heavy"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "data/interim/pilot_accessibility_inputs.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        }
+      }
+    },
+    "run_pilot_metrics": {
+      "command": [
+        "python",
+        "scripts/run_pilot_metrics.py"
+      ],
+      "depends_on": [
+        "build_accessibility_inputs"
+      ],
+      "inputs": [
+        "data/interim/pilot_accessibility_inputs.csv"
+      ],
+      "outputs": [
+        "data/processed/pilot_metrics.csv",
+        "outputs/pilot_summary.csv"
+      ],
+      "decisions": [
+        "DEC-002",
+        "DEC-007",
+        "DEC-022"
+      ],
+      "objective": "Compute shared-scale scenario metrics and typologies",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "data/processed/pilot_metrics.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        },
+        "outputs/pilot_summary.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        }
+      }
+    },
+    "make_validation_report": {
+      "command": [
+        "python",
+        "scripts/make_validation_report.py"
+      ],
+      "depends_on": [
+        "run_pilot_metrics"
+      ],
+      "inputs": [
+        "data/processed/pilot_metrics.csv"
+      ],
+      "outputs": [
+        "outputs/validation/vif_flags.csv"
+      ],
+      "decisions": [
+        "DEC-003",
+        "DEC-022"
+      ],
+      "objective": "Evaluate collinearity and metric validity",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "outputs/validation/vif_flags.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        }
+      }
+    },
+    "compute_population_weighted_smci": {
+      "command": [
+        "python",
+        "scripts/compute_population_weighted_smci.py"
+      ],
+      "depends_on": [
+        "run_pilot_metrics"
+      ],
+      "inputs": [
+        "data/processed/pilot_metrics.csv",
+        "data/interim/grid_worldpop.csv"
+      ],
+      "outputs": [
+        "outputs/validation/population_weighted_smci.md"
+      ],
+      "decisions": [
+        "DEC-019"
+      ],
+      "objective": "Evaluate population-weighted capability",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core"
+      ],
+      "artifact_contract": {
+        "outputs/validation/population_weighted_smci.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "build_headline_snapshot": {
+      "command": [
+        "python",
+        "scripts/build_headline_snapshot.py"
+      ],
+      "depends_on": [
+        "make_validation_report",
+        "compute_population_weighted_smci"
+      ],
+      "inputs": [
+        "outputs/pilot_summary.csv",
+        "data/processed/pilot_metrics.csv",
+        "outputs/validation/vif_flags.csv"
+      ],
+      "outputs": [
+        "outputs/headline_metrics.json"
+      ],
+      "decisions": [
+        "DEC-002",
+        "DEC-022",
+        "DEC-027"
+      ],
+      "objective": "Publish one machine-readable headline source of truth",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core",
+        "publication"
+      ],
+      "artifact_contract": {
+        "outputs/headline_metrics.json": {
+          "non_empty": true,
+          "suffix": ".json"
+        }
+      }
+    },
+    "project_self_audit": {
+      "command": [
+        "python",
+        "scripts/project_self_audit.py"
+      ],
+      "depends_on": [
+        "build_headline_snapshot"
+      ],
+      "inputs": [
+        "outputs/headline_metrics.json"
+      ],
+      "outputs": [
+        "outputs/project_self_audit.json",
+        "outputs/project_self_audit.md"
+      ],
+      "decisions": [
+        "DEC-022",
+        "DEC-027"
+      ],
+      "objective": "Evaluate project completeness and stale outputs",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "core",
+        "publication"
+      ],
+      "artifact_contract": {
+        "outputs/project_self_audit.json": {
+          "non_empty": true,
+          "suffix": ".json"
+        },
+        "outputs/project_self_audit.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "freeze_geospatial_baseline": {
+      "command": [
+        "python",
+        "scripts/freeze_geospatial_baseline.py"
+      ],
+      "depends_on": [
+        "run_pilot_metrics"
+      ],
+      "inputs": [
+        "data/interim/pilot_grid.gpkg",
+        "data/interim/ocean_park_1_boundary.geojson",
+        "data/processed/pilot_metrics.csv",
+        "data/interim/grid_worldpop.csv",
+        "data/raw/pilot_walk_network.graphml",
+        "data/raw/pilot_drive_network.graphml",
+        "outputs/headline_metrics.json"
+      ],
+      "outputs": [
+        "outputs/validation/geospatial_extension_baseline.json",
+        "outputs/validation/geospatial_extension_baseline.md"
+      ],
+      "decisions": [
+        "DEC-032"
+      ],
+      "objective": "Lock primary inputs before additive geospatial diagnostics",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "light"
+      },
+      "tags": [
+        "validation"
+      ],
+      "artifact_contract": {
+        "outputs/validation/geospatial_extension_baseline.json": {
+          "non_empty": true,
+          "suffix": ".json"
+        },
+        "outputs/validation/geospatial_extension_baseline.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "spatial_autocorrelation": {
+      "command": [
+        "python",
+        "scripts/analyze_spatial_autocorrelation.py"
+      ],
+      "depends_on": [
+        "freeze_geospatial_baseline"
+      ],
+      "inputs": [
+        "data/interim/pilot_grid.gpkg",
+        "data/processed/pilot_metrics.csv"
+      ],
+      "outputs": [
+        "outputs/results/spatial_autocorrelation_cells.gpkg",
+        "outputs/validation/spatial_autocorrelation_global.csv",
+        "outputs/validation/spatial_autocorrelation.md"
+      ],
+      "decisions": [
+        "DEC-032"
+      ],
+      "objective": "Diagnose global and local spatial clustering without changing SMCI",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "heavy"
+      },
+      "tags": [
+        "validation"
+      ],
+      "artifact_contract": {
+        "outputs/results/spatial_autocorrelation_cells.gpkg": {
+          "non_empty": true,
+          "suffix": ".gpkg"
+        },
+        "outputs/validation/spatial_autocorrelation_global.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        },
+        "outputs/validation/spatial_autocorrelation.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "boundary_permeability": {
+      "command": [
+        "python",
+        "scripts/analyze_boundary_permeability.py"
+      ],
+      "depends_on": [
+        "freeze_geospatial_baseline"
+      ],
+      "inputs": [
+        "data/interim/pilot_grid.gpkg",
+        "data/interim/ocean_park_1_boundary.geojson",
+        "data/raw/pilot_walk_network.graphml",
+        "data/raw/pilot_drive_network.graphml"
+      ],
+      "outputs": [
+        "outputs/results/boundary_permeability_crossings.gpkg",
+        "outputs/results/boundary_permeability_detours.csv",
+        "outputs/validation/boundary_permeability_summary.csv",
+        "outputs/validation/boundary_permeability.md"
+      ],
+      "decisions": [
+        "DEC-032"
+      ],
+      "objective": "Measure modeled graph crossings and detours across the project boundary",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "heavy"
+      },
+      "tags": [
+        "validation"
+      ],
+      "artifact_contract": {
+        "outputs/results/boundary_permeability_crossings.gpkg": {
+          "non_empty": true,
+          "suffix": ".gpkg"
+        },
+        "outputs/validation/boundary_permeability.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    },
+    "dasymetric_population_sensitivity": {
+      "command": [
+        "python",
+        "scripts/dasymetric_population_sensitivity.py"
+      ],
+      "depends_on": [
+        "freeze_geospatial_baseline"
+      ],
+      "inputs": [
+        "data/raw/worldpop/vnm_ppp_2020.tif",
+        "data/raw/building_footprints.gpkg",
+        "data/interim/pilot_grid.gpkg",
+        "data/interim/grid_worldpop.csv",
+        "data/processed/pilot_metrics.csv"
+      ],
+      "outputs": [
+        "data/interim/grid_worldpop_dasymetric.csv",
+        "outputs/validation/dasymetric_population_sensitivity.md"
+      ],
+      "decisions": [
+        "DEC-032"
+      ],
+      "objective": "Evaluate building-constrained population exposure without changing core metrics",
+      "evaluations": [
+        "artifact_contract"
+      ],
+      "resources": {
+        "network": false,
+        "class": "heavy"
+      },
+      "tags": [
+        "validation"
+      ],
+      "artifact_contract": {
+        "data/interim/grid_worldpop_dasymetric.csv": {
+          "non_empty": true,
+          "suffix": ".csv"
+        },
+        "outputs/validation/dasymetric_population_sensitivity.md": {
+          "non_empty": true,
+          "suffix": ".md"
+        }
+      }
+    }
+  }
+}

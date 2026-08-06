@@ -67,6 +67,11 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
     for key, values in rac_b.items():
         out[f"{key}_B"] = values
 
+    out["RAC_full_A"] = out["RAC_A"]
+    out["RAC_full_B"] = out["RAC_B"]
+    out["RAC_A"] = out["RAC_time_A"]
+    out["RAC_B"] = out["RAC_time_B"]
+
     mai_lo, mai_hi = shared_minmax(out["MAI_A"].to_numpy(), out["MAI_B"].to_numpy())
     rac_lo, rac_hi = shared_minmax(out["RAC_A"].to_numpy(), out["RAC_B"].to_numpy())
 
@@ -86,8 +91,8 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
     out["typology_A"] = theory_first_typology(out["NAI"].to_numpy(), out["MCS_A"].to_numpy())
     out["typology_B"] = theory_first_typology(out["NAI"].to_numpy(), out["MCS_B"].to_numpy())
 
-    # RAC_time-only sensitivity (VIF contingency per Decision #3).
-    # Uses only the time subcomponent — drops RAC_opp entirely.
+    # RAC_time-only is the promoted primary RAC specification; full RAC is
+    # retained in RAC_full_A/B for robustness against the previous formula.
     time_lo, time_hi = shared_minmax(out["RAC_time_A_raw"].to_numpy(), out["RAC_time_B_raw"].to_numpy())
     rt_a_only = norm01_with_bounds(out["RAC_time_A_raw"].to_numpy(), time_lo, time_hi)
     rt_b_only = norm01_with_bounds(out["RAC_time_B_raw"].to_numpy(), time_lo, time_hi)
@@ -97,6 +102,11 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
     mcs_b_time_only = metropolitan_competitiveness_score_from_normalized(out["MAI_B_norm"].to_numpy(), rt_b_norm)
     out["SMCI_B_time_only"] = compute_smci_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), rt_b_norm)
     out["typology_B_time_only"] = theory_first_typology(out["NAI"].to_numpy(), mcs_b_time_only)
+    full_lo, full_hi = shared_minmax(out["RAC_full_A"].to_numpy(), out["RAC_full_B"].to_numpy())
+    full_b_norm = norm01_with_bounds(out["RAC_full_B"].to_numpy(), full_lo, full_hi)
+    out["SMCI_B_full_rac_legacy"] = compute_smci_from_normalized(
+        out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), full_b_norm
+    )
 
     return out
 
