@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "run_id": "20260725T134248.703472Z",
+  "pipeline": "config/pipeline.json",
+  "started_at": "2026-07-25T13:42:48.703472+00:00",
+  "finished_at": "2026-07-25T13:44:13.417455+00:00",
+  "status": "failed",
+  "git": {
+    "commit": "cc291689e870ef3acbb2ec59388a78b52ee03861",
+    "dirty": true
+  },
+  "nodes": [
+    {
+      "node_id": "audit_pois",
+      "command": [
+        "python",
+        "scripts/audit_pois.py"
+      ],
+      "depends_on": [],
+      "decisions": [
+        "DEC-020"
+      ],
+      "started_at": "2026-07-25T13:42:48.791930+00:00",
+      "finished_at": "2026-07-25T13:42:49.657416+00:00",
+      "status": "succeeded",
+      "exit_code": 0,
+      "artifacts": [
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/interim/pilot_pois.gpkg",
+          "role": "input",
+          "sha256": "006d6fac08b020a9532a1970344dbd97f9ea076874b6aba1e0722fa2704874c0",
+          "size_bytes": 147456
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/outputs/poi_audit.csv",
+          "role": "output",
+          "sha256": "b42d8a1bc87bf4d000f36f7639c34c74a381a54f06e61fceaa1ae54137dae88f",
+          "size_bytes": 110
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/outputs/poi_audit.md",
+          "role": "output",
+          "sha256": "a21cee2a1c6a7d11e587356388dcbc781c11ef7298a40775f0604e59b2e29923",
+          "size_bytes": 338
+        }
+      ]
+    },
+    {
+      "node_id": "build_accessibility_inputs",
+      "command": [
+        "python",
+        "scripts/build_accessibility_inputs.py",
+        "--mode",
+        "network",
+        "--gtfs-status",
+        "baseline_limited"
+      ],
+      "depends_on": [
+        "audit_pois"
+      ],
+      "decisions": [
+        "DEC-017",
+        "DEC-020",
+        "DEC-021",
+        "DEC-027"
+      ],
+      "started_at": "2026-07-25T13:42:49.661868+00:00",
+      "finished_at": "2026-07-25T13:44:10.120041+00:00",
+      "status": "succeeded",
+      "exit_code": 0,
+      "artifacts": [
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/interim/pilot_grid.gpkg",
+          "role": "input",
+          "sha256": "8d6faf02042976b613401bb8e2d6b1c48237272bdcde2dd24777d34807145c02",
+          "size_bytes": 196608
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/interim/merged_pois_observed.gpkg",
+          "role": "input",
+          "sha256": "37642acba2e7678b356d9edf46932050fe2298b7c64bcb830c95949f855fe928",
+          "size_bytes": 208896
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/raw/pilot_walk_network.graphml",
+          "role": "input",
+          "sha256": "98b57bcf592302e60c028f7caafa630f31d337f2a2a8b376c3856083a6d7caa6",
+          "size_bytes": 7300190
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/raw/pilot_drive_network.graphml",
+          "role": "input",
+          "sha256": "515ef5dc6a16eba51a6c1682cc69702121fa9bae7aaa237585b2e777af967b5e",
+          "size_bytes": 1487750
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/raw/hanoi_gtfs.zip",
+          "role": "input",
+          "sha256": "540375bc909a708d4d1428a8f3f1ae1ebd0a1bdc8c77cf069b4ae3cf68510785",
+          "size_bytes": 1580517
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/raw/vinbus_pseudo_gtfs_fixed",
+          "role": "input",
+          "sha256": "ef68b18bbb1233b64aa1122d6980fbf82b47ec16c982974e28037ab2c5960c84",
+          "size_bytes": null
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/interim/pilot_accessibility_inputs.csv",
+          "role": "output",
+          "sha256": "b33b25b29d5875e15e549fdb62cda41e56929c3995d6d8280a58a55a27fc4f49",
+          "size_bytes": 466853
+        }
+      ]
+    },
+    {
+      "node_id": "run_pilot_metrics",
+      "command": [
+        "python",
+        "scripts/run_pilot_metrics.py"
+      ],
+      "depends_on": [
+        "build_accessibility_inputs"
+      ],
+      "decisions": [
+        "DEC-002",
+        "DEC-007",
+        "DEC-022"
+      ],
+      "started_at": "2026-07-25T13:44:10.149466+00:00",
+      "finished_at": "2026-07-25T13:44:10.733145+00:00",
+      "status": "succeeded",
+      "exit_code": 0,
+      "artifacts": [
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/interim/pilot_accessibility_inputs.csv",
+          "role": "input",
+          "sha256": "b33b25b29d5875e15e549fdb62cda41e56929c3995d6d8280a58a55a27fc4f49",
+          "size_bytes": 466853
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/processed/pilot_metrics.csv",
+          "role": "output",
+          "sha256": "0a25b03ae3abb33cda705a20c62c6619d1f2aecad6a5bb95e56e9c26889e24a9",
+          "size_bytes": 683106
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/outputs/pilot_summary.csv",
+          "role": "output",
+          "sha256": "02df2ed73e30a368a6752ba127b911a293cf8a057874fd3a04c8e5bce41f7151",
+          "size_bytes": 164
+        }
+      ]
+    },
+    {
+      "node_id": "make_validation_report",
+      "command": [
+        "python",
+        "scripts/make_validation_report.py"
+      ],
+      "depends_on": [
+        "run_pilot_metrics"
+      ],
+      "decisions": [
+        "DEC-003",
+        "DEC-022"
+      ],
+      "started_at": "2026-07-25T13:44:10.743975+00:00",
+      "finished_at": "2026-07-25T13:44:12.115208+00:00",
+      "status": "succeeded",
+      "exit_code": 0,
+      "artifacts": [
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/data/processed/pilot_metrics.csv",
+          "role": "input",
+          "sha256": "0a25b03ae3abb33cda705a20c62c6619d1f2aecad6a5bb95e56e9c26889e24a9",
+          "size_bytes": 683106
+        },
+        {
+          "path": "D:/GREEN-X/mobility-capability-study/outputs/validation/vif_flags.csv",
+          "role": "output",
+          "sha256": "b73e6ae72a0f26164e5aba4aacb6325372f532eeadf549823e31c519d2f2731f",
+          "size_bytes": 140
+        }
+      ]
+    },
+    {
+      "node_id": "compute_population_weighted_smci",
+      "command": [
+        "python",
+        "scripts/compute_population_weighted_smci.py"
+      ],
+      "depends_on": [
+        "run_pilot_metrics"
+      ],
+      "decisions": [
+        "DEC-019"
+      ],
+      "started_at": "2026-07-25T13:44:12.126092+00:00",
+      "finished_at": "2026-07-25T13:44:13.417455+00:00",
+      "status": "failed",
+      "exit_code": 1,
+      "artifacts": []
+    }
+  ],
+  "error": "FileNotFoundError: compute_population_weighted_smci missing outputs: ['outputs/population_weighted_smci.csv', 'outputs/population_weighted_smci_summary.csv']"
+}
