@@ -1,10 +1,19 @@
 # Project Self-Audit
 
+## Gate Checks
+
+- headline_complete: True
+- publication_outputs_fresh: False
+- docs_consistent: None
+- missing_headline_sources: []
+- stale_headline_sources: ['outputs\\validation\\manual_motorcycle_validation_template.csv', 'outputs\\validation\\motorcycle_speed_sensitivity.csv']
+- missing_publication_outputs: []
+
 ## Snapshot
 
 - grid_cells: 462
-- mean_SMCI_A: 0.0070377752800668
-- mean_SMCI_B: 0.0132898043722475
+- mean_SMCI_A: 0.0070377752800667714
+- mean_SMCI_B: 0.013289804372247466
 - share_improved: 0.6082251082251082
 - gtfs_status: baseline_limited
 - pre_vinbus_baseline: True

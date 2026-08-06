@@ -31,6 +31,10 @@ METRICS_CSV  = os.path.join(ROOT, "data", "processed", "pilot_metrics.csv")
 STRICT_INPUTS_CSV = os.path.join(ROOT, "data", "interim", "pilot_accessibility_inputs.csv")
 POIS_GPKG    = os.path.join(ROOT, "data", "interim", "merged_pois_observed.gpkg")
 OCEAN_BOUNDARY = os.path.join(ROOT, "data", "interim", "ocean_park_1_boundary.geojson")
+LISA_GPKG    = os.path.join(ROOT, "outputs", "results", "spatial_autocorrelation_cells.gpkg")
+CROSSINGS_GPKG = os.path.join(ROOT, "outputs", "results", "boundary_permeability_crossings.gpkg")
+PERMEABILITY_SUMMARY_CSV = os.path.join(ROOT, "outputs", "validation", "boundary_permeability_summary.csv")
+PERMEABILITY_DETOURS_CSV = os.path.join(ROOT, "outputs", "results", "boundary_permeability_detours.csv")
 VINBUS_GEOM  = os.path.join(ROOT, "data", "raw", "vinbus_overpass_relations_geom.json")
 VINBUS_STOPS = os.path.join(ROOT, "data", "raw", "vinbus_pseudo_gtfs_fixed", "stops.txt")
 VINBUS_ROUTES= os.path.join(ROOT, "data", "raw", "vinbus_pseudo_gtfs_fixed", "routes.txt")
@@ -169,6 +173,90 @@ grid_geojson = {"type": "FeatureCollection", "features": grid_features}
 zero_nai_geojson = {"type": "FeatureCollection", "features": zero_nai_features}
 print(f"  {len(grid_features)} grid cells")
 print(f"  {len(zero_nai_features)} zero-NAI cells")
+
+# Spatial diagnostics are kept separate from the core accessibility indices.
+LISA_CLUSTER_COLORS = {
+    "High-High": "#b2182b",
+    "Low-Low": "#2166ac",
+    "High-Low": "#ef8a62",
+    "Low-High": "#67a9cf",
+    "Not Significant": "#d9d9d9",
+}
+lisa_features = []
+if os.path.exists(LISA_GPKG):
+    print("Reading LISA diagnostics ...")
+    lisa = gpd.read_file(LISA_GPKG).to_crs("EPSG:4326")
+    lisa_columns = {
+        "cluster": "SMCI_B__queen__cluster",
+        "p_value": "SMCI_B__queen__p_value",
+        "q_value": "SMCI_B__queen__q_value",
+        "local_i": "SMCI_B__queen__local_i",
+        "spatial_lag": "SMCI_B__queen__spatial_lag",
+    }
+    missing_lisa = [column for column in lisa_columns.values() if column not in lisa.columns]
+    if missing_lisa:
+        print(f"  Skipping LISA layer; missing columns: {', '.join(missing_lisa)}")
+    else:
+        for _, row in lisa.iterrows():
+            cluster = str(row[lisa_columns["cluster"]])
+            lisa_features.append({
+                "type": "Feature",
+                "geometry": mapping(row.geometry),
+                "properties": {
+                    "cell_id": int(row["cell_id"]),
+                    "cluster": cluster,
+                    "color": LISA_CLUSTER_COLORS.get(cluster, LISA_CLUSTER_COLORS["Not Significant"]),
+                    "p_value": float(row[lisa_columns["p_value"]]),
+                    "q_value": float(row[lisa_columns["q_value"]]),
+                    "local_i": float(row[lisa_columns["local_i"]]),
+                    "spatial_lag": float(row[lisa_columns["spatial_lag"]]),
+                },
+            })
+lisa_geojson = {"type": "FeatureCollection", "features": lisa_features}
+lisa_significant = sum(feature["properties"]["cluster"] != "Not Significant" for feature in lisa_features)
+print(f"  {len(lisa_features)} LISA cells ({lisa_significant} FDR-significant)")
+
+crossing_features = []
+if os.path.exists(CROSSINGS_GPKG):
+    print("Reading boundary permeability crossings ...")
+    crossings = gpd.read_file(CROSSINGS_GPKG).to_crs("EPSG:4326")
+    seen_physical_crossings = set()
+    for _, row in crossings.iterrows():
+        crossing_id = (str(row["mode"]), str(row["physical_edge_id"]))
+        if crossing_id in seen_physical_crossings:
+            continue
+        seen_physical_crossings.add(crossing_id)
+        crossing_features.append({
+            "type": "Feature",
+            "geometry": mapping(row.geometry),
+            "properties": {
+                "mode": str(row["mode"]),
+                "length_m": float(row["length_m"]),
+                "highway": str(row["highway"]),
+                "access_status": str(row["access_status"]),
+                "approx_edge_betweenness": float(row["approx_edge_betweenness"]),
+            },
+        })
+crossings_geojson = {"type": "FeatureCollection", "features": crossing_features}
+crossing_counts = {
+    mode: sum(feature["properties"]["mode"] == mode for feature in crossing_features)
+    for mode in ("walking", "motorcycle")
+}
+print(f"  {crossing_counts['walking']} walking and {crossing_counts['motorcycle']} motorcycle crossings")
+
+permeability_summary = {}
+if os.path.exists(PERMEABILITY_SUMMARY_CSV):
+    for _, row in pd.read_csv(PERMEABILITY_SUMMARY_CSV).iterrows():
+        permeability_summary[str(row["mode"])] = {
+            "crossings_per_km": float(row["physical_crossings_per_km"]),
+            "boundary_length_km": float(row["boundary_length_km"]),
+        }
+if os.path.exists(PERMEABILITY_DETOURS_CSV):
+    detours = pd.read_csv(PERMEABILITY_DETOURS_CSV)
+    for mode, values in detours.groupby("mode"):
+        permeability_summary.setdefault(str(mode), {})["median_detour_ratio"] = float(values["detour_ratio"].median())
+walking_detour = permeability_summary.get("walking", {}).get("median_detour_ratio", float("nan"))
+motorcycle_detour = permeability_summary.get("motorcycle", {}).get("median_detour_ratio", float("nan"))
 
 # ── 2. POIs ────────────────────────────────────────────────────────────────
 print("Reading POIs ...")
@@ -453,6 +541,11 @@ html,body{{height:100%;font-family:'Segoe UI',Arial,sans-serif;background:#1a1a2
   overflow-y:auto;padding:14px 12px;flex-shrink:0;font-size:12.5px;
 }}
 #map{{flex:1;position:relative;}}
+@media (max-width:700px){{
+  #app{{flex-direction:column;height:100dvh;}}
+  #sidebar{{width:100%;min-width:0;max-height:46dvh;padding:10px 12px;}}
+  #map{{min-height:54dvh;}}
+}}
 h2{{font-size:11.5px;color:#4fc3f7;margin:10px 0 5px;letter-spacing:.6px;text-transform:uppercase;font-weight:700;}}
 h1{{font-size:15px;color:#fff;margin-bottom:3px;line-height:1.35;font-weight:700;}}
 .subtitle{{font-size:10.5px;color:#90a4ae;margin-bottom:2px;}}
@@ -590,6 +683,34 @@ select{{
   </div>
 
   <div class="section">
+    <h2>Spatial diagnostics</h2>
+    <label><input type="checkbox" id="chk-lisa">
+      <span class="swatch" style="background:#b2182b;"></span>
+      SMCI_B LISA clusters ({lisa_significant} FDR-significant cells)
+    </label>
+    <div style="margin:4px 0 6px 20px;">
+      <div class="legend-row"><span class="swatch" style="background:#b2182b;"></span>High-High</div>
+      <div class="legend-row"><span class="swatch" style="background:#2166ac;"></span>Low-Low</div>
+      <div class="legend-row"><span class="swatch" style="background:#ef8a62;"></span>High-Low</div>
+      <div class="legend-row"><span class="swatch" style="background:#67a9cf;"></span>Low-High</div>
+      <div class="legend-row"><span class="swatch" style="background:#d9d9d9;"></span>Not significant</div>
+    </div>
+    <label><input type="checkbox" id="chk-walk-crossings">
+      <span class="line-swatch" style="background:#238b45;"></span>
+      Walking crossings ({crossing_counts['walking']})
+    </label>
+    <label><input type="checkbox" id="chk-motorcycle-crossings">
+      <span class="line-swatch" style="background:#756bb1;"></span>
+      Motorcycle crossings ({crossing_counts['motorcycle']})
+    </label>
+    <div class="layer-desc">
+      <b>Diagnostic only</b><br>
+      LISA uses Queen contiguity, 9,999 permutations, and FDR correction. It identifies spatial association, not a boundary effect or causal mechanism.<br><br>
+      Crossing lines are modeled Network A/D topology, not confirmed public gates. Median near-boundary detour is {walking_detour:.2f}x for walking and {motorcycle_detour:.2f}x for motorcycle.
+    </div>
+  </div>
+
+  <div class="section">
     <h2>Points of Interest (strict observed)</h2>
     <label><input type="checkbox" id="chk-poi" checked> Show POIs</label>
     <div style="margin-top:5px;">
@@ -653,6 +774,8 @@ const POIS     = {js(poi_geojson)};
 const ROUTES   = {js(route_geojson)};
 const VSTOPS   = {js(stops_geojson)};
 const HSTOPS   = {js(hanoi_stops_geojson)};
+const LISA     = {js(lisa_geojson)};
+const CROSSINGS = {js(crossings_geojson)};
 
 // ── Metric metadata (for continuous legend) ────────────────────────────────
 const METRIC_META = {js(METRIC_META)};
@@ -900,6 +1023,69 @@ document.getElementById('chk-zero-nai').addEventListener('change', e => {{
   }} else {{
     map.removeLayer(zeroNaiLayer);
   }}
+}});
+
+// LISA is an overlay, not a replacement for the underlying SMCI/typology layer.
+const lisaLayer = L.geoJSON(LISA, {{
+  style: f => ({{
+    color: '#ffffff',
+    weight: 0.8,
+    fillColor: f.properties.color,
+    fillOpacity: f.properties.cluster === 'Not Significant' ? 0.20 : 0.68,
+  }}),
+  onEachFeature: (f, layer) => {{
+    const p = f.properties;
+    layer.bindTooltip(
+      `<b>Cell #${{p.cell_id}}</b><br>SMCI_B LISA: <b>${{p.cluster}}</b><br>FDR q = ${{p.q_value.toFixed(4)}}`,
+      {{sticky: true}}
+    );
+    layer.bindPopup(
+      `<b>SMCI_B LISA diagnostic</b><br>` +
+      `Cell #${{p.cell_id}}: <b>${{p.cluster}}</b><br>` +
+      `Local Moran's I: ${{p.local_i.toFixed(4)}}<br>` +
+      `Permutation p: ${{p.p_value.toFixed(4)}}; FDR q: ${{p.q_value.toFixed(4)}}<br><br>` +
+      `<small>Queen contiguity, 9,999 permutations. This is spatial association, not causal evidence.</small>`
+    );
+  }},
+}});
+
+function setLayerVisible(layer, visible) {{
+  if (visible) {{
+    layer.addTo(map);
+    layer.bringToFront();
+  }} else {{
+    map.removeLayer(layer);
+  }}
+}}
+
+document.getElementById('chk-lisa').addEventListener('change', e => {{
+  setLayerVisible(lisaLayer, e.target.checked);
+}});
+
+function crossingLayer(mode, color) {{
+  return L.geoJSON(CROSSINGS, {{
+    filter: f => f.properties.mode === mode,
+    style: {{color, weight: 3.5, opacity: 0.9, lineCap: 'round'}},
+    onEachFeature: (f, layer) => {{
+      const p = f.properties;
+      layer.bindTooltip(
+        `<b>${{mode === 'walking' ? 'Walking' : 'Motorcycle'}} modeled crossing</b><br>` +
+        `${{p.highway}} &middot; ${{p.length_m.toFixed(0)}} m<br>` +
+        `Approx. edge betweenness: ${{p.approx_edge_betweenness.toFixed(4)}}<br>` +
+        `<small>OSM access status: ${{p.access_status}}; not gate validation.</small>`,
+        {{sticky: true}}
+      );
+    }},
+  }});
+}}
+
+const walkingCrossingsLayer = crossingLayer('walking', '#238b45');
+const motorcycleCrossingsLayer = crossingLayer('motorcycle', '#756bb1');
+document.getElementById('chk-walk-crossings').addEventListener('change', e => {{
+  setLayerVisible(walkingCrossingsLayer, e.target.checked);
+}});
+document.getElementById('chk-motorcycle-crossings').addEventListener('change', e => {{
+  setLayerVisible(motorcycleCrossingsLayer, e.target.checked);
 }});
 
 document.getElementById('chk-grid').addEventListener('change', e => {{

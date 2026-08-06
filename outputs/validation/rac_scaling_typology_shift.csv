@@ -1,7 +1,7 @@
 from_minmax,to_log_minmax,n_cells
-Integrated Capability,Integrated Capability,176
-Fragmented Capability,Fragmented Capability,55
-Transit-Dependent,Transit-Dependent,54
-Transit-Dependent,Motorcycle Lock-in,1
+Integrated Capability,Integrated Capability,168
+Integrated Capability,Fragmented Capability,1
+Fragmented Capability,Fragmented Capability,62
+Transit-Dependent,Transit-Dependent,62
 Motorcycle Lock-in,Transit-Dependent,1
-Motorcycle Lock-in,Motorcycle Lock-in,175
+Motorcycle Lock-in,Motorcycle Lock-in,168
