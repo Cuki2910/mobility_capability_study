@@ -2,6 +2,11 @@
 from __future__ import annotations
 import argparse, json, subprocess, sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from scripts.agent_gate import ROOT, changed_files, default_base, load_policy, normalize_paths
 
 def owns(path: str, reservations: tuple[str, ...]) -> bool:

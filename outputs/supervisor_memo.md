@@ -27,7 +27,6 @@
 - Built/population zero-access audit completed with building footprints and WorldPop.
 - Overture POI gate passed; merged OSM+Overture POI layer is now primary.
 - Quick-look SVG maps and GIS map layer generated in outputs/maps/.
-- Paper-facing composite figures and captions generated in outputs/figures/.
 
 ## Inferred / Proxy Metrics
 - Transit accessibility is network-v1/proxy where timetable and stop-access detail is incomplete.

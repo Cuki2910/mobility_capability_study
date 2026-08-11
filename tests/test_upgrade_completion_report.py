@@ -1,8 +1,10 @@
+from pathlib import Path
+
 from scripts.make_upgrade_completion_report import ALLOWED_STATUSES, ROOT, exists
 
 
 def test_report_checks_artifacts_against_worktree_root():
-    assert ROOT.name == "mobility-capability-study-smci-nai-upgrade"
+    assert ROOT == Path(__file__).resolve().parents[1]
     assert exists("scripts/make_upgrade_completion_report.py")
 
 

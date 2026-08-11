@@ -31,7 +31,7 @@
 - merged_poi_sensitivity: True
 - gtfs_catalog_check: True
 - analytical_spec: {'nai_primary_threshold_m': 800, 'smci_primary_operator': 'equal_weight_geometric_mean', 'smci_legacy_operator': 'product', 'smci_robustness_operator': 'additive', 'smci_bottleneck_operator': 'minimum_component', 'default_scenario': 'B', 'default_metric': 'typology'}
-- data_requirement_statuses: {'external_validation': 'NOT_RUN_DATA_REQUIRED', 'reliability': 'NOT_RUN_DATA_REQUIRED', 'generalized_cost': 'NOT_RUN_DATA_REQUIRED', 'mixed_traffic': 'NOT_RUN_DATA_REQUIRED', 'west_taymo': 'MATCHING_GATE_FAILED'}
+- data_requirement_statuses: {'external_validation': 'COMPLETED_WITH_LIMITATION', 'reliability': 'NOT_RUN_DATA_REQUIRED', 'generalized_cost': 'NOT_RUN_DATA_REQUIRED', 'mixed_traffic': 'NOT_RUN_DATA_REQUIRED', 'west_taymo': 'MATCHING_GATE_FAILED'}
 - generated_artifacts: {'upgrade_completion_report': 'outputs\\upgrade\\upgrade_completion_report.md', 'uncertainty_envelope': 'outputs\\validation\\scenario_uncertainty_envelope_status.md', 'data_quality_grades': 'outputs\\validation\\data_quality_grades.md', 'interactive_map': 'outputs\\maps\\ocean_park_interactive.html', 'grid_robustness': 'outputs\\validation\\grid_sensitivity_summary.md'}
 
 ## Strengths
@@ -53,7 +53,6 @@
 
 ## Blockers
 
-- external validation remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.
 - reliability remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.
 - generalized cost remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.
 - mixed traffic remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.

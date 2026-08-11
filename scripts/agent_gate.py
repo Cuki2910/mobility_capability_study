@@ -100,9 +100,10 @@ def default_base(policy: dict) -> str:
 
 
 def changed_files(base: str) -> tuple[str, ...]:
-    committed = _git("diff", "--name-only", f"{base}...HEAD", check=False).splitlines()
-    working = _git("diff", "--name-only", "HEAD", check=False).splitlines()
-    untracked = _git("ls-files", "--others", "--exclude-standard", check=False).splitlines()
+    # NUL-delimited Git paths preserve non-ASCII filenames without C-style quoting.
+    committed = _git("diff", "--name-only", "-z", f"{base}...HEAD", check=False).split("\0")
+    working = _git("diff", "--name-only", "-z", "HEAD", check=False).split("\0")
+    untracked = _git("ls-files", "--others", "--exclude-standard", "-z", check=False).split("\0")
     return normalize_paths((*committed, *working, *untracked))
 
 

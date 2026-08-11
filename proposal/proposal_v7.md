@@ -2,7 +2,7 @@
 
 ## A Dual-Scale and Mode-Competitive Accessibility Framework from Vinhomes Ocean Park, Hanoi
 
-Proposal v7. Last updated: 2026-07-27.
+Proposal v7. Last updated: 2026-08-11.
 
 ## 1. Summary
 
@@ -10,7 +10,7 @@ This study examines whether a green-branded megaproject can produce sustainable 
 
 The proposal develops a dual-scale and mode-competitive accessibility framework. It separates neighborhood walking access from metropolitan opportunity access, then evaluates whether walking and transit are competitive with motorcycle access. The central metric is the Sustainable Mobility Capability Index (SMCI), defined as the joint presence of local access, metropolitan access, and relative competitiveness against motorcycles.
 
-The current implementation is a pilot, not a full final study. It covers 462 grid cells around Vinhomes Ocean Park and uses real OSM walking and driving networks, Hanoi GTFS as a pre-VinBus transit baseline, VinBus pseudo-GTFS for the intervention scenario, OSM plus Overture POIs, OSM landuse/office enrichment for economic opportunities, WorldPop, VIDA building footprints, and manual Android Google Maps motorcycle checks. The metropolitan opportunity index is now built on a strict provenance-tiered opportunity specification with full coverage of all included destinations. The pipeline runs end to end and passes 80 tests.
+The current implementation is a pilot, not a full final study. It covers 462 grid cells around Vinhomes Ocean Park and uses real OSM walking and driving networks, Hanoi GTFS as a pre-VinBus transit baseline, VinBus pseudo-GTFS for the intervention scenario, OSM plus Overture POIs, OSM landuse/office enrichment for economic opportunities, WorldPop, VIDA building footprints, and manual Android Google Maps motorcycle checks. The metropolitan opportunity index is now built on a strict provenance-tiered opportunity specification with full coverage of all included destinations. The pipeline runs end to end and passes 167 tests.
 
 ## 2. Research Problem
 
@@ -387,7 +387,7 @@ python scripts/make_pilot_maps.py
 pytest tests/ -q
 ```
 
-Current test baseline: 80 tests pass.
+Current test baseline: 167 tests pass.
 
 ## 16. Ethics and Data Statement
 

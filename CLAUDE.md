@@ -125,7 +125,7 @@ python scripts/fetch_overture_pois.py
 python scripts/merge_poi_sources.py   # after fetch_overture_pois.py
 
 # Anywhere:
-pytest tests/ -v   # current baseline: 85 passed
+pytest tests/ -v   # current baseline: 167 passed
 ```
 
 ## Known constraints / gotchas
@@ -177,7 +177,7 @@ pytest tests/ -v   # current baseline: 85 passed
 - [x] Proposal text finalized at v7 (`proposal/proposal_v7.md`): theory-RAC consistency,
   classification logic, collinearity check, VIF contingency executed, RAC scaling sensitivity,
   additive robustness robustness (ρ=0.803), Section 3.8 additive fix, validation hierarchy resolved.
-- [x] Analysis formulas (`src/accessibility.py`) implemented and tested. 85 pytest tests pass.
+- [x] Analysis formulas (`src/accessibility.py`) implemented and tested. 167 pytest tests pass.
 - [x] Deterministic core DAG + JSON/SQLite provenance implemented (`config/pipeline.json`,
   `scripts/run_research_pipeline.py`, `src/provenance.py`). Current graph covers core inputs,
   pilot metrics, VIF, population weighting, headline snapshot, and self-audit. Publication

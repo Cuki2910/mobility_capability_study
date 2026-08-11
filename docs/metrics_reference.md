@@ -9,7 +9,7 @@ This is a **reference document**, not a tutorial. The authoritative implementati
 `src/routing.py` (input construction). If a formula here disagrees with the code, the
 code wins — fix this file. Last synced: 2026-07-01 (strict observed MAI + RAC_time
 promoted to primary per Decision #22; NAI threshold under localized audit per Decision #26;
-full-RAC retained as robustness; 77 tests).
+full-RAC retained as robustness; 167 tests).
 For a plain-language Vietnamese explanation, see `docs/metrics_explained_vi.md`.
 
 Convention: cell index `i`, opportunity/POI index `j`, domain index `k`,
