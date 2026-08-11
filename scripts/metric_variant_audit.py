@@ -4,7 +4,7 @@ Runs the metric changes raised in red-team review:
 - NAI diversity and category-capped NAI
 - RAC full vs time-only vs opportunity-only
 - minmax vs winsorized vs log normalization
-- multiplicative vs additive SMCI
+- geometric-mean vs additive SMCI (legacy product is scale audit only)
 - alternative typology thresholds
 - MAI weight/decay/top-opportunity leverage rebuilds
 - strict observed excluded-POI spatial missingness
@@ -218,7 +218,7 @@ def compute_variant(
     name: str,
     rac_variant: str = "full",
     norm_method: str = "minmax",
-    smci_kind: str = "product",
+    smci_kind: str = "geometric",
     typology_kind: str = "rank",
     nai_abs_threshold: float | None = None,
     mcs_abs_threshold: float | None = None,
@@ -244,9 +244,14 @@ def compute_variant(
         raise ValueError(f"unknown rac_variant={rac_variant}")
 
     mcs_b = np.sqrt(mai_b_norm * rac_b_norm)
-    if smci_kind == "product":
+    if smci_kind == "geometric":
+        smci_a = np.cbrt(nai_norm * mai_a_norm * rac_a_norm)
+        smci_b = np.cbrt(nai_norm * mai_b_norm * rac_b_norm)
+    elif smci_kind == "product":
+        smci_a = nai_norm * mai_a_norm * rac_a_norm
         smci_b = nai_norm * mai_b_norm * rac_b_norm
     elif smci_kind == "additive":
+        smci_a = (nai_norm + mai_a_norm + rac_a_norm) / 3.0
         smci_b = (nai_norm + mai_b_norm + rac_b_norm) / 3.0
     else:
         raise ValueError(f"unknown smci_kind={smci_kind}")
@@ -265,7 +270,9 @@ def compute_variant(
         "cell_id": base["cell_id"].astype(str),
         f"{name}_NAI": nai,
         f"{name}_MCS_B": mcs_b,
+        f"{name}_SMCI_A": smci_a,
         f"{name}_SMCI_B": smci_b,
+        f"{name}_Delta_SMCI": smci_b - smci_a,
         f"{name}_typology_B": labels,
     })
     summary = {
@@ -370,18 +377,18 @@ def main() -> int:
     cell_frames: list[pd.DataFrame] = []
 
     candidate_specs = [
-        ("legacy_full_rac", "NAI", "full", "minmax", "product", "rank", None, None),
-        ("nai_diversity", "NAI_diversity", "full", "minmax", "product", "rank", None, None),
-        ("nai_capped", "NAI_capped", "full", "minmax", "product", "rank", None, None),
-        ("rac_time_only", "NAI", "time_only", "minmax", "product", "rank", None, None),
-        ("rac_opp_only", "NAI", "opp_only", "minmax", "product", "rank", None, None),
-        ("winsor_norm", "NAI", "full", "winsor", "product", "rank", None, None),
-        ("log_norm", "NAI", "full", "log", "product", "rank", None, None),
+        ("legacy_full_rac", "NAI", "full", "minmax", "geometric", "rank", None, None),
+        ("nai_diversity", "NAI_diversity", "full", "minmax", "geometric", "rank", None, None),
+        ("nai_capped", "NAI_capped", "full", "minmax", "geometric", "rank", None, None),
+        ("rac_time_only", "NAI", "time_only", "minmax", "geometric", "rank", None, None),
+        ("rac_opp_only", "NAI", "opp_only", "minmax", "geometric", "rank", None, None),
+        ("winsor_norm", "NAI", "full", "winsor", "geometric", "rank", None, None),
+        ("log_norm", "NAI", "full", "log", "geometric", "rank", None, None),
         ("additive_smci", "NAI", "full", "minmax", "additive", "rank", None, None),
-        ("reviewer_safe_capped_time_winsor", "NAI_capped", "time_only", "winsor", "product", "rank", None, None),
-        ("reviewer_safe_diversity_time_winsor", "NAI_diversity", "time_only", "winsor", "product", "rank", None, None),
-        ("absolute_count5_mcs60", "NAI", "full", "minmax", "product", "absolute", 5.0, None),
-        ("absolute_diversity4_mcs60", "NAI_diversity", "full", "minmax", "product", "absolute", 4.0, None),
+        ("reviewer_safe_capped_time_winsor", "NAI_capped", "time_only", "winsor", "geometric", "rank", None, None),
+        ("reviewer_safe_diversity_time_winsor", "NAI_diversity", "time_only", "winsor", "geometric", "rank", None, None),
+        ("absolute_count5_mcs60", "NAI", "full", "minmax", "geometric", "absolute", 5.0, None),
+        ("absolute_diversity4_mcs60", "NAI_diversity", "full", "minmax", "geometric", "absolute", 4.0, None),
     ]
     baseline_labels = baseline_metrics["typology_B"].to_numpy()
     baseline_smci = baseline_metrics["SMCI_B"].to_numpy()

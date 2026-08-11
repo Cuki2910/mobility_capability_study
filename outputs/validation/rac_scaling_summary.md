@@ -16,21 +16,21 @@ All variants use shared Scenario A+B bounds for Delta_SMCI comparability.
 
 | Scaler | mean SMCI_B | median SMCI_B |
 |---|---|---|
-| minmax | 0.066486 | 0.026318 |
-| log_minmax | 0.081731 | 0.033195 |
-| sqrt_minmax | 0.107600 | 0.050195 |
+| minmax | 0.051133 | 0.020096 |
+| log_minmax | 0.062828 | 0.025729 |
+| sqrt_minmax | 0.082163 | 0.039241 |
 
 ## Typology Agreement (Cohen's Kappa)
 
-- **minmax vs log_minmax**: κ = 0.9936 (near-perfect)
-- **minmax vs sqrt_minmax**: κ = 0.9745 (near-perfect)
-- **log_minmax vs sqrt_minmax**: κ = 0.9745 (near-perfect)
+- **minmax vs log_minmax**: κ = 0.9938 (near-perfect)
+- **minmax vs sqrt_minmax**: κ = 0.9752 (near-perfect)
+- **log_minmax vs sqrt_minmax**: κ = 0.9752 (near-perfect)
 
 ## SMCI Rank Agreement (Spearman ρ)
 
 - **minmax vs log_minmax**: ρ = 0.9999
-- **minmax vs sqrt_minmax**: ρ = 0.9964
-- **log_minmax vs sqrt_minmax**: ρ = 0.9969
+- **minmax vs sqrt_minmax**: ρ = 0.997
+- **log_minmax vs sqrt_minmax**: ρ = 0.9977
 
 ## Typology Shift: minmax → log_minmax
 
@@ -39,10 +39,10 @@ Diagonal = cells that did not change.
 
 | From \ To | Integrated Capability | Fragmented Capability | Transit-Dependent | Motorcycle Lock-in |
 |---|---|---|---|---|
-| Integrated Capability | 176 | 0 | 0 | 0 |
-| Fragmented Capability | 0 | 55 | 0 | 0 |
-| Transit-Dependent | 0 | 0 | 54 | 1 |
-| Motorcycle Lock-in | 0 | 0 | 1 | 175 |
+| Integrated Capability | 168 | 1 | 0 | 0 |
+| Fragmented Capability | 0 | 62 | 0 | 0 |
+| Transit-Dependent | 0 | 0 | 62 | 0 |
+| Motorcycle Lock-in | 0 | 0 | 1 | 168 |
 
 ## Interpretation
 

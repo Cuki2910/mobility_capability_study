@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "healthy": true,
-  "node_count": 7,
-  "edge_count": 47,
-  "artifact_count": 10,
-  "external_input_count": 8,
+  "node_count": 11,
+  "edge_count": 75,
+  "artifact_count": 21,
+  "external_input_count": 12,
   "hard_failures": [],
   "warnings": []
 }

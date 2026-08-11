@@ -1,18 +1,18 @@
 # Supervisor Memo: Ocean Park Pilot
 
 ## Result Snapshot
-- Grid cells: 462
-- Mean SMCI Scenario A: 0.0070
-- Mean SMCI Scenario B: 0.0133
-- Mean Delta_SMCI: 0.0063
-- Share improved: 60.82%
+- Grid cells: <!-- headline:/n_cells|int -->462<!-- /headline -->
+- Mean SMCI Scenario A: <!-- headline:/smci/mean_A|.4f -->0.1470<!-- /headline -->
+- Mean SMCI Scenario B: <!-- headline:/smci/mean_B|.4f -->0.1711<!-- /headline -->
+- Mean Delta_SMCI: 0.0242
+- Share improved: <!-- headline:/delta_groups/improved|int -->281<!-- /headline --> cells (60.82%)
 - Improved / unchanged / declined cells: 281 (60.82%) / 88 (19.05%) / 93 (20.13%)
 - Distribution note: Mean SMCI is small mainly because RAC_B is compressed by an extreme max (mean normalized RAC_B=0.0819; p99=0.2116; max=1.0000) and zero-valued components make multiplicative SMCI exactly zero for many cells.
 
 ## Typology Counts, Scenario B
-- Motorcycle Lock-in: 171
-- Integrated Capability: 171
 - Fragmented Capability: 60
+- Integrated Capability: 171
+- Motorcycle Lock-in: 171
 - Transit-Dependent: 60
 
 ## Confirmed Real Data
@@ -27,7 +27,6 @@
 - Built/population zero-access audit completed with building footprints and WorldPop.
 - Overture POI gate passed; merged OSM+Overture POI layer is now primary.
 - Quick-look SVG maps and GIS map layer generated in outputs/maps/.
-- Paper-facing composite figures and captions generated in outputs/figures/.
 
 ## Inferred / Proxy Metrics
 - Transit accessibility is network-v1/proxy where timetable and stop-access detail is incomplete.

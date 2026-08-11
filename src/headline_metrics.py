@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 FLOAT_ABS_TOLERANCE = 1e-12
 
 SENSITIVITY_INPUTS = {
@@ -102,7 +102,11 @@ def build_headline_metrics(root: Path = Path(".")) -> dict[str, Any]:
     metrics = _read(
         root,
         "data/processed/pilot_metrics.csv",
-        ("cell_id", "NAI", "SMCI_A", "SMCI_B", "Delta_SMCI", "typology_A", "typology_B"),
+        (
+            "cell_id", "NAI", "SMCI_A", "SMCI_B", "Delta_SMCI",
+            "SMCI_product_A", "SMCI_product_B", "Delta_SMCI_product",
+            "typology_A", "typology_B",
+        ),
     )
     if metrics["cell_id"].duplicated().any():
         raise ValueError("pilot_metrics.csv contains duplicate cell_id")
@@ -198,11 +202,18 @@ def build_headline_metrics(root: Path = Path(".")) -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "n_cells": n_cells,
         "smci": {
+            "operator": "equal_weight_geometric_mean",
+            "legacy_operator": "product",
             "mean_A": _finite(metrics["SMCI_A"].mean(), "smci.mean_A"),
             "mean_B": _finite(metrics["SMCI_B"].mean(), "smci.mean_B"),
             "mean_delta": _finite(delta.mean(), "smci.mean_delta"),
             "positive_median_A": _finite(metrics.loc[metrics["SMCI_A"] > 0, "SMCI_A"].median(), "smci.positive_median_A"),
             "positive_median_B": _finite(metrics.loc[metrics["SMCI_B"] > 0, "SMCI_B"].median(), "smci.positive_median_B"),
+        },
+        "smci_legacy_product": {
+            "mean_A": _finite(metrics["SMCI_product_A"].mean(), "smci_product.mean_A"),
+            "mean_B": _finite(metrics["SMCI_product_B"].mean(), "smci_product.mean_B"),
+            "mean_delta": _finite(metrics["Delta_SMCI_product"].mean(), "smci_product.mean_delta"),
         },
         "delta_groups": {
             "improved": int((delta > 0).sum()),

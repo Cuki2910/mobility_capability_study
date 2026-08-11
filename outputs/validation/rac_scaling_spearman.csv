@@ -1,4 +1,4 @@
 comparison,spearman_rho_smci
 minmax vs log_minmax,0.9999
-minmax vs sqrt_minmax,0.9964
-log_minmax vs sqrt_minmax,0.9969
+minmax vs sqrt_minmax,0.997
+log_minmax vs sqrt_minmax,0.9977

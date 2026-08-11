@@ -10,12 +10,12 @@ Cells with non-zero population: 462 / 462
 
 | Metric | Unweighted | Population-weighted | Bias |
 |---|---|---|---|
-| Mean SMCI_B | 0.0133 | 0.0129 | -3.2% |
-| Mean SMCI_A | 0.0070 | 0.0070 | — |
-| Mean Delta SMCI | 0.0063 | 0.0059 | — |
+| Mean SMCI_B | 0.1711 | 0.1730 | +1.1% |
+| Mean SMCI_A | 0.1470 | 0.1494 | — |
+| Mean Delta SMCI | 0.0242 | 0.0236 | — |
 | Share improved | 60.82% | 63.48% | — |
 
-Population-weighted mean SMCI_B is lower than the unweighted mean by 3.2%.
+Population-weighted mean SMCI_B is higher than the unweighted mean by 1.1%.
 
 ## Population–SMCI Rank Correlation
 

@@ -96,6 +96,7 @@ def main() -> int:
     calibration = pd.read_csv(args.calibration)
     calibration_sha256 = hashlib.sha256(args.calibration.read_bytes()).hexdigest()
     rows = []
+    cell_frames = []
     baseline_labels = None
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
@@ -122,20 +123,23 @@ def main() -> int:
             if baseline_labels is None:
                 baseline_labels = metrics["typology_B"].copy()
             rows.append(scenario_summary(metrics, baseline_labels, scenario, calibration_sha256, args.pois))
+            cell_frames.append(metrics[["cell_id", "SMCI_A", "SMCI_B", "Delta_SMCI"]].assign(scenario=scenario))
 
     summary = pd.DataFrame(rows)
     baseline = summary.loc[summary["scenario"] == "baseline"].iloc[0]
-    if abs(float(baseline["mean_SMCI_B"]) - 0.0133) > 5e-5:
-        raise RuntimeError(f"Sensitivity baseline SMCI_B {baseline['mean_SMCI_B']:.6f} does not reproduce canonical 0.0133")
+    if abs(float(baseline["mean_SMCI_B"]) - 0.17111148832800888) > 5e-5:
+        raise RuntimeError(f"Sensitivity baseline SMCI_B {baseline['mean_SMCI_B']:.6f} does not reproduce canonical geometric mean")
     if abs(float(baseline["share_improved"]) - (281 / 462)) > 1e-12:
         raise RuntimeError(
             f"Sensitivity baseline improved share {baseline['share_improved']:.6f} does not reproduce 281/462"
         )
     csv_path = args.output_dir / "motorcycle_speed_sensitivity.csv"
+    cells_path = args.output_dir / "motorcycle_speed_sensitivity_cells.csv"
     md_path = args.output_dir / "motorcycle_speed_sensitivity.md"
     summary.to_csv(csv_path, index=False)
+    pd.concat(cell_frames, ignore_index=True).to_csv(cells_path, index=False)
     write_markdown(summary, md_path)
-    print(f"Wrote {csv_path} and {md_path}")
+    print(f"Wrote {csv_path}, {cells_path}, and {md_path}")
     return 0
 
 

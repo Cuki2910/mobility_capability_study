@@ -1,5 +1,6 @@
 ﻿"""Tests for the policy-driven agent gate."""
 import json
+import scripts.agent_gate as agent_gate
 from scripts.agent_gate import build_plan, load_policy, normalize_paths, report
 
 def names(plan): return {" ".join(command) for command in plan.commands}
@@ -23,6 +24,14 @@ def test_paths_normalized_and_unsafe_rejected():
     try: normalize_paths(["../secret"])
     except ValueError: pass
     else: raise AssertionError("unsafe path accepted")
+def test_changed_files_preserves_nul_delimited_non_ascii_paths(monkeypatch):
+    calls = []
+    def fake_git(*args, **kwargs):
+        calls.append(args)
+        return "docs/upgrade_cmt/kế_hoạch.md\0"
+    monkeypatch.setattr(agent_gate, "_git", fake_git)
+    assert agent_gate.changed_files("main") == ("docs/upgrade_cmt/kế_hoạch.md",)
+    assert all("-z" in call for call in calls)
 def test_policy_and_json_report_shape():
     policy = load_policy(); plan = build_plan(["README.md"], "main", policy)
     payload = report(plan, "main", "main")

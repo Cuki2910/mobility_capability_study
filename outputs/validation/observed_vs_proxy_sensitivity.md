@@ -6,7 +6,7 @@ Decision #21 compares proxy opportunity weights, the hybrid observed hierarchy, 
 
 | Metric | Proxy | Hybrid observed | Strict observed |
 |---|---:|---:|---:|
-| mean_SMCI_B | 0.0129 | 0.0133 | 0.0133 |
+| mean_SMCI_B | 0.1658 | 0.1711 | 0.1711 |
 | share_improved | 0.6450 | 0.6082 | 0.6082 |
 | typology_kappa | 1.0000 | 0.9373 | 0.9373 |
 | cells_relabelled | 0.0000 | 20.0000 | 20.0000 |

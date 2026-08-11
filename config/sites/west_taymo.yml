@@ -19,7 +19,7 @@ thresholds:
 
 pipeline:
   default_mode: network
-  default_opportunity_basis: proxy
+  default_opportunity_basis: observed_strict
   gtfs_status: baseline_limited
   vinbus_mode: stops
   bus_speed_kph: 20
@@ -38,7 +38,7 @@ paths:
   merged_pois: data/interim/west_taymo_merged_pois.gpkg
   merged_pois_economic: data/interim/west_taymo_merged_pois_economic.gpkg
   merged_pois_observed: data/interim/west_taymo_merged_pois_observed.gpkg
-  accessibility_pois: data/interim/west_taymo_merged_pois_economic.gpkg
+  accessibility_pois: data/interim/west_taymo_merged_pois_observed.gpkg
   accessibility_inputs: data/interim/west_taymo_accessibility_inputs.csv
   metrics: data/processed/west_taymo_metrics.csv
   summary: outputs/west_taymo/west_pair_summary.csv
@@ -52,6 +52,7 @@ paths:
   labeled_grid: data/interim/west_taymo_labeled_grid.gpkg
   data_setup_report: outputs/west_taymo/data_setup_report.md
   matching_preflight: outputs/west_taymo/matching_preflight.md
+  cbd_matching: outputs/west_taymo/cbd_network_distance_preflight.csv
   transit_supply_check: outputs/west_taymo/transit_supply_check.md
 
 seeds:

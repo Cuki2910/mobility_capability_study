@@ -2,7 +2,7 @@
 
 ## A Dual-Scale and Mode-Competitive Accessibility Framework from Vinhomes Ocean Park, Hanoi
 
-Proposal v7. Last updated: 2026-07-27.
+Proposal v7. Last updated: 2026-08-11.
 
 ## 1. Summary
 
@@ -10,7 +10,7 @@ This study examines whether a green-branded megaproject can produce sustainable 
 
 The proposal develops a dual-scale and mode-competitive accessibility framework. It separates neighborhood walking access from metropolitan opportunity access, then evaluates whether walking and transit are competitive with motorcycle access. The central metric is the Sustainable Mobility Capability Index (SMCI), defined as the joint presence of local access, metropolitan access, and relative competitiveness against motorcycles.
 
-The current implementation is a pilot, not a full final study. It covers 462 grid cells around Vinhomes Ocean Park and uses real OSM walking and driving networks, Hanoi GTFS as a pre-VinBus transit baseline, VinBus pseudo-GTFS for the intervention scenario, OSM plus Overture POIs, OSM landuse/office enrichment for economic opportunities, WorldPop, VIDA building footprints, and manual Android Google Maps motorcycle checks. The metropolitan opportunity index is now built on a strict provenance-tiered opportunity specification with full coverage of all included destinations. The pipeline runs end to end and passes 80 tests.
+The current implementation is a pilot, not a full final study. It covers 462 grid cells around Vinhomes Ocean Park and uses real OSM walking and driving networks, Hanoi GTFS as a pre-VinBus transit baseline, VinBus pseudo-GTFS for the intervention scenario, OSM plus Overture POIs, OSM landuse/office enrichment for economic opportunities, WorldPop, VIDA building footprints, and manual Android Google Maps motorcycle checks. The metropolitan opportunity index is now built on a strict provenance-tiered opportunity specification with full coverage of all included destinations. The pipeline runs end to end and passes 169 tests.
 
 ## 2. Research Problem
 
@@ -168,7 +168,7 @@ A supply-side population multiplier `m_j = clip(sqrt(pop_density_j / median), 0.
 
 **Provenance honesty.** Full coverage means every included destination has a source-backed magnitude, not that every value is an official facility census. Economic is no longer purely dasymetric: it is anchored by key citable headcounts (e.g., Z176 Factory, Phú Thị Industrial Cluster, VinBus Depot). The remaining disaggregated values use a built-coverage coefficient of 0.35 on industrial landuse polygons (to reflect GFA rather than land area) and are capped at 5,000 jobs to eliminate extreme outliers. Only 15 values across the study area are area-disaggregated employment-density estimates (`observed_dasymetric_weak`) and must be read as areal interpolation, not point truth. National-standard tiers (MOET class sizes, MOH commune-station beds) are citable but apply a class-of-facility figure rather than a school-by-school or clinic-by-clinic count. These tiers are flagged so that the final paper can upgrade them with named facility sources where possible.
 
-**Sensitivity against the proxy baseline.** The pre-observed proxy specification (`--opportunity-basis proxy`) is retained as a regression baseline, and the strict specification is compared against it. Under the promoted RAC_time primary specification and 800 m NAI primary threshold, moving from proxy to strict provenance-tiered magnitudes changes mean SMCI_B from 0.0129 to 0.0133, relabels 20 of 462 cells (Cohen's kappa = 0.9373), and preserves the cell ranking almost exactly (Spearman rho = 0.9965). Variance inflation remains well below the conventional threshold (strict provenance-tiered VIF_MAI = 2.93, VIF_RAC = 2.05).
+**Sensitivity against the proxy baseline.** The pre-observed proxy specification (`--opportunity-basis proxy`) is retained as a regression baseline, and the strict specification is compared against it. Under the promoted RAC_time primary specification and 800 m NAI primary threshold, moving from proxy to strict provenance-tiered magnitudes changes mean geometric-mean SMCI_B from 0.1658 to 0.1711, relabels 20 of 462 cells (Cohen's kappa = 0.9373), and preserves the cell ranking almost exactly (Spearman rho = 0.9965). Variance inflation remains well below the conventional threshold (strict provenance-tiered VIF_MAI = 2.93, VIF_RAC = 2.05).
 
 ### 8.3 Relative Accessibility Competitiveness
 
@@ -197,13 +197,13 @@ This reviewer-safe specification is promoted because the previous full-RAC compo
 
 ### 8.4 Sustainable Mobility Capability Index
 
-The primary index is:
+The primary index is the equal-weight geometric mean:
 
 ```text
-SMCI_i = NAI_norm_i * MAI_norm_i * RAC_norm_i
+SMCI_i = (NAI_norm_i * MAI_norm_i * RAC_norm_i)^(1/3)
 ```
 
-SMCI is a multiplicative, weak-link-sensitive composite with zero annihilation. A cell needs local walking access, metropolitan opportunity access, and mode competitiveness at the same time; any zero normalized component sets the product to zero, while partial compensation remains possible among positive values.
+SMCI is a multiplicative, weak-link-sensitive composite on a 0-1 scale with zero annihilation. A cell needs local walking access, metropolitan opportunity access, and mode competitiveness at the same time; any zero normalized component sets the geometric mean to zero, while partial compensation remains possible among positive values. The legacy product is retained as an audit scale: it has identical ordinal ranking but stronger compression near zero, so product-versus-geometric-mean is not a robustness test.
 
 Scenario A/B comparison uses shared normalization bounds across both scenarios. Delta SMCI is therefore:
 
@@ -266,17 +266,17 @@ Fourth, SMCI robustness uses an additive alternative:
 SMCI_additive_i = (NAI_norm_i + MAI_norm_i + RAC_norm_i) / 3
 ```
 
-This is meaningful because it allows compensation across dimensions. A geometric mean alternative is not used because it is only a monotonic transformation of the multiplicative product.
+This is meaningful because it allows compensation across dimensions. The geometric mean is the primary reporting scale; the product is retained only as a monotonic legacy audit, not as an independent robustness specification.
 
 Fifth, built-cell and population audits check whether zero-access results are open-space artifacts. VIDA building footprints are present in 455/462 cells, and many zero-access cells are built and populated. Zero inflation is therefore interpreted cautiously rather than dismissed.
 
-Sixth, the neighborhood walking threshold is treated as a substantive sensitivity rather than a fixed import from the 15-minute-city literature. The primary NAI catchment is 800 m (10-minute neighborhood), used as a transparent operational assumption rather than a locally validated behavioral cutoff (see Section 8.1); the threshold-response audit rebuilds NAI and downstream metrics under 600 m, 800 m, 1000 m, and 1200 m walking catchments. Zero-NAI cells fall from 133/462 at 600 m to 88/462 at the 800 m primary and 33/462 at the 1200 m optimistic upper bound, while mean SMCI_B rises from 0.0107 to 0.0133 to 0.0169. The direction of the VinBus improvement remains and the four-typology structure is near-invariant across the range, but the apparent level of neighborhood completeness is threshold-dependent; this is why the primary cutoff is reported as an operational central value bounded by an explicit 600-1200 m sensitivity range rather than a single validated standard.
+Sixth, the neighborhood walking threshold is treated as a substantive sensitivity rather than a fixed import from the 15-minute-city literature. The primary NAI catchment is 800 m (10-minute neighborhood), used as a transparent operational assumption rather than a locally validated behavioral cutoff (see Section 8.1); the threshold-response audit rebuilds NAI and downstream metrics under 600 m, 800 m, 1000 m, and 1200 m walking catchments. Zero-NAI cells fall from 133/462 at 600 m to 88/462 at the 800 m primary and 33/462 at the 1200 m optimistic upper bound, while mean geometric-mean SMCI_B rises from 0.1483 to 0.1711 to 0.2009. The direction of the VinBus improvement remains and the four-typology structure is near-invariant across the range, but the apparent level of neighborhood completeness is threshold-dependent; this is why the primary cutoff is reported as an operational central value bounded by an explicit 600-1200 m sensitivity range rather than a single validated standard.
 
 Seventh, spatial structure is evaluated as an additive diagnostic, not as a replacement for the index. Global Moran's I uses 9,999 permutations, while Local Moran's I (LISA) applies a Benjamini-Hochberg correction across cells. Under Queen contiguity, Scenario B SMCI has strong positive global autocorrelation (I = 0.7496, permutation p = 0.0001), with 58 High-High and 111 Low-Low FDR-significant cells; the same high/low clustering pattern also appears under Rook and 8-nearest-neighbour sensitivity specifications. Delta_SMCI is likewise spatially clustered (I = 0.7104, p = 0.0001). These diagnostics identify concentration and boundary outliers; they do not establish that the planning boundary causes the pattern.
 
 Eighth, a boundary-permeability audit separates topological evidence from causal interpretation. The walking graph contains 59 physical edge crossings of the 10.11 km Ocean Park boundary (5.84 crossings/km), while the motorcycle graph contains 31 (3.07 crossings/km). For paired cells within 250 m on opposite sides, all 39 modeled pairs are connected, but median network-to-Euclidean detours are 2.10 for walking and 2.36 for motorcycle. OSM access/barrier tags do not flag a restriction on these crossing edges; missing tags are not evidence of unrestricted real-world access. Approximate fixed-seed edge betweenness is consequently reported only as a structural routing diagnostic.
 
-Ninth, WorldPop demand-side exposure is tested with a building-footprint-constrained, population-preserving dasymetric allocation. The allocation retains the study population (difference from the baseline aggregate is -0.0003 persons from floating-point precision) and leaves every core index and typology unchanged. Population-weighted SMCI_B changes from 0.012862 to 0.012906, while the Motorcycle Lock-in population share changes from 33.89% to 33.63%. Because VIDA footprints do not provide dwelling counts, floor area, height, or residential use, this is reported as a sensitivity result rather than building-level population truth.
+Ninth, WorldPop demand-side exposure is tested with a building-footprint-constrained, population-preserving dasymetric allocation. The allocation retains the study population (difference from the baseline aggregate is -0.0003 persons from floating-point precision) and leaves every core index and typology unchanged. Population-weighted geometric-mean SMCI_B changes from 0.173003 to 0.173331, while the Motorcycle Lock-in population share changes from 33.89% to 33.63%. Because VIDA footprints do not provide dwelling counts, floor area, height, or residential use, this is reported as a sensitivity result rather than building-level population truth.
 
 ## 11. Current Pilot Results
 
@@ -285,18 +285,18 @@ The current pilot results, under the strict provenance-tiered opportunity specif
 | Metric | Value |
 | --- | --- |
 | Grid cells | <!-- headline:/n_cells|int -->462<!-- /headline --> |
-| Mean SMCI A | 0.0070 |
-| Mean SMCI B | 0.0133 |
-| Mean Delta_SMCI | +0.0063 |
+| Mean SMCI A | 0.1470 |
+| Mean SMCI B | 0.1711 |
+| Mean Delta_SMCI | +0.0242 |
 | Improved cells | 281 / 462 (60.82%) |
 | Unchanged cells | 88 / 462 (19.05%) |
 | Declined cells | 93 / 462 (20.13%) |
 | NAI walking threshold | 800 m (~10 min); 1200 m reported as optimistic upper bound |
 | Motorcycle validation MAE | 1.90 min |
 
-The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI is 0.0070 in Scenario A and 0.0133 in Scenario B under the promoted RAC_time specification and the 800 m NAI primary threshold, but this average is affected by zero annihilation in the multiplicative composite. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI and therefore zero SMCI_B, because any zero component collapses the product. Cross-checking these zero-access cells against VIDA building footprints shows that 84 are built cells housing about 11,798 residents (15.0% of pilot population), so zero accessibility is not simply a lake, park, or open-space artifact. At the 1200 m optimistic upper bound, zero-NAI cells fall to 33/462 (7.1%).
+The pilot results should be interpreted through distributional and spatial diagnostics rather than the global mean alone. Mean SMCI is 0.1470 in Scenario A and 0.1711 in Scenario B under the promoted RAC_time specification and the 800 m NAI primary threshold. This geometric-mean reporting scale retains zero annihilation while reducing compression among positive cells. In the walking-access layer, 88 of 462 cells (19.0%) have zero NAI and therefore zero SMCI_B, because any zero component collapses the geometric mean. Cross-checking these zero-access cells against VIDA building footprints shows that 84 are built cells housing about 11,798 residents (15.0% of pilot population), so zero accessibility is not simply a lake, park, or open-space artifact. At the 1200 m optimistic upper bound, zero-NAI cells fall to 33/462 (7.1%).
 
-The VinBus network assumption yields higher SMCI in 281 of 462 cells (60.8%), while 88 cells (19.0%) remain unchanged and 93 cells (20.1%) have slightly lower modeled values under the opportunity-weighted time-competitiveness term. Among cells with positive SMCI, the median is 0.0051 in Scenario A and 0.0081 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells where all three measured components are positive. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
+The VinBus network assumption yields higher SMCI in 281 of 462 cells (60.8%), while 88 cells (19.0%) remain unchanged and 93 cells (20.1%) have slightly lower modeled values under the opportunity-weighted time-competitiveness term. Among cells with positive SMCI, the median is 0.1726 in Scenario A and 0.2007 in Scenario B. This non-zero median comparison is more interpretable than the global mean for cells where all three measured components are positive. The unchanged group remains analytically important: these cells identify locations where adding metropolitan transit access does not overcome missing neighborhood walking access or weak local opportunity structure.
 
 ### Scenario B typology
 
@@ -313,7 +313,7 @@ The population-weighted cross-check remains a useful caution. Total estimated po
 
 The built/population zero-access audit adds a second caution. At the 800 m NAI primary, the built zero-NAI cells contain about 11,798 residents, or 15.0% of the pilot population. Zero accessibility is therefore not only a lake/park/open-space issue; it is a substantive access and mapping uncertainty issue that should be reported separately from low-but-positive accessibility.
 
-The NAI threshold-response audit adds a third caution. At 600 m, zero-NAI cells are 133/462 (28.8%) and mean SMCI_B is 0.0107; at the 800 m primary, zero-NAI cells are 88/462 (19.0%) and mean SMCI_B is 0.0133; at 1000 m, zero-NAI cells are 58/462 (12.6%) and mean SMCI_B is 0.0148; at the 1200 m optimistic upper bound, zero-NAI cells are 33/462 (7.1%) and mean SMCI_B is 0.0169. The headline improvement is robust in direction and the four-typology structure is near-invariant, but 1200 m clearly gives the most generous reading of local walkability, which is why 800 m is the primary.
+The NAI threshold-response audit adds a third caution. At 600 m, zero-NAI cells are 133/462 (28.8%) and mean geometric-mean SMCI_B is 0.1483; at the 800 m primary, zero-NAI cells are 88/462 (19.0%) and mean geometric-mean SMCI_B is 0.1711; at 1000 m, zero-NAI cells are 58/462 (12.6%) and mean geometric-mean SMCI_B is 0.1860; at the 1200 m optimistic upper bound, zero-NAI cells are 33/462 (7.1%) and mean geometric-mean SMCI_B is 0.2009. The headline improvement is robust in direction and the four-typology structure is near-invariant, but 1200 m clearly gives the most generous reading of local walkability, which is why 800 m is the primary.
 
 ## 12. Expected Argument
 
@@ -387,7 +387,7 @@ python scripts/make_pilot_maps.py
 pytest tests/ -q
 ```
 
-Current test baseline: 80 tests pass.
+Current test baseline: 169 tests pass.
 
 ## 16. Ethics and Data Statement
 
