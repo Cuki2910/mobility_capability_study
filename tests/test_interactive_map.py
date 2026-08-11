@@ -56,6 +56,19 @@ def test_map_implements_scenario_aware_controls_and_shareable_state():
         assert token in source
 
 
+def test_map_uses_progressive_disclosure_for_non_primary_controls():
+    source = SOURCE.read_text(encoding="utf-8")
+    for token in (
+        'id="primary-controls"',
+        'id="advanced-layers"',
+        'id="advanced-diagnostics"',
+        'id="map-method-notes"',
+        "Quick views",
+        "Reset view",
+    ):
+        assert token in source
+
+
 def test_map_has_quality_view_and_selected_cell_comparison_bars():
     source = SOURCE.read_text(encoding="utf-8")
     for token in (

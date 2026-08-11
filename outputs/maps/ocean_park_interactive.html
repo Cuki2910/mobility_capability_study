@@ -35,6 +35,29 @@ select{
 }
 button{background:#0f3460;color:#eee;border:1px solid #4fc3f7;border-radius:4px;padding:5px 7px;font-size:11px;cursor:pointer;margin:2px 2px 0 0;}
 button:hover,button:focus{background:#17517f;outline:2px solid #fff;outline-offset:1px;}
+.control-field{margin-top:8px;}
+.control-field > label,.control-label{display:block;color:#b9d6ef;font-size:10.5px;font-weight:700;letter-spacing:.25px;padding:0;}
+.control-field select{margin-top:4px;}
+.quick-views{margin-top:10px;}
+.quick-views button{margin-top:5px;}
+.secondary-action{margin-top:9px;background:transparent;border-color:#54779e;color:#c6d6f0;}
+.advanced-panel{border-top:1px solid #243454;margin-top:10px;padding-top:9px;}
+.advanced-panel summary{color:#8fc9ef;cursor:pointer;font-size:11.5px;font-weight:700;letter-spacing:.35px;list-style-position:outside;}
+.advanced-panel summary:hover{color:#fff;}
+.advanced-content{padding:7px 0 1px 4px;}
+.advanced-content h3{color:#9fc9e5;font-size:10px;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.45px;}
+.advanced-content h3:first-child{margin-top:1px;}
+.map-note{font-size:10px;color:#78909c;line-height:1.45;margin-top:6px;}
+#primary-controls{display:flex;flex-direction:column;}
+#primary-controls h2{order:0;}
+#primary-controls .control-field{order:1;}
+#primary-controls .quick-views{order:2;}
+#primary-controls > #fit-study{order:3;align-self:flex-start;}
+#primary-controls #typo-legend{order:4;display:grid;grid-template-columns:1fr 1fr;column-gap:8px;}
+#primary-controls #cont-legend{order:5;}
+#primary-controls #advanced-layers{order:6;}
+#primary-controls #advanced-navigation{order:7;}
+#primary-controls #map-method-notes{order:8;}
 #info-panel{
   background:#0d2137;border-radius:6px;padding:9px 10px;margin-top:8px;
   font-size:11px;min-height:70px;line-height:1.65;color:#b0c4de;
@@ -96,20 +119,27 @@ button:hover,button:focus{background:#17517f;outline:2px solid #fff;outline-offs
   <div class="subtitle" style="color:#546e7a;">Gia Lam, Hanoi &middot; 462 cells &middot; 250 m grid &middot; 2026</div>
   <div class="subtitle" style="color:#4fc3f7;">Strict observed MAI (no tag-only proxy fallback)</div>
 
-  <div class="section">
-    <h2>Basemap</h2>
+  <details class="section advanced-panel" id="map-appearance">
+    <summary>Map appearance</summary>
+    <div class="advanced-content">
+    <label for="basemap-sel">Basemap</label>
     <select id="basemap-sel">
       <option value="carto" selected>CartoDB Dark</option>
       <option value="osm">OpenStreetMap</option>
       <option value="esri">Esri Satellite</option>
     </select>
-  </div>
+    </div>
+  </details>
 
-  <div class="section">
-    <h2>Grid cells</h2>
-    <label>Scenario
-      <select id="scenario-sel"><option value="B" selected>Scenario B</option><option value="A">Scenario A</option><option value="difference">Difference B minus A</option></select>
-    </label>
+  <div class="section" id="primary-controls">
+    <h2>Explore the map</h2>
+    <div class="control-field">
+      <label for="scenario-sel">Compare</label>
+      <select id="scenario-sel"><option value="B" selected>With VinBus</option><option value="A">Before VinBus</option><option value="difference">Change after VinBus</option></select>
+    </div>
+    <details class="advanced-panel" id="advanced-layers">
+      <summary>Map layers</summary>
+      <div class="advanced-content">
     <label><input type="checkbox" id="chk-grid" checked> Show 462-cell grid</label>
     <label><input type="checkbox" id="chk-boundary" checked>
       <span class="swatch" style="background:transparent;border:2px dashed #f39c12;"></span>
@@ -123,23 +153,37 @@ button:hover,button:focus{background:#17517f;outline:2px solid #fff;outline-offs
       <span class="swatch" style="background:rgba(255,255,255,.08);border:2px solid #ffffff;"></span>
       Zero NAI cells (88)
     </label>
-    <select id="grid-mode">
-      <option value="typology" selected>Typology B (primary)</option>
-      <option value="smci">SMCI_B — capability index</option>
-      <option value="nai">NAI — walkable POIs (count)</option>
-      <option value="mai">MAI_B — metro opportunity</option>
-      <option value="rac">RAC_B — transit vs motorcycle</option>
-      <option value="delta">Modeled difference: Scenario B minus A</option>
-      <option value="population">Population</option>
-      <option value="density">Population density</option>
-      <option value="exposure">Population exposure</option>
-      <option value="boundary">Boundary fragmentation</option>
-      <option value="quality">Data quality grade</option>
-    </select>
-    <div style="margin-top:6px;" aria-label="Map presets">
-      <button type="button" data-preset="capability">Capability</button><button type="button" data-preset="comparison">Scenario comparison</button><button type="button" data-preset="exposure">Population exposure</button><button type="button" data-preset="boundary">Boundary</button>
+      </div>
+    </details>
+    <div class="control-field">
+      <label for="grid-mode">Show on map</label>
+      <select id="grid-mode">
+        <option value="typology" selected>Capability type (recommended)</option>
+        <option value="smci">Capability score</option>
+        <option value="delta">Change with VinBus</option>
+        <optgroup label="Accessibility components">
+          <option value="nai">Nearby walkable places</option>
+          <option value="mai">Metropolitan opportunity access</option>
+          <option value="rac">Transit versus motorcycle competitiveness</option>
+        </optgroup>
+        <optgroup label="Context and audit">
+          <option value="population">Population</option>
+          <option value="density">Population density</option>
+          <option value="exposure">Population exposure</option>
+          <option value="boundary">Boundary fragmentation</option>
+          <option value="quality">Data quality grade</option>
+        </optgroup>
+      </select>
     </div>
-    <div style="margin-top:4px;" aria-label="Map navigation"><button type="button" id="fit-study">Fit study area</button><button type="button" id="fit-project">Fit project boundary</button><button type="button" id="fit-network">Show full VinBus network</button></div>
+    <div class="quick-views" aria-label="Quick views">
+      <span class="control-label">Quick views</span>
+      <button type="button" data-preset="capability">Capability</button><button type="button" data-preset="comparison">Scenario comparison</button><button type="button" data-preset="exposure">Population exposure</button>
+    </div>
+    <button type="button" id="fit-study" class="secondary-action">Reset view</button>
+    <details class="advanced-panel" id="advanced-navigation">
+      <summary>Map navigation</summary>
+      <div class="advanced-content"><button type="button" id="fit-project">Fit project boundary</button><button type="button" id="fit-network">Show full VinBus network</button></div>
+    </details>
 
     <div id="typo-legend" style="margin-top:9px;">
       <div class="legend-row"><span class="swatch" style="background:#2ecc71;"></span>Integrated Capability</div>
@@ -157,7 +201,9 @@ button:hover,button:focus{background:#17517f;outline:2px solid #fff;outline-offs
       <div class="leg-how" id="leg-how"></div>
       <div class="leg-desc" id="leg-desc"></div>
     </div>
-    <div class="layer-desc">
+    <details class="advanced-panel" id="map-method-notes">
+      <summary>Layer notes and methods</summary>
+      <div class="layer-desc">
       <div><b>Core layers</b></div>
       <ul>
         <li><b>Typology B</b>: final spatial class for Scenario B.</li>
@@ -172,11 +218,13 @@ button:hover,button:focus{background:#17517f;outline:2px solid #fff;outline-offs
         <b>Zero NAI caution</b><br>
         NAI = 0 means no mapped walkable POIs within the walking threshold. It does not prove there are no real-world amenities. In this pilot, zero-NAI built cells are analytically important because they also force SMCI_B to 0.
       </div>
-    </div>
+      </div>
+    </details>
   </div>
 
-  <div class="section">
-    <h2>Spatial diagnostics</h2>
+  <details class="section advanced-panel" id="advanced-diagnostics">
+    <summary>Spatial diagnostics</summary>
+    <div class="advanced-content">
     <label><input type="checkbox" id="chk-lisa">
       <span class="swatch" style="background:#b2182b;"></span>
       SMCI_B LISA clusters (0 FDR-significant cells)
@@ -201,10 +249,13 @@ button:hover,button:focus{background:#17517f;outline:2px solid #fff;outline-offs
       LISA uses Queen contiguity, 9,999 permutations, and FDR correction. It identifies spatial association, not a boundary effect or causal mechanism.<br><br>
       Crossing lines are modeled Network A/D topology, not confirmed public gates. Median near-boundary detour is nanx for walking and nanx for motorcycle.
     </div>
-  </div>
+    </div>
+  </details>
 
-  <div class="section">
-    <h2>Points of Interest (strict observed)</h2>
+  <details class="section advanced-panel" id="advanced-places">
+    <summary>Places and transit layers</summary>
+    <div class="advanced-content">
+    <h3>Points of Interest (strict observed)</h3>
     <label><input type="checkbox" id="chk-poi"> Show POIs</label>
     <div style="margin-top:5px;">
       <div class="legend-row"><span class="swatch" style="background:#9b59b6;border-radius:50%;"></span>Education (incl. higher ed)</div>
@@ -215,10 +266,7 @@ button:hover,button:focus{background:#17517f;outline:2px solid #fff;outline-offs
       <div class="legend-row"><span class="swatch" style="background:#7f8c8d;border-radius:50%;"></span>Transport / Other</div>
     </div>
     <div style="font-size:10px;color:#546e7a;margin-top:4px;">Sources: OSM + Overture + source-backed MAI audit (Decision #21)</div>
-  </div>
-
-  <div class="section">
-    <h2>Transit Networks</h2>
+    <h3>Transit networks</h3>
     <label><input type="checkbox" id="chk-routes">
       <span class="line-swatch" style="background:#e74c3c;"></span>
       VinBus routes (OSM geometry)
@@ -240,7 +288,8 @@ button:hover,button:focus{background:#17517f;outline:2px solid #fff;outline-offs
       Hanoi GTFS stops — Network B baseline (84 in area)
     </label>
     <div style="font-size:10px;color:#546e7a;margin-top:4px;">GTFS: Hanoi 2018 vintage (pre-VinBus baseline, stop geometry valid)</div>
-  </div>
+    </div>
+  </details>
 
   <div class="section">
     <h2>Selected cell</h2>
