@@ -18,6 +18,7 @@ import zipfile
 import sys
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 from shapely.geometry import mapping
 from shapely.geometry import box
@@ -40,6 +41,14 @@ VINBUS_STOPS = os.path.join(ROOT, "data", "raw", "vinbus_pseudo_gtfs_fixed", "st
 VINBUS_ROUTES= os.path.join(ROOT, "data", "raw", "vinbus_pseudo_gtfs_fixed", "routes.txt")
 OUT_HTML     = os.path.join(ROOT, "outputs", "maps", "ocean_park_interactive.html")
 
+ANALYTICAL_SPEC = {
+    "nai_primary_threshold_m": 800,
+    "smci_form": "geometric_mean",
+    "default_scenario": "B",
+    "default_metric": "typology",
+}
+DELTA_EPSILON = 1e-10
+
 # ── 1. Grid + metrics ──────────────────────────────────────────────────────
 print("Reading grid ...")
 grid = gpd.read_file(GRID_GPKG).to_crs("EPSG:4326")
@@ -57,6 +66,19 @@ if "cell_id" not in grid.columns:
 grid["cell_id"] = grid["cell_id"].astype(int)
 metrics["cell_id"] = metrics["cell_id"].astype(int)
 gdf = grid.merge(metrics, on="cell_id", how="left")
+WORLDPOP_CSV = os.path.join(ROOT, "data", "interim", "grid_worldpop.csv")
+if os.path.exists(WORLDPOP_CSV):
+    worldpop = pd.read_csv(WORLDPOP_CSV, usecols=["cell_id", "pop_sum"])
+    gdf = gdf.merge(worldpop, on="cell_id", how="left")
+else:
+    gdf["pop_sum"] = pd.NA
+QUALITY_CSV = os.path.join(ROOT, "outputs", "validation", "data_quality_grades.csv")
+if os.path.exists(QUALITY_CSV):
+    quality = pd.read_csv(QUALITY_CSV, usecols=["cell_id", "overall_quality_grade"])
+    quality = quality.rename(columns={"overall_quality_grade": "overall_grade"})
+    gdf = gdf.merge(quality, on="cell_id", how="left")
+else:
+    gdf["overall_grade"] = pd.NA
 
 # Exact grid bbox (tight — used for stop filtering)
 bounds = grid.total_bounds  # [minx, miny, maxx, maxy] = [lon_min, lat_min, lon_max, lat_max]
@@ -72,9 +94,7 @@ print(f"  Grid bbox: lat [{GRID_LAT_MIN:.4f}, {GRID_LAT_MAX:.4f}]  "
 
 # Study area boundary: union of all grid cells → exterior ring
 print("Building study area boundary ...")
-study_union = unary_union(grid.geometry)
-# Use convex hull for a clean presentation outline; keep union as fallback
-study_boundary_geom = study_union.convex_hull
+study_boundary_geom = unary_union(grid.geometry)
 study_boundary_geojson = {
     "type": "FeatureCollection",
     "features": [{
@@ -95,6 +115,27 @@ else:
     _ocean_geom = box(minx + 1700, miny + 1300, maxx - 800, maxy - 1300)
     ocean_boundary_geom = gpd.GeoSeries([_ocean_geom], crs=_metric_crs).to_crs("EPSG:4326").iloc[0]
     ocean_boundary_name = "Approximate Ocean Park 1 core"
+
+# Boundary attributes are computed in a projected CRS, never in degrees.
+metric_crs = grid.estimate_utm_crs()
+gdf_metric = gdf.to_crs(metric_crs)
+ocean_metric = gpd.GeoSeries([ocean_boundary_geom], crs="EPSG:4326").to_crs(metric_crs).iloc[0]
+cell_area = gdf_metric.geometry.area
+gdf["share_inside_project"] = [
+    geom.intersection(ocean_metric).area / area if area else 0.0
+    for geom, area in zip(gdf_metric.geometry, cell_area)
+]
+gdf["boundary_side"] = pd.Series(gdf["share_inside_project"]).map(
+    lambda value: "Inside" if value >= 0.75 else "Outside" if value <= 0.25 else "Boundary-straddling"
+)
+gdf["distance_to_boundary_m"] = gdf_metric.geometry.centroid.distance(ocean_metric.boundary)
+gdf["boundary_band"] = pd.cut(
+    gdf["distance_to_boundary_m"],
+    bins=[-1, 250, 500, 1000, 2000, float("inf")],
+    labels=["0-250 m", "250-500 m", "500-1000 m", "1000-2000 m", ">2000 m"],
+).astype(str)
+gdf["population_density"] = gdf["pop_sum"] / (cell_area.to_numpy() / 1_000_000)
+gdf["population_exposure"] = gdf["pop_sum"] * (1 - gdf["SMCI_B"])
 context_boundary_geom = study_boundary_geom.difference(ocean_boundary_geom)
 zone_boundary_geojson = {
     "type": "FeatureCollection",
@@ -130,6 +171,23 @@ TYPOLOGY_COLORS = {
 }
 DEFAULT_COLOR = "#cccccc"
 
+
+def typology_transition(before: object, after: object) -> str:
+    """Describe Scenario A-to-B class movement without subtracting labels."""
+    before, after = str(before), str(after)
+    if before == after:
+        return "No class change"
+    if after == "Integrated Capability":
+        return "Moved toward Integrated Capability"
+    if before == "Integrated Capability":
+        return "Moved away from Integrated Capability"
+    return "Changed between intermediate classes"
+
+def safe_float(v):
+    """Keep missing values distinct from measured structural zeros in GeoJSON."""
+    return None if pd.isna(v) else float(v)
+
+
 def fmt(v):
     if v is None or (isinstance(v, float) and math.isnan(v)):
         return "N/A"
@@ -145,23 +203,46 @@ for _, row in gdf.iterrows():
     typ = row.get("typology_B", "")
     color = TYPOLOGY_COLORS.get(str(typ), DEFAULT_COLOR)
     def _f(col):
-        v = row.get(col)
-        return float(v) if pd.notna(v) else 0.0
+        return safe_float(row.get(col))
     feature = {
         "type": "Feature",
         "geometry": mapping(row.geometry),
         "properties": {
             "cell_id":    int(row["cell_id"]),
+            "has_data":   bool(pd.notna(row.get("SMCI_B"))),
+            "population": safe_float(row.get("pop_sum")),
+            "population_density": safe_float(row.get("population_density")),
+            "population_exposure": safe_float(row.get("population_exposure")),
+            "data_quality_grade": None if pd.isna(row.get("overall_grade")) else str(row.get("overall_grade")),
+            "share_inside_project": safe_float(row.get("share_inside_project")),
+            "boundary_side": str(row.get("boundary_side", "")),
+            "distance_to_boundary_m": safe_float(row.get("distance_to_boundary_m")),
+            "boundary_band": str(row.get("boundary_band", "")),
+            "typology_A": str(row.get("typology_A", "")),
             "typology_B": str(typ),
+            "typology_transition": typology_transition(row.get("typology_A", ""), typ),
             "color":      color,
             "NAI":        fmt(row.get("NAI")),
             "MAI_B":      fmt(row.get("MAI_B")),
+            "MAI_A":      fmt(row.get("MAI_A")),
             "RAC_B":      fmt(row.get("RAC_B")),
+            "RAC_A":      fmt(row.get("RAC_A")),
+            "SMCI_A":     fmt(row.get("SMCI_A")),
             "SMCI_B":     fmt(row.get("SMCI_B")),
             "Delta_SMCI": fmt(row.get("Delta_SMCI")),
             "NAI_raw":    _f("NAI"),
+            "NAI_norm":   _f("NAI_norm"),
             "MAI_raw":    _f("MAI_B"),
+            "MAI_A_raw":  _f("MAI_A"),
+            "MAI_A_norm": _f("MAI_A_norm"),
+            "MAI_norm":   _f("MAI_B_norm"),
+            "MAI_delta_raw": safe_float(row.get("MAI_B")) - safe_float(row.get("MAI_A")) if pd.notna(row.get("MAI_A")) and pd.notna(row.get("MAI_B")) else None,
             "RAC_raw":    _f("RAC_B"),
+            "RAC_A_raw":  _f("RAC_A"),
+            "RAC_A_norm": _f("RAC_A_norm"),
+            "RAC_norm":   _f("RAC_B_norm"),
+            "RAC_delta_raw": safe_float(row.get("RAC_B")) - safe_float(row.get("RAC_A")) if pd.notna(row.get("RAC_A")) and pd.notna(row.get("RAC_B")) else None,
+            "SMCI_A_raw": _f("SMCI_A"),
             "SMCI_raw":   _f("SMCI_B"),
             "Delta_raw":  _f("Delta_SMCI"),
         },
@@ -471,9 +552,10 @@ hanoi_stops_geojson = {"type": "FeatureCollection", "features": hanoi_stop_featu
 print(f"  {len(hanoi_stop_features)} Hanoi GTFS stops (was 2422 with loose filter)")
 
 # ── 6. Compute histogram data for continuous legend (Python side) ──────────
-def make_histogram(features, key, n_bins=20):
+def make_histogram(features, key, n_bins=20, include_zero=False):
     vals = [f["properties"][key] for f in features
-            if isinstance(f["properties"].get(key), (int, float)) and f["properties"][key] > 0]
+            if isinstance(f["properties"].get(key), (int, float))
+            and (include_zero or f["properties"][key] > 0)]
     if not vals:
         return [], 0, 1
     lo, hi = min(vals), max(vals)
@@ -485,33 +567,63 @@ def make_histogram(features, key, n_bins=20):
         bins[idx] += 1
     return bins, lo, hi
 
+
+def shared_visual_bounds(features, *keys, diverging: bool = False) -> tuple[float, float]:
+    """Use common robust A/B bounds so visual differences are comparable."""
+    values = [f["properties"].get(key) for f in features for key in keys]
+    values = np.asarray([value for value in values if isinstance(value, (int, float)) and np.isfinite(value)], dtype=float)
+    if not len(values):
+        return 0.0, 1.0
+    lo, hi = np.quantile(values, [0.02, 0.98])
+    if diverging:
+        bound = max(abs(lo), abs(hi))
+        return -float(bound), float(bound)
+    return float(lo), float(hi) if hi > lo else float(lo + 1.0)
+
 nai_hist,   nai_lo,   nai_hi   = make_histogram(grid_features, "NAI_raw",   20)
-smci_hist,  smci_lo,  smci_hi  = make_histogram(grid_features, "SMCI_raw",  20)
-mai_hist,   mai_lo,   mai_hi   = make_histogram(grid_features, "MAI_raw",   20)
-rac_hist,   rac_lo,   rac_hi   = make_histogram(grid_features, "RAC_raw",   20)
-delta_hist, delta_lo, delta_hi = make_histogram(grid_features, "Delta_raw", 20)
+smci_hist,  _, _ = make_histogram(grid_features, "SMCI_raw", 20)
+mai_hist,   _, _ = make_histogram(grid_features, "MAI_raw", 20)
+rac_hist,   _, _ = make_histogram(grid_features, "RAC_raw", 20)
+delta_hist, delta_lo, delta_hi = make_histogram(grid_features, "Delta_raw", 20, include_zero=True)
+smci_lo, smci_hi = shared_visual_bounds(grid_features, "SMCI_A_raw", "SMCI_raw")
+mai_lo, mai_hi = shared_visual_bounds(grid_features, "MAI_A_raw", "MAI_raw")
+rac_lo, rac_hi = shared_visual_bounds(grid_features, "RAC_A_raw", "RAC_raw")
+delta_lo, delta_hi = shared_visual_bounds(grid_features, "Delta_raw", diverging=True)
+pop_hist, pop_lo, pop_hi = make_histogram(grid_features, "population", 20, include_zero=True)
+density_hist, density_lo, density_hi = make_histogram(grid_features, "population_density", 20, include_zero=True)
+exposure_hist, exposure_lo, exposure_hi = make_histogram(grid_features, "population_exposure", 20, include_zero=True)
 
 METRIC_META = {
-    "nai":   {"label": "NAI",        "unit": "count",    "desc": "Walkable POIs within 1200m network distance (~15 min)",
+    "nai":   {"label": "NAI",        "unit": "reachable POIs",    "desc": "Walkable POIs within 800 m network distance (~10 min)",
               "long": "<b>NAI</b>: local walkability. It counts nearby everyday POIs reachable on the walking network. Higher values mean the cell has more schools, clinics, shops, parks, or daily services close enough for walking.",
-              "how": "Cold blue = fewer walkable nearby POIs; warm red = more walkable nearby POIs.",
+              "how": "Lower value = fewer walkable nearby POIs; higher value = more walkable nearby POIs.",
               "hist": nai_hist,   "lo": nai_lo,   "hi": nai_hi},
     "smci":  {"label": "SMCI_B",     "unit": "index",    "desc": "Sustainable Mobility Capability Index (Scenario B with VinBus)",
               "long": "<b>SMCI_B</b>: final sustainable mobility capability after adding VinBus. It combines local walking access, metropolitan opportunity access, and transit-vs-motorcycle competitiveness. Because it is multiplicative, one weak component can pull the score down.",
-              "how": "Cold blue = weaker sustainable mobility capability; warm red = stronger capability.",
+              "how": "Lower value = weaker sustainable mobility capability; higher value = stronger capability.",
               "hist": smci_hist,  "lo": smci_lo,  "hi": smci_hi},
     "mai":   {"label": "MAI_B",      "unit": "weighted", "desc": "Metropolitan Accessibility Index — magnitude-weighted, walk+transit, 60 min cutoff",
               "long": "<b>MAI_B</b>: metropolitan opportunity access after VinBus. It measures how many weighted opportunities can be reached by walking plus transit within the 60-minute impedance window. Destination weights use the strict source-backed MAI audit.",
-              "how": "Cold blue = fewer/weaker metropolitan opportunities reachable by walk+transit; warm red = more/stronger reachable opportunities.",
+              "how": "Lower value = fewer/weaker metropolitan opportunities reachable by walk+transit; higher value = more/stronger reachable opportunities.",
               "hist": mai_hist,   "lo": mai_lo,   "hi": mai_hi},
     "rac":   {"label": "RAC_B",      "unit": "ratio",    "desc": "Relative Accessibility Competitiveness = RAC_time primary; higher = transit travel time closer to motorcycle",
               "long": "<b>RAC_B</b>: promoted reviewer-safe time competitiveness of walking plus transit against motorcycle access after VinBus. Higher values mean transit narrows the travel-time gap with motorcycles. The previous full RAC with opportunity ratio is retained as robustness, not the primary map.",
-              "how": "Cold blue = walk+transit is less competitive against motorcycle; warm red = walk+transit is more competitive.",
+              "how": "Lower value = walk+transit is less competitive against motorcycle; higher value = more competitive.",
               "hist": rac_hist,   "lo": rac_lo,   "hi": rac_hi},
-    "delta": {"label": "Delta_SMCI", "unit": "index",    "desc": "SMCI change from adding VinBus (Scenario B minus A); positive = VinBus improves capability",
-              "long": "<b>Delta_SMCI</b>: change caused by adding VinBus, computed as Scenario B minus Scenario A using shared normalization bounds. Positive values mean the VinBus scenario improves sustainable mobility capability relative to the pre-VinBus baseline.",
-              "how": "Cold blue = little/no improvement from VinBus; warm red = larger positive improvement from VinBus.",
+    "delta": {"label": "Modeled difference: Scenario B minus A", "unit": "index difference",    "desc": "Shared-scale SMCI(B) minus SMCI(A)",
+              "long": "<b>Delta_SMCI</b>: modeled difference between Scenario B and Scenario A using shared normalization bounds. Positive values mean the Scenario B value is higher.",
+              "how": "Negative = lower under Scenario B; zero = unchanged; positive = higher under Scenario B.",
               "hist": delta_hist, "lo": delta_lo, "hi": delta_hi},
+    "population": {"label": "Population", "unit": "people per cell", "desc": "WorldPop 2020 population estimate",
+              "long": "Population is an exposure denominator, not a measurement of accessibility.", "how": "Lower value = fewer estimated residents; higher value = more estimated residents.", "hist": pop_hist, "lo": pop_lo, "hi": pop_hi},
+    "density": {"label": "Population density", "unit": "people / km2", "desc": "WorldPop population divided by cell area",
+              "long": "Population density is a descriptive demand-side layer, not an input to the primary SMCI.", "how": "Lower value = lower estimated density; higher value = higher estimated density.", "hist": density_hist, "lo": density_lo, "hi": density_hi},
+    "exposure": {"label": "Population exposure", "unit": "people x (1 - SMCI_B)", "desc": "Diagnostic population-weighted low-capability exposure",
+              "long": "Exposure is Population x (1 - SMCI_B). It is a diagnostic, not a validated independent index.", "how": "Lower value = less estimated exposure; higher value = more estimated exposure.", "hist": exposure_hist, "lo": exposure_lo, "hi": exposure_hi},
+    "boundary": {"label": "Boundary fragmentation", "unit": "distance / side", "desc": "Inside, outside, or boundary-straddling project relation",
+              "long": "Boundary fragmentation is a descriptive spatial relation to Ocean Park 1, not a causal effect.", "how": "Categories distinguish inside, outside, and boundary-straddling cells.", "hist": [], "lo": 0, "hi": 1},
+    "quality": {"label": "Data quality grade", "unit": "A-D provenance grade", "desc": "Cell-level provenance audit",
+              "long": "Data-quality grades audit input provenance. They are not an SMCI component or confidence interval.", "how": "A is stronger documented provenance; D is weaker. No local POI is a separate absence label.", "hist": [], "lo": 0, "hi": 1},
 }
 
 # ── 7. Serialise ──────────────────────────────────────────────────────────
@@ -525,7 +637,7 @@ map_center_lon = (GRID_LON_MIN + GRID_LON_MAX) / 2
 print("Building HTML ...")
 
 HTML = f"""<!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -559,6 +671,8 @@ select{{
   background:#0f3460;color:#eee;border:1px solid #4fc3f7;
   border-radius:4px;padding:5px 7px;font-size:12px;width:100%;margin-top:5px;cursor:pointer;
 }}
+button{{background:#0f3460;color:#eee;border:1px solid #4fc3f7;border-radius:4px;padding:5px 7px;font-size:11px;cursor:pointer;margin:2px 2px 0 0;}}
+button:hover,button:focus{{background:#17517f;outline:2px solid #fff;outline-offset:1px;}}
 #info-panel{{
   background:#0d2137;border-radius:6px;padding:9px 10px;margin-top:8px;
   font-size:11px;min-height:70px;line-height:1.65;color:#b0c4de;
@@ -568,6 +682,11 @@ select{{
 .metric{{background:#112847;border-radius:5px;padding:6px 8px;}}
 .metric .val{{font-size:14px;font-weight:700;color:#4fc3f7;}}
 .metric .lbl{{font-size:9.5px;color:#7a9ec8;margin-top:1px;}}
+.comparison{{grid-column:span 2;background:#0b2742;border-radius:5px;padding:7px 8px;}}
+.comparison-row{{display:grid;grid-template-columns:40px 1fr 1fr;gap:4px;align-items:center;margin-top:4px;font-size:9px;color:#9fb7d8;}}
+.comparison-bar{{height:7px;border-radius:3px;background:#2b496a;overflow:hidden;}}
+.comparison-fill-a{{height:100%;background:#8da0cb;}}
+.comparison-fill-b{{height:100%;background:#66c2a5;}}
 .badge{{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;}}
 /* Continuous legend */
 #cont-legend{{display:none;margin-top:8px;}}
@@ -626,6 +745,9 @@ select{{
 
   <div class="section">
     <h2>Grid cells</h2>
+    <label>Scenario
+      <select id="scenario-sel"><option value="B" selected>Scenario B</option><option value="A">Scenario A</option><option value="difference">Difference B minus A</option></select>
+    </label>
     <label><input type="checkbox" id="chk-grid" checked> Show 462-cell grid</label>
     <label><input type="checkbox" id="chk-boundary" checked>
       <span class="swatch" style="background:transparent;border:2px dashed #f39c12;"></span>
@@ -645,8 +767,17 @@ select{{
       <option value="nai">NAI — walkable POIs (count)</option>
       <option value="mai">MAI_B — metro opportunity</option>
       <option value="rac">RAC_B — transit vs motorcycle</option>
-      <option value="delta">Delta SMCI — VinBus effect</option>
+      <option value="delta">Modeled difference: Scenario B minus A</option>
+      <option value="population">Population</option>
+      <option value="density">Population density</option>
+      <option value="exposure">Population exposure</option>
+      <option value="boundary">Boundary fragmentation</option>
+      <option value="quality">Data quality grade</option>
     </select>
+    <div style="margin-top:6px;" aria-label="Map presets">
+      <button type="button" data-preset="capability">Capability</button><button type="button" data-preset="comparison">Scenario comparison</button><button type="button" data-preset="exposure">Population exposure</button><button type="button" data-preset="boundary">Boundary</button>
+    </div>
+    <div style="margin-top:4px;" aria-label="Map navigation"><button type="button" id="fit-study">Fit study area</button><button type="button" id="fit-project">Fit project boundary</button><button type="button" id="fit-network">Show full VinBus network</button></div>
 
     <div id="typo-legend" style="margin-top:9px;">
       <div class="legend-row"><span class="swatch" style="background:#2ecc71;"></span>Integrated Capability</div>
@@ -712,7 +843,7 @@ select{{
 
   <div class="section">
     <h2>Points of Interest (strict observed)</h2>
-    <label><input type="checkbox" id="chk-poi" checked> Show POIs</label>
+    <label><input type="checkbox" id="chk-poi"> Show POIs</label>
     <div style="margin-top:5px;">
       <div class="legend-row"><span class="swatch" style="background:#9b59b6;border-radius:50%;"></span>Education (incl. higher ed)</div>
       <div class="legend-row"><span class="swatch" style="background:#e74c3c;border-radius:50%;"></span>Health</div>
@@ -726,7 +857,7 @@ select{{
 
   <div class="section">
     <h2>Transit Networks</h2>
-    <label><input type="checkbox" id="chk-routes" checked>
+    <label><input type="checkbox" id="chk-routes">
       <span class="line-swatch" style="background:#e74c3c;"></span>
       VinBus routes (OSM geometry)
     </label>
@@ -738,7 +869,7 @@ select{{
       OCP1&thinsp;<span style="color:#9b59b6">&#9632;</span>
       OCP2&thinsp;<span style="color:#1abc9c">&#9632;</span>
     </div>
-    <label><input type="checkbox" id="chk-vstops" checked>
+    <label><input type="checkbox" id="chk-vstops">
       <span class="swatch" style="background:#1abc9c;border-radius:2px;width:10px;height:10px;"></span>
       VinBus stops — Network C (pseudo-GTFS, {len(stop_features)} in area)
     </label>
@@ -821,17 +952,18 @@ document.getElementById('basemap-sel').addEventListener('change', e => {{
 function lerp(a,b,t){{ return a+(b-a)*t; }}
 function clamp(v,lo,hi){{ return Math.max(lo,Math.min(hi,v)); }}
 
-const SPECTRAL = [
-  [49,54,149],[69,117,180],[116,173,209],[171,217,233],[224,243,248],
-  [255,255,191],[254,224,144],[253,174,97],[244,109,67],[215,48,39],[165,0,38]
+const VIRIDIS = [
+  [68,1,84],[72,40,120],[62,74,137],[49,104,142],[38,130,142],
+  [31,158,137],[53,183,121],[109,205,89],[180,222,44],[253,231,37]
 ];
-function spectralColor(t) {{
+const DELTA = [[178,24,43],[244,165,130],[245,245,245],[146,197,222],[33,102,172]];
+function paletteColor(t, palette) {{
   t = clamp(t, 0, 0.9999);
-  const n = SPECTRAL.length - 1;
+  const n = palette.length - 1;
   const i = Math.floor(t * n);
   const f = t * n - i;
-  const [r1,g1,b1] = SPECTRAL[i];
-  const [r2,g2,b2] = SPECTRAL[Math.min(i+1,n)];
+  const [r1,g1,b1] = palette[i];
+  const [r2,g2,b2] = palette[Math.min(i+1,n)];
   return `rgb(${{Math.round(lerp(r1,r2,f))}},${{Math.round(lerp(g1,g2,f))}},${{Math.round(lerp(b1,b2,f))}})`;
 }}
 function norm(v,lo,hi){{ return hi===lo ? 0.5 : clamp((v-lo)/(hi-lo),0,1); }}
@@ -872,13 +1004,38 @@ document.getElementById('chk-zones').addEventListener('change', e => {{
 
 // ── Grid layer ────────────────────────────────────────────────────────────
 let gridMode = 'typology';
+let scenario = 'B';
+function fieldFor(mode) {{
+  if (mode === 'nai') return 'NAI_raw';
+  if (mode === 'delta') return 'Delta_raw';
+  if (mode === 'population') return 'population';
+  if (mode === 'density') return 'population_density';
+  if (mode === 'exposure') return 'population_exposure';
+  if (mode === 'boundary') return 'boundary_side';
+  if (mode === 'quality') return 'data_quality_grade';
+  if (mode === 'typology') return null;
+  if (scenario === 'difference') return mode === 'smci' ? 'Delta_raw' : `${{mode.toUpperCase()}}_delta_raw`;
+  if (mode === 'smci') return scenario === 'A' ? 'SMCI_A_raw' : 'SMCI_raw';
+  return scenario === 'A' ? `${{mode.toUpperCase()}}_A_raw` : `${{mode.toUpperCase()}}_raw`;
+}}
 
 function gridStyle(f) {{
   const p = f.properties;
   let fill = p.color || '#ccc';
+  if (gridMode === 'typology' && scenario === 'difference') {{
+    fill = {{'No class change':'#9e9e9e','Moved toward Integrated Capability':'#1b9e77','Moved away from Integrated Capability':'#d95f02','Changed between intermediate classes':'#7570b3'}}[p.typology_transition] || '#9e9e9e';
+  }} else if (gridMode === 'boundary') {{
+    fill = {{'Inside':'#2c7fb8','Outside':'#fdbb84','Boundary-straddling':'#7fcdbb'}}[p.boundary_side] || '#808080';
+  }} else if (gridMode === 'quality') {{
+    fill = {{'A':'#1b9e77','B':'#66a61e','C':'#e6ab02','D':'#d95f02','No local POI':'#7570b3'}}[p.data_quality_grade] || '#808080';
+  }}
   if (gridMode !== 'typology') {{
     const m = METRIC_META[gridMode];
-    fill = spectralColor(norm(p[gridMode==='nai'?'NAI_raw':gridMode==='smci'?'SMCI_raw':gridMode==='mai'?'MAI_raw':gridMode==='rac'?'RAC_raw':'Delta_raw'], m.lo, m.hi));
+    const value = p[fieldFor(gridMode)];
+    if (gridMode === 'boundary' || gridMode === 'quality') return {{fillColor:fill, fillOpacity:0.70, color:'#000', weight:0.4, opacity:0.55}};
+    if (value === null || value === undefined) return {{fillColor:'#808080', fillOpacity:0.45, color:'#fff', weight:0.8, dashArray:'3 3'}};
+    if (value === 0 && gridMode !== 'delta') return {{fillColor:'#7f7f7f', fillOpacity:0.75, color:'#fff', weight:0.9, dashArray:'3 3'}};
+    fill = paletteColor(norm(value, m.lo, m.hi), gridMode === 'delta' ? DELTA : VIRIDIS);
   }}
   return {{fillColor:fill, fillOpacity:0.68, color:'#000', weight:0.3, opacity:0.45}};
 }}
@@ -897,27 +1054,31 @@ const METRIC_KEYS = {{
   mai: 'MAI_raw',
   rac: 'RAC_raw',
   delta: 'Delta_raw',
+  population: 'population',
+  density: 'population_density',
+  exposure: 'population_exposure',
+  boundary: 'boundary_side',
+  quality: 'data_quality_grade',
 }};
 
 function modeHelp(mode) {{
   if (mode === 'typology') {{
     return `
-      <b>Typology B</b><br>
+      <b>${{scenario === 'difference' ? 'Typology transition: Scenario B minus A' : 'Typology ' + scenario}}</b><br>
       Four classes combine local walking access (NAI) with metropolitan competitiveness (MCS).
       Green/orange/blue/red are categories, not a heat scale. Click any cell for its metrics.`;
   }}
   const m = METRIC_META[mode];
   return `
     <b>${{m.label}} heatmap</b><br>
-    <span style="color:#abd9e9;">Cold blue</span> = lower value.
-    <span style="color:#f46d43;">Warm red</span> = higher value.<br>
+    Lower value to higher value; exact values remain available in the selected-cell panel.<br>
     ${{m.how}}<br>
     <span style="color:#78909c;">Current range: ${{m.lo.toFixed(4)}} to ${{m.hi.toFixed(4)}}. Click any cell for exact values.</span>`;
 }}
 
 function layerDescription(mode) {{
   if (mode === 'typology') {{
-    return `<b>Selected: Typology B</b><br>
+    return `<b>Selected: ${{scenario === 'difference' ? 'Typology transition' : 'Typology ' + scenario}}</b><br>
       This is the final classification map for Scenario B. It groups cells into Integrated Capability,
       Fragmented Capability, Transit-Dependent, and Motorcycle Lock-in by combining local access (NAI)
       with metropolitan competitiveness. It is categorical, so the colors are class labels rather than
@@ -932,7 +1093,7 @@ function updateActiveDescription(mode) {{
 }}
 
 function heatPosition(mode, value) {{
-  if (mode === 'typology') return '';
+  if (mode === 'typology' || mode === 'boundary' || mode === 'quality') return '';
   const m = METRIC_META[mode];
   const t = norm(value, m.lo, m.hi);
   if (t < 0.25) return 'low / cold';
@@ -949,11 +1110,23 @@ function setDefaultInfo() {{
   }}
 }}
 
+function comparisonBar(label, a, b) {{
+  if (a === null || b === null || a === undefined || b === undefined) return '';
+  const max = Math.max(a, b, 1e-9);
+  return `<div class="comparison-row"><span>${{label}}</span><div class="comparison-bar" title="Scenario A: ${{a.toFixed(4)}}"><div class="comparison-fill-a" style="width:${{(a / max) * 100}}%"></div></div><div class="comparison-bar" title="Scenario B: ${{b.toFixed(4)}}"><div class="comparison-fill-b" style="width:${{(b / max) * 100}}%"></div></div></div>`;
+}}
+
+function componentBar(label, value) {{
+  if (value === null || value === undefined) return '';
+  return `<div class="comparison-row"><span>${{label}}</span><div class="comparison-bar" style="grid-column:span 2" title="Scenario B normalized value: ${{value.toFixed(4)}}"><div class="comparison-fill-b" style="width:${{Math.max(0, Math.min(1, value)) * 100}}%"></div></div></div>`;
+}}
+
 function renderSelectedCell(f) {{
     const p = f.properties;
-    const [bg,fg] = BADGE_COLORS[p.typology_B] || ['#555','#fff'];
+    const activeTypology = scenario === 'A' ? p.typology_A : p.typology_B;
+    const [bg,fg] = BADGE_COLORS[activeTypology] || ['#555','#fff'];
     const activeKey = METRIC_KEYS[gridMode];
-    const activeValue = activeKey ? p[activeKey] : null;
+    const activeValue = activeKey ? p[fieldFor(gridMode)] : null;
     const activeMetric = activeKey ? `
       <div class="metric" style="grid-column:span 2;border:1px solid #4fc3f7;">
         <div class="val">${{activeValue.toFixed ? activeValue.toFixed(4) : activeValue}}</div>
@@ -961,7 +1134,8 @@ function renderSelectedCell(f) {{
       </div>` : '';
     document.getElementById('info-panel').innerHTML = `
       <b>Cell #${{p.cell_id}}</b>&nbsp;
-      <span class="badge" style="background:${{bg}};color:${{fg}};">${{p.typology_B}}</span>
+      <span class="badge" style="background:${{bg}};color:${{fg}};">${{activeTypology}}</span>
+      <div style="margin:5px 0;color:#b0c4de;">Scenario A: ${{p.typology_A}} &rarr; Scenario B: ${{p.typology_B}}<br>${{p.typology_transition}}</div>
       <div class="metric-grid">
         ${{activeMetric}}
         <div class="metric">
@@ -982,7 +1156,33 @@ function renderSelectedCell(f) {{
         </div>
         <div class="metric" style="grid-column:span 2;">
           <div class="val">${{p.Delta_SMCI}}</div>
-          <div class="lbl">&Delta;SMCI &mdash; VinBus effect (Scenario B &minus; A)</div>
+          <div class="lbl">&Delta;SMCI &mdash; modeled Scenario B minus A</div>
+        </div>
+        <div class="metric">
+          <div class="val">${{p.population === null ? 'N/A' : p.population.toFixed(0)}}</div>
+          <div class="lbl">Population estimate</div>
+        </div>
+        <div class="metric">
+          <div class="val">${{p.distance_to_boundary_m === null ? 'N/A' : p.distance_to_boundary_m.toFixed(0) + ' m'}}</div>
+          <div class="lbl">${{p.boundary_side}} (${{p.boundary_band}})</div>
+        </div>
+        <div class="metric">
+          <div class="val">${{p.population_density === null ? 'N/A' : p.population_density.toFixed(0)}}</div>
+          <div class="lbl">Population density / km2</div>
+        </div>
+        <div class="metric">
+          <div class="val">${{p.data_quality_grade || 'N/A'}}</div>
+          <div class="lbl">Data-quality grade</div>
+        </div>
+        <div class="comparison">
+          <b>Scenario comparison</b> <span style="color:#8da0cb">A</span> / <span style="color:#66c2a5">B</span>
+          ${{comparisonBar('MAI', p.MAI_A_raw, p.MAI_raw)}}
+          ${{comparisonBar('RAC', p.RAC_A_raw, p.RAC_raw)}}
+          ${{comparisonBar('SMCI', p.SMCI_A_raw, p.SMCI_raw)}}
+          <div style="margin-top:6px"><b>Scenario B component balance</b></div>
+          ${{componentBar('NAI', p.NAI_norm)}}
+          ${{componentBar('MAI', p.MAI_norm)}}
+          ${{componentBar('RAC', p.RAC_norm)}}
         </div>
       </div>`;
 }}
@@ -1127,7 +1327,7 @@ function updateContLegend(mode) {{
     const bar = document.createElement('div');
     bar.className = 'bar';
     bar.style.height = (count / maxBin * 100) + '%';
-    bar.style.background = spectralColor(t);
+    bar.style.background = paletteColor(t, mode === 'delta' ? DELTA : VIRIDIS);
     bar.title = `n=${{count}}`;
     histEl.appendChild(bar);
   }});
@@ -1135,11 +1335,35 @@ function updateContLegend(mode) {{
 
 document.getElementById('grid-mode').addEventListener('change', e => {{
   gridMode = e.target.value;
+  const differenceOption = document.querySelector('#scenario-sel option[value="difference"]');
+  differenceOption.disabled = gridMode === 'nai';
+  if (gridMode === 'nai' && scenario === 'difference') {{ scenario = 'B'; document.getElementById('scenario-sel').value = 'B'; }}
   gridLayer.setStyle(gridStyle);
   updateContLegend(gridMode);
   updateActiveDescription(gridMode);
   setDefaultInfo();
+  updateUrlState();
 }});
+document.getElementById('scenario-sel').addEventListener('change', e => {{
+  scenario = e.target.value;
+  if (scenario === 'difference' && gridMode === 'nai') {{
+    scenario = 'B';
+    e.target.value = 'B';
+  }}
+  gridLayer.setStyle(gridStyle);
+  updateContLegend(gridMode);
+  updateActiveDescription(gridMode);
+  setDefaultInfo();
+  updateUrlState();
+}});
+function updateUrlState() {{
+  const state = new URLSearchParams(window.location.search);
+  state.set('scenario', scenario); state.set('metric', gridMode);
+  history.replaceState(null, '', `${{window.location.pathname}}?${{state.toString()}}`);
+}}
+const initialState = new URLSearchParams(window.location.search);
+if (['A','B','difference'].includes(initialState.get('scenario'))) {{ scenario = initialState.get('scenario'); document.getElementById('scenario-sel').value = scenario; }}
+if (METRIC_META[initialState.get('metric')] || initialState.get('metric') === 'typology') {{ gridMode = initialState.get('metric'); document.getElementById('grid-mode').value = gridMode; }}
 updateContLegend(gridMode);
 updateActiveDescription(gridMode);
 setDefaultInfo();
@@ -1165,8 +1389,6 @@ const poiLayer = L.geoJSON(POIS, {{
     );
   }},
 }});
-poiLayer.addTo(map);
-
 document.getElementById('chk-poi').addEventListener('change', e => {{
   e.target.checked ? poiLayer.addTo(map) : map.removeLayer(poiLayer);
 }});
@@ -1181,8 +1403,6 @@ const routeLayer = L.geoJSON(ROUTES, {{
     );
   }},
 }});
-routeLayer.addTo(map);
-
 document.getElementById('chk-routes').addEventListener('change', e => {{
   e.target.checked ? routeLayer.addTo(map) : map.removeLayer(routeLayer);
 }});
@@ -1205,8 +1425,6 @@ const vstopLayer = L.geoJSON(VSTOPS, {{
     {{sticky:true}}
   ),
 }});
-vstopLayer.addTo(map);
-
 document.getElementById('chk-vstops').addEventListener('change', e => {{
   e.target.checked ? vstopLayer.addTo(map) : map.removeLayer(vstopLayer);
 }});
@@ -1224,11 +1442,28 @@ document.getElementById('chk-hstops').addEventListener('change', e => {{
 }});
 
 // ── Initial fit: union of grid + all routes so OCP1/OCP2 (east of grid) visible ──
-const FULL_BOUNDS = [
-  [{route_bounds['lat_min']:.4f}, {route_bounds['lon_min']:.4f}],
-  [{route_bounds['lat_max']:.4f}, {route_bounds['lon_max']:.4f}],
+function selectMapState(nextScenario, nextMetric) {{
+  scenario = nextScenario; gridMode = nextMetric;
+  document.getElementById('scenario-sel').value = scenario;
+  document.getElementById('grid-mode').value = gridMode;
+  gridLayer.setStyle(gridStyle); updateContLegend(gridMode); updateActiveDescription(gridMode); setDefaultInfo(); updateUrlState();
+}}
+document.querySelectorAll('[data-preset]').forEach(button => button.addEventListener('click', () => {{
+  const preset = button.dataset.preset;
+  if (preset === 'capability') selectMapState('B', 'typology');
+  if (preset === 'comparison') selectMapState('difference', 'delta');
+  if (preset === 'exposure') selectMapState('B', 'exposure');
+  if (preset === 'boundary') selectMapState('B', 'boundary');
+}}));
+document.getElementById('fit-study').addEventListener('click', () => map.fitBounds(gridLayer.getBounds(), {{padding:[20,20]}}));
+document.getElementById('fit-project').addEventListener('click', () => map.fitBounds(zoneLayer.getBounds(), {{padding:[20,20]}}));
+document.getElementById('fit-network').addEventListener('click', () => {{ routeLayer.addTo(map); document.getElementById('chk-routes').checked = true; map.fitBounds(routeLayer.getBounds(), {{padding:[20,20]}}); }});
+
+const STUDY_BOUNDS = [
+  [{GRID_LAT_MIN:.4f}, {GRID_LON_MIN:.4f}],
+  [{GRID_LAT_MAX:.4f}, {GRID_LON_MAX:.4f}],
 ];
-map.fitBounds(FULL_BOUNDS, {{padding:[20,20]}});
+map.fitBounds(STUDY_BOUNDS, {{padding:[20,20]}});
 </script>
 </body>
 </html>"""

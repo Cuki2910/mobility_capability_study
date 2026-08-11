@@ -1,0 +1,463 @@
+cell_id,poi_quality_grade,poi_count,gtfs_quality_grade,vinbus_quality_grade,motorcycle_quality_grade,population_quality_grade,overall_quality_grade
+0,No local POI,0,C,B,C,B,C
+1,C,1,C,B,C,B,C
+2,No local POI,0,C,B,C,B,C
+3,C,1,C,B,C,B,C
+4,No local POI,0,C,B,C,B,C
+5,No local POI,0,C,B,C,B,C
+6,A,1,C,B,C,B,C
+7,No local POI,0,C,B,C,B,C
+8,No local POI,0,C,B,C,B,C
+9,No local POI,0,C,B,C,B,C
+10,No local POI,0,C,B,C,B,C
+11,No local POI,0,C,B,C,B,C
+12,No local POI,0,C,B,C,B,C
+13,No local POI,0,C,B,C,B,C
+14,No local POI,0,C,B,C,B,C
+15,No local POI,0,C,B,C,B,C
+16,No local POI,0,C,B,C,B,C
+17,No local POI,0,C,B,C,B,C
+18,No local POI,0,C,B,C,B,C
+19,No local POI,0,C,B,C,B,C
+20,No local POI,0,C,B,C,B,C
+21,No local POI,0,C,B,C,B,C
+22,No local POI,0,C,B,C,B,C
+23,C,1,C,B,C,B,C
+24,No local POI,0,C,B,C,B,C
+25,No local POI,0,C,B,C,B,C
+26,No local POI,0,C,B,C,B,C
+27,No local POI,0,C,B,C,B,C
+28,No local POI,0,C,B,C,B,C
+29,No local POI,0,C,B,C,B,C
+30,No local POI,0,C,B,C,B,C
+31,No local POI,0,C,B,C,B,C
+32,No local POI,0,C,B,C,B,C
+33,No local POI,0,C,B,C,B,C
+34,No local POI,0,C,B,C,B,C
+35,No local POI,0,C,B,C,B,C
+36,No local POI,0,C,B,C,B,C
+37,C,1,C,B,C,B,C
+38,No local POI,0,C,B,C,B,C
+39,No local POI,0,C,B,C,B,C
+40,No local POI,0,C,B,C,B,C
+41,No local POI,0,C,B,C,B,C
+42,No local POI,0,C,B,C,B,C
+43,No local POI,0,C,B,C,B,C
+44,No local POI,0,C,B,C,B,C
+45,C,1,C,B,C,B,C
+46,No local POI,0,C,B,C,B,C
+47,No local POI,0,C,B,C,B,C
+48,No local POI,0,C,B,C,B,C
+49,No local POI,0,C,B,C,B,C
+50,No local POI,0,C,B,C,B,C
+51,D,2,C,B,C,B,D
+52,No local POI,0,C,B,C,B,C
+53,No local POI,0,C,B,C,B,C
+54,No local POI,0,C,B,C,B,C
+55,No local POI,0,C,B,C,B,C
+56,No local POI,0,C,B,C,B,C
+57,No local POI,0,C,B,C,B,C
+58,No local POI,0,C,B,C,B,C
+59,C,1,C,B,C,B,C
+60,No local POI,0,C,B,C,B,C
+61,C,1,C,B,C,B,C
+62,C,1,C,B,C,B,C
+63,C,2,C,B,C,B,C
+64,No local POI,0,C,B,C,B,C
+65,A,1,C,B,C,B,C
+66,D,1,C,B,C,B,D
+67,No local POI,0,C,B,C,B,C
+68,No local POI,0,C,B,C,B,C
+69,No local POI,0,C,B,C,B,C
+70,No local POI,0,C,B,C,B,C
+71,No local POI,0,C,B,C,B,C
+72,No local POI,0,C,B,C,B,C
+73,C,3,C,B,C,B,C
+74,No local POI,0,C,B,C,B,C
+75,No local POI,0,C,B,C,B,C
+76,No local POI,0,C,B,C,B,C
+77,No local POI,0,C,B,C,B,C
+78,No local POI,0,C,B,C,B,C
+79,No local POI,0,C,B,C,B,C
+80,No local POI,0,C,B,C,B,C
+81,No local POI,0,C,B,C,B,C
+82,A,1,C,B,C,B,C
+83,A,2,C,B,C,B,C
+84,No local POI,0,C,B,C,B,C
+85,A,1,C,B,C,B,C
+86,No local POI,0,C,B,C,B,C
+87,No local POI,0,C,B,C,B,C
+88,No local POI,0,C,B,C,B,C
+89,No local POI,0,C,B,C,B,C
+90,No local POI,0,C,B,C,B,C
+91,No local POI,0,C,B,C,B,C
+92,No local POI,0,C,B,C,B,C
+93,No local POI,0,C,B,C,B,C
+94,No local POI,0,C,B,C,B,C
+95,C,1,C,B,C,B,C
+96,No local POI,0,C,B,C,B,C
+97,No local POI,0,C,B,C,B,C
+98,No local POI,0,C,B,C,B,C
+99,No local POI,0,C,B,C,B,C
+100,No local POI,0,C,B,C,B,C
+101,No local POI,0,C,B,C,B,C
+102,C,1,C,B,C,B,C
+103,C,3,C,B,C,B,C
+104,A,2,C,B,C,B,C
+105,No local POI,0,C,B,C,B,C
+106,B,1,C,B,C,B,C
+107,No local POI,0,C,B,C,B,C
+108,No local POI,0,C,B,C,B,C
+109,C,1,C,B,C,B,C
+110,No local POI,0,C,B,C,B,C
+111,No local POI,0,C,B,C,B,C
+112,No local POI,0,C,B,C,B,C
+113,No local POI,0,C,B,C,B,C
+114,No local POI,0,C,B,C,B,C
+115,No local POI,0,C,B,C,B,C
+116,No local POI,0,C,B,C,B,C
+117,C,1,C,B,C,B,C
+118,No local POI,0,C,B,C,B,C
+119,No local POI,0,C,B,C,B,C
+120,No local POI,0,C,B,C,B,C
+121,No local POI,0,C,B,C,B,C
+122,No local POI,0,C,B,C,B,C
+123,No local POI,0,C,B,C,B,C
+124,No local POI,0,C,B,C,B,C
+125,A,1,C,B,C,B,C
+126,C,5,C,B,C,B,C
+127,No local POI,0,C,B,C,B,C
+128,C,4,C,B,C,B,C
+129,No local POI,0,C,B,C,B,C
+130,No local POI,0,C,B,C,B,C
+131,No local POI,0,C,B,C,B,C
+132,No local POI,0,C,B,C,B,C
+133,No local POI,0,C,B,C,B,C
+134,No local POI,0,C,B,C,B,C
+135,No local POI,0,C,B,C,B,C
+136,No local POI,0,C,B,C,B,C
+137,No local POI,0,C,B,C,B,C
+138,No local POI,0,C,B,C,B,C
+139,No local POI,0,C,B,C,B,C
+140,No local POI,0,C,B,C,B,C
+141,No local POI,0,C,B,C,B,C
+142,No local POI,0,C,B,C,B,C
+143,No local POI,0,C,B,C,B,C
+144,No local POI,0,C,B,C,B,C
+145,No local POI,0,C,B,C,B,C
+146,No local POI,0,C,B,C,B,C
+147,C,1,C,B,C,B,C
+148,No local POI,0,C,B,C,B,C
+149,C,2,C,B,C,B,C
+150,C,3,C,B,C,B,C
+151,C,1,C,B,C,B,C
+152,C,5,C,B,C,B,C
+153,No local POI,0,C,B,C,B,C
+154,No local POI,0,C,B,C,B,C
+155,No local POI,0,C,B,C,B,C
+156,No local POI,0,C,B,C,B,C
+157,No local POI,0,C,B,C,B,C
+158,No local POI,0,C,B,C,B,C
+159,No local POI,0,C,B,C,B,C
+160,No local POI,0,C,B,C,B,C
+161,No local POI,0,C,B,C,B,C
+162,No local POI,0,C,B,C,B,C
+163,C,1,C,B,C,B,C
+164,No local POI,0,C,B,C,B,C
+165,No local POI,0,C,B,C,B,C
+166,No local POI,0,C,B,C,B,C
+167,No local POI,0,C,B,C,B,C
+168,No local POI,0,C,B,C,B,C
+169,No local POI,0,C,B,C,B,C
+170,D,2,C,B,C,B,D
+171,B,2,C,B,C,B,C
+172,C,1,C,B,C,B,C
+173,C,3,C,B,C,B,C
+174,No local POI,0,C,B,C,B,C
+175,No local POI,0,C,B,C,B,C
+176,No local POI,0,C,B,C,B,C
+177,No local POI,0,C,B,C,B,C
+178,No local POI,0,C,B,C,B,C
+179,No local POI,0,C,B,C,B,C
+180,No local POI,0,C,B,C,B,C
+181,C,1,C,B,C,B,C
+182,No local POI,0,C,B,C,B,C
+183,No local POI,0,C,B,C,B,C
+184,No local POI,0,C,B,C,B,C
+185,C,1,C,B,C,B,C
+186,C,2,C,B,C,B,C
+187,C,2,C,B,C,B,C
+188,No local POI,0,C,B,C,B,C
+189,No local POI,0,C,B,C,B,C
+190,No local POI,0,C,B,C,B,C
+191,No local POI,0,C,B,C,B,C
+192,No local POI,0,C,B,C,B,C
+193,No local POI,0,C,B,C,B,C
+194,No local POI,0,C,B,C,B,C
+195,No local POI,0,C,B,C,B,C
+196,D,3,C,B,C,B,D
+197,D,2,C,B,C,B,D
+198,No local POI,0,C,B,C,B,C
+199,No local POI,0,C,B,C,B,C
+200,No local POI,0,C,B,C,B,C
+201,No local POI,0,C,B,C,B,C
+202,No local POI,0,C,B,C,B,C
+203,No local POI,0,C,B,C,B,C
+204,No local POI,0,C,B,C,B,C
+205,A,1,C,B,C,B,C
+206,A,2,C,B,C,B,C
+207,C,1,C,B,C,B,C
+208,A,1,C,B,C,B,C
+209,C,1,C,B,C,B,C
+210,C,2,C,B,C,B,C
+211,No local POI,0,C,B,C,B,C
+212,C,4,C,B,C,B,C
+213,D,2,C,B,C,B,D
+214,No local POI,0,C,B,C,B,C
+215,No local POI,0,C,B,C,B,C
+216,No local POI,0,C,B,C,B,C
+217,No local POI,0,C,B,C,B,C
+218,D,1,C,B,C,B,D
+219,No local POI,0,C,B,C,B,C
+220,No local POI,0,C,B,C,B,C
+221,No local POI,0,C,B,C,B,C
+222,No local POI,0,C,B,C,B,C
+223,No local POI,0,C,B,C,B,C
+224,No local POI,0,C,B,C,B,C
+225,No local POI,0,C,B,C,B,C
+226,No local POI,0,C,B,C,B,C
+227,No local POI,0,C,B,C,B,C
+228,No local POI,0,C,B,C,B,C
+229,No local POI,0,C,B,C,B,C
+230,C,3,C,B,C,B,C
+231,No local POI,0,C,B,C,B,C
+232,No local POI,0,C,B,C,B,C
+233,No local POI,0,C,B,C,B,C
+234,No local POI,0,C,B,C,B,C
+235,C,1,C,B,C,B,C
+236,No local POI,0,C,B,C,B,C
+237,B,2,C,B,C,B,C
+238,No local POI,0,C,B,C,B,C
+239,No local POI,0,C,B,C,B,C
+240,B,1,C,B,C,B,C
+241,No local POI,0,C,B,C,B,C
+242,No local POI,0,C,B,C,B,C
+243,No local POI,0,C,B,C,B,C
+244,No local POI,0,C,B,C,B,C
+245,No local POI,0,C,B,C,B,C
+246,No local POI,0,C,B,C,B,C
+247,No local POI,0,C,B,C,B,C
+248,C,1,C,B,C,B,C
+249,No local POI,0,C,B,C,B,C
+250,No local POI,0,C,B,C,B,C
+251,No local POI,0,C,B,C,B,C
+252,No local POI,0,C,B,C,B,C
+253,B,1,C,B,C,B,C
+254,C,2,C,B,C,B,C
+255,No local POI,0,C,B,C,B,C
+256,No local POI,0,C,B,C,B,C
+257,No local POI,0,C,B,C,B,C
+258,No local POI,0,C,B,C,B,C
+259,No local POI,0,C,B,C,B,C
+260,No local POI,0,C,B,C,B,C
+261,C,1,C,B,C,B,C
+262,No local POI,0,C,B,C,B,C
+263,No local POI,0,C,B,C,B,C
+264,No local POI,0,C,B,C,B,C
+265,No local POI,0,C,B,C,B,C
+266,No local POI,0,C,B,C,B,C
+267,No local POI,0,C,B,C,B,C
+268,No local POI,0,C,B,C,B,C
+269,No local POI,0,C,B,C,B,C
+270,No local POI,0,C,B,C,B,C
+271,No local POI,0,C,B,C,B,C
+272,D,1,C,B,C,B,D
+273,C,1,C,B,C,B,C
+274,No local POI,0,C,B,C,B,C
+275,No local POI,0,C,B,C,B,C
+276,No local POI,0,C,B,C,B,C
+277,No local POI,0,C,B,C,B,C
+278,No local POI,0,C,B,C,B,C
+279,No local POI,0,C,B,C,B,C
+280,No local POI,0,C,B,C,B,C
+281,No local POI,0,C,B,C,B,C
+282,No local POI,0,C,B,C,B,C
+283,No local POI,0,C,B,C,B,C
+284,No local POI,0,C,B,C,B,C
+285,A,1,C,B,C,B,C
+286,No local POI,0,C,B,C,B,C
+287,No local POI,0,C,B,C,B,C
+288,No local POI,0,C,B,C,B,C
+289,No local POI,0,C,B,C,B,C
+290,No local POI,0,C,B,C,B,C
+291,No local POI,0,C,B,C,B,C
+292,No local POI,0,C,B,C,B,C
+293,No local POI,0,C,B,C,B,C
+294,C,1,C,B,C,B,C
+295,No local POI,0,C,B,C,B,C
+296,No local POI,0,C,B,C,B,C
+297,No local POI,0,C,B,C,B,C
+298,No local POI,0,C,B,C,B,C
+299,C,1,C,B,C,B,C
+300,No local POI,0,C,B,C,B,C
+301,No local POI,0,C,B,C,B,C
+302,No local POI,0,C,B,C,B,C
+303,No local POI,0,C,B,C,B,C
+304,No local POI,0,C,B,C,B,C
+305,No local POI,0,C,B,C,B,C
+306,No local POI,0,C,B,C,B,C
+307,C,1,C,B,C,B,C
+308,No local POI,0,C,B,C,B,C
+309,No local POI,0,C,B,C,B,C
+310,No local POI,0,C,B,C,B,C
+311,No local POI,0,C,B,C,B,C
+312,No local POI,0,C,B,C,B,C
+313,No local POI,0,C,B,C,B,C
+314,C,1,C,B,C,B,C
+315,C,1,C,B,C,B,C
+316,No local POI,0,C,B,C,B,C
+317,No local POI,0,C,B,C,B,C
+318,C,1,C,B,C,B,C
+319,No local POI,0,C,B,C,B,C
+320,No local POI,0,C,B,C,B,C
+321,No local POI,0,C,B,C,B,C
+322,No local POI,0,C,B,C,B,C
+323,No local POI,0,C,B,C,B,C
+324,No local POI,0,C,B,C,B,C
+325,No local POI,0,C,B,C,B,C
+326,No local POI,0,C,B,C,B,C
+327,D,3,C,B,C,B,D
+328,C,1,C,B,C,B,C
+329,No local POI,0,C,B,C,B,C
+330,No local POI,0,C,B,C,B,C
+331,No local POI,0,C,B,C,B,C
+332,No local POI,0,C,B,C,B,C
+333,No local POI,0,C,B,C,B,C
+334,B,1,C,B,C,B,C
+335,No local POI,0,C,B,C,B,C
+336,No local POI,0,C,B,C,B,C
+337,A,1,C,B,C,B,C
+338,No local POI,0,C,B,C,B,C
+339,C,1,C,B,C,B,C
+340,No local POI,0,C,B,C,B,C
+341,No local POI,0,C,B,C,B,C
+342,No local POI,0,C,B,C,B,C
+343,C,1,C,B,C,B,C
+344,No local POI,0,C,B,C,B,C
+345,No local POI,0,C,B,C,B,C
+346,No local POI,0,C,B,C,B,C
+347,No local POI,0,C,B,C,B,C
+348,No local POI,0,C,B,C,B,C
+349,No local POI,0,C,B,C,B,C
+350,No local POI,0,C,B,C,B,C
+351,No local POI,0,C,B,C,B,C
+352,No local POI,0,C,B,C,B,C
+353,No local POI,0,C,B,C,B,C
+354,No local POI,0,C,B,C,B,C
+355,C,1,C,B,C,B,C
+356,C,4,C,B,C,B,C
+357,A,1,C,B,C,B,C
+358,No local POI,0,C,B,C,B,C
+359,No local POI,0,C,B,C,B,C
+360,No local POI,0,C,B,C,B,C
+361,No local POI,0,C,B,C,B,C
+362,C,1,C,B,C,B,C
+363,No local POI,0,C,B,C,B,C
+364,C,1,C,B,C,B,C
+365,No local POI,0,C,B,C,B,C
+366,No local POI,0,C,B,C,B,C
+367,No local POI,0,C,B,C,B,C
+368,No local POI,0,C,B,C,B,C
+369,No local POI,0,C,B,C,B,C
+370,No local POI,0,C,B,C,B,C
+371,No local POI,0,C,B,C,B,C
+372,A,1,C,B,C,B,C
+373,No local POI,0,C,B,C,B,C
+374,No local POI,0,C,B,C,B,C
+375,No local POI,0,C,B,C,B,C
+376,No local POI,0,C,B,C,B,C
+377,No local POI,0,C,B,C,B,C
+378,No local POI,0,C,B,C,B,C
+379,No local POI,0,C,B,C,B,C
+380,No local POI,0,C,B,C,B,C
+381,No local POI,0,C,B,C,B,C
+382,C,1,C,B,C,B,C
+383,D,1,C,B,C,B,D
+384,No local POI,0,C,B,C,B,C
+385,No local POI,0,C,B,C,B,C
+386,No local POI,0,C,B,C,B,C
+387,No local POI,0,C,B,C,B,C
+388,No local POI,0,C,B,C,B,C
+389,No local POI,0,C,B,C,B,C
+390,No local POI,0,C,B,C,B,C
+391,No local POI,0,C,B,C,B,C
+392,C,1,C,B,C,B,C
+393,No local POI,0,C,B,C,B,C
+394,No local POI,0,C,B,C,B,C
+395,No local POI,0,C,B,C,B,C
+396,No local POI,0,C,B,C,B,C
+397,No local POI,0,C,B,C,B,C
+398,No local POI,0,C,B,C,B,C
+399,No local POI,0,C,B,C,B,C
+400,No local POI,0,C,B,C,B,C
+401,No local POI,0,C,B,C,B,C
+402,No local POI,0,C,B,C,B,C
+403,No local POI,0,C,B,C,B,C
+404,No local POI,0,C,B,C,B,C
+405,No local POI,0,C,B,C,B,C
+406,No local POI,0,C,B,C,B,C
+407,No local POI,0,C,B,C,B,C
+408,No local POI,0,C,B,C,B,C
+409,C,1,C,B,C,B,C
+410,No local POI,0,C,B,C,B,C
+411,A,1,C,B,C,B,C
+412,No local POI,0,C,B,C,B,C
+413,No local POI,0,C,B,C,B,C
+414,No local POI,0,C,B,C,B,C
+415,No local POI,0,C,B,C,B,C
+416,No local POI,0,C,B,C,B,C
+417,No local POI,0,C,B,C,B,C
+418,No local POI,0,C,B,C,B,C
+419,No local POI,0,C,B,C,B,C
+420,No local POI,0,C,B,C,B,C
+421,D,1,C,B,C,B,D
+422,No local POI,0,C,B,C,B,C
+423,No local POI,0,C,B,C,B,C
+424,No local POI,0,C,B,C,B,C
+425,No local POI,0,C,B,C,B,C
+426,No local POI,0,C,B,C,B,C
+427,No local POI,0,C,B,C,B,C
+428,No local POI,0,C,B,C,B,C
+429,No local POI,0,C,B,C,B,C
+430,No local POI,0,C,B,C,B,C
+431,No local POI,0,C,B,C,B,C
+432,B,1,C,B,C,B,C
+433,D,2,C,B,C,B,D
+434,C,1,C,B,C,B,C
+435,No local POI,0,C,B,C,B,C
+436,No local POI,0,C,B,C,B,C
+437,No local POI,0,C,B,C,B,C
+438,C,1,C,B,C,B,C
+439,No local POI,0,C,B,C,B,C
+440,No local POI,0,C,B,C,B,C
+441,No local POI,0,C,B,C,B,C
+442,No local POI,0,C,B,C,B,C
+443,No local POI,0,C,B,C,B,C
+444,No local POI,0,C,B,C,B,C
+445,C,2,C,B,C,B,C
+446,No local POI,0,C,B,C,B,C
+447,No local POI,0,C,B,C,B,C
+448,D,1,C,B,C,B,D
+449,No local POI,0,C,B,C,B,C
+450,No local POI,0,C,B,C,B,C
+451,No local POI,0,C,B,C,B,C
+452,No local POI,0,C,B,C,B,C
+453,No local POI,0,C,B,C,B,C
+454,No local POI,0,C,B,C,B,C
+455,No local POI,0,C,B,C,B,C
+456,No local POI,0,C,B,C,B,C
+457,No local POI,0,C,B,C,B,C
+458,No local POI,0,C,B,C,B,C
+459,No local POI,0,C,B,C,B,C
+460,No local POI,0,C,B,C,B,C
+461,No local POI,0,C,B,C,B,C

@@ -172,6 +172,8 @@ pytest tests/ -v   # current baseline: 85 passed
 
 ## Current status (update this section as the project progresses)
 
+**SMCI scale migration (2026-08-11):** The canonical cell-level primary is the equal-weight geometric mean: mean SMCI_A=0.1470, SMCI_B=0.1711, and Delta_SMCI=+0.0242. Product-scale values retained elsewhere in dated history or unrerun sensitivity prose are legacy audit values, not current headlines. See `outputs/validation/smci_scale_transition.md` and `outputs/validation/scenario_uncertainty_envelope_status.md`.
+
 - [x] Proposal text finalized at v7 (`proposal/proposal_v7.md`): theory-RAC consistency,
   classification logic, collinearity check, VIF contingency executed, RAC scaling sensitivity,
   additive robustness robustness (ρ=0.803), Section 3.8 additive fix, validation hierarchy resolved.

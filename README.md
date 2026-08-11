@@ -1,5 +1,7 @@
 # Fragmented Mobility Capability - Ocean Park Study
 
+> Current reporting scale: equal-weight geometric-mean SMCI (cell level). The canonical Ocean Park primary result is mean SMCI_A=0.1470, SMCI_B=0.1711, Delta_SMCI=+0.0242; legacy product values are retained only for scale-transition auditing.
+
 Research proposal and analysis pipeline examining whether Vinhomes Ocean Park
 (Hanoi) achieves a walkable local environment while remaining dependent on
 motorcycles at the metropolitan scale, using a dual-scale, mode-competitive

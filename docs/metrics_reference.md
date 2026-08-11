@@ -367,14 +367,14 @@ not score as "metropolitanly strong."
 **What it measures.** The headline metric. Joint presence of (1) local walking access,
 (2) metropolitan opportunity access, and (3) mode competitiveness — a **weakest-link** index.
 
-**Primary (multiplicative).**
+**Primary (equal-weight geometric mean).**
 ```text
-SMCI_i = NAI_norm_i * MAI_norm_i * RAC_norm_i
+SMCI_i = (NAI_norm_i * MAI_norm_i * RAC_norm_i)^(1/3)
 ```
 All three components min-max normalized; `RAC_norm` is the primary RAC (= RAC_time, Decision #22).
 Any component near zero collapses the index — that is the intended "capability requires all three
-at once" semantics. Current pilot (800 m NAI primary, Decision #27): SMCI_A=0.0070, SMCI_B=0.0133,
-mean Delta=0.0063, 281/462 improved (60.8%), 88 unchanged, 93 declined; typology_B 171/171/60/60.
+at once" semantics. Current pilot (800 m NAI primary): SMCI_A=0.1470, SMCI_B=0.1711,
+mean Delta=0.0242, 281/462 improved (60.8%), 88 unchanged, 93 declined; typology_B 171/171/60/60.
 
 **Scenario delta (shared scale, Decision #11).**
 ```text
@@ -389,7 +389,7 @@ SMCI_additive_i = (NAI_norm_i + MAI_norm_i + RAC_norm_i) / 3
 ```
 | Parameter | Value | Code |
 |---|---|---|
-| Primary combination | product (multiplicative) | `accessibility.compute_smci` |
+| Primary combination | equal-weight geometric mean | `accessibility.compute_smci_geometric` |
 | Robustness combination | mean (additive) | `accessibility.compute_smci_additive` |
 | Normalization | min-max, shared A+B for Δ | `accessibility.norm01[_with_bounds]` |
 

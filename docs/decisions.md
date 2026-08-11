@@ -714,3 +714,11 @@ so settled debates don't get silently re-opened.
     conserves the pilot total population to floating-point precision (-0.0003 people) and is used
     only for population-weighted SMCI and typology exposure sensitivity. It is not a residential
     building population estimate because footprints lack use, height, floor area, and occupancy.
+
+33. **DEC-033 - Geometric-mean SMCI is the primary reporting scale (2026-08-10).**
+    SMCI is reported as the equal-weight, per-cell geometric mean of normalized NAI, MAI, and
+    RAC. The legacy product is retained in processed outputs for auditability. The two operators
+    preserve zero cells and ordinal rankings exactly, so their comparison is a scale transition,
+    not a robustness test. Additive SMCI remains the compensatory robustness specification and
+    the minimum component remains an extreme bottleneck diagnostic. Typology remains based on
+    rank-split NAI and MCS, so it is independent of the SMCI reporting operator.

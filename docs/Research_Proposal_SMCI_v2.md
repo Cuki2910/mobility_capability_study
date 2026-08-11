@@ -1,5 +1,7 @@
 # RESEARCH PROPOSAL
 
+> **Scale migration notice (2026-08-11):** The canonical primary SMCI is now the cell-level equal-weight geometric mean (A=0.1470, B=0.1711, Delta=+0.0242). Product-scale numbers retained in this historical proposal are legacy audit values; use `proposal/proposal_v7.md` and `docs/metrics_reference.md` for current methods.
+
 ## Vượt ra ngoài đô thị 15 phút: Khung đánh giá năng lực di chuyển bền vững bị phân mảnh tại Vinhomes Ocean Park, Hà Nội
 
 **Ứng viên:** Đặng Tuấn Kiệt
@@ -85,19 +87,19 @@ Tất cả NAI, MAI và RAC phục vụ so sánh Scenario A/B được chuẩn h
 x_norm = (x - min_pool) / (max_pool - min_pool)
 ```
 
-Giới hạn chung bảo đảm chênh lệch scenario không do thang đo thay đổi. SMCI đặc tả chính là tích:
+Giới hạn chung bảo đảm chênh lệch scenario không do thang đo thay đổi. SMCI đặc tả chính là geometric mean trọng số bằng nhau:
 
 ```
-SMCI_i = NAI_norm,i * MAI_norm,i * RAC_time_norm,i
+SMCI_i = (NAI_norm,i * MAI_norm,i * RAC_time_norm,i)^(1/3)
 ```
 
-Phép tích nhạy với mắt xích yếu: thành phần bằng không làm SMCI bằng không, dù các thành phần khác cao. Nó vẫn cho phép bù trừ một phần giữa các giá trị dương, do đó không được mô tả là hoàn toàn không bù trừ. Đặc tả cộng chỉ dùng robustness check:
+Geometric mean nhạy với mắt xích yếu: thành phần bằng không làm SMCI bằng không, dù các thành phần khác cao. Nó vẫn cho phép bù trừ một phần giữa các giá trị dương, do đó không được mô tả là hoàn toàn không bù trừ. Đặc tả cộng chỉ dùng robustness check:
 
 ```
 SMCI_add,i = (NAI_norm,i + MAI_norm,i + RAC_time_norm,i) / 3
 ```
 
-Không dùng geometric mean như robustness vì đó là biến đổi đơn điệu của tích và không kiểm tra tính ổn định thực chất.
+Không dùng product như robustness vì đó là biến đổi đơn điệu của geometric mean và không kiểm tra tính ổn định thực chất.
 
 Typology chính là theory-first rank-based median split giữa NAI và Metropolitan Competitiveness Score:
 

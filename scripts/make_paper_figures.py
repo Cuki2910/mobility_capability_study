@@ -189,7 +189,12 @@ def figure5_boundary(
     output.write_text("\n".join(parts), encoding="utf-8")
 
 
-def write_captions(output: Path) -> None:
+def write_captions(boundary_table: Path, boundary_bootstrap: Path, output: Path) -> None:
+    bands = pd.read_csv(boundary_table).set_index("distance_band")
+    bootstrap = pd.read_csv(boundary_bootstrap)
+    smci = bootstrap.loc[bootstrap["metric"] == "SMCI_B"].iloc[0]
+    inside = float(bands.loc["inside_0_250m", "SMCI_B_median"])
+    outside = float(bands.loc["outside_0_250m", "SMCI_B_median"])
     captions = [
         "# Paper Figure Captions",
         "",
@@ -201,7 +206,11 @@ def write_captions(output: Path) -> None:
         "",
         "**Figure 4. Distribution and population exposure.** The figure reports SMCI_B distribution, cell share by typology, and population share by typology using WorldPop aggregation.",
         "",
-        "**Figure 5. Descriptive boundary profile.** Signed-distance bands compare cells within 1,000 m inside and outside the Ocean Park planning boundary. The 0–250 m inside-minus-outside median SMCI_B difference is 0.0173 (bootstrap 95% CI: 0.0113–0.0320; inside n=39, outside n=44; 2,000 iterations, seed 2026). This spatial comparison is descriptive, not a causal regression-discontinuity estimate.",
+        "**Figure 5. Descriptive boundary profile.** Signed-distance bands compare cells within 1,000 m inside and outside the Ocean Park planning boundary. "
+        f"The 0–250 m inside-minus-outside median SMCI_B difference is {inside - outside:.4f} "
+        f"(bootstrap 95% CI: {float(smci['bootstrap_ci_low']):.4f}–{float(smci['bootstrap_ci_high']):.4f}; "
+        f"inside n={int(smci['inside_n'])}, outside n={int(smci['outside_n'])}; {int(smci['bootstrap_iterations']):,} iterations, seed {int(smci['seed'])}). "
+        "This spatial comparison is descriptive, not a causal regression-discontinuity estimate.",
         "",
     ]
     output.write_text("\n".join(captions), encoding="utf-8")
@@ -216,6 +225,7 @@ def main() -> int:
     parser.add_argument("--boundary", type=Path, default=Path("data/interim/ocean_park_1_boundary.geojson"))
     parser.add_argument("--boundary-cells", type=Path, default=Path("outputs/results/boundary_cell_metrics.csv"))
     parser.add_argument("--boundary-table", type=Path, default=Path("outputs/tables/boundary_discontinuity.csv"))
+    parser.add_argument("--boundary-bootstrap", type=Path, default=Path("outputs/tables/boundary_bootstrap.csv"))
     parser.add_argument("--output-dir", type=Path, default=Path("outputs/figures"))
     args = parser.parse_args()
 
@@ -226,7 +236,7 @@ def main() -> int:
     figure3_typology_delta(maps, args.output_dir / "figure3_typology_delta.svg")
     figure4_distribution(args.metrics, args.population, args.output_dir / "figure4_distribution_population.svg")
     figure5_boundary(args.grid, args.boundary, args.boundary_cells, args.boundary_table, args.output_dir / "figure5_boundary_profile.svg")
-    write_captions(args.output_dir / "figure_captions.md")
+    write_captions(args.boundary_table, args.boundary_bootstrap, args.output_dir / "figure_captions.md")
     print(f"Wrote paper figures to {args.output_dir}")
     return 0
 

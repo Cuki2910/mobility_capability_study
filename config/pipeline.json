@@ -1,5 +1,14 @@
 {
   "schema_version": 2,
+  "analytical_spec": {
+    "nai_primary_threshold_m": 800,
+    "smci_primary_operator": "equal_weight_geometric_mean",
+    "smci_legacy_operator": "product",
+    "smci_robustness_operator": "additive",
+    "smci_bottleneck_operator": "minimum_component",
+    "default_scenario": "B",
+    "default_metric": "typology"
+  },
   "nodes": {
     "audit_pois": {
       "command": [

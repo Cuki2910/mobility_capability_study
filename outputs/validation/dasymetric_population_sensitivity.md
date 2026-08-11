@@ -14,7 +14,7 @@
 
 | Metric | Baseline WorldPop | Dasymetric sensitivity | Difference |
 | --- | ---: | ---: | ---: |
-| Population-weighted SMCI_B | 0.012862 | 0.012906 | 0.000044 |
+| Population-weighted SMCI_B | 0.173003 | 0.173331 | 0.000328 |
 | Population share: Fragmented Capability | 16.0127% | 16.3389% | 0.3262% |
 | Population share: Integrated Capability | 34.6622% | 34.7973% | 0.1351% |
 | Population share: Motorcycle Lock-in | 33.8944% | 33.6347% | -0.2598% |

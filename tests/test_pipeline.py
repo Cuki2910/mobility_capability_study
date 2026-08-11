@@ -100,6 +100,10 @@ def test_pilot_metrics_compute_scenarios_and_typology():
     summary = pilot_summary(metrics)
 
     assert {"SMCI_A", "SMCI_B", "Delta_SMCI", "typology_A", "typology_B"} <= set(metrics.columns)
+    assert {"SMCI_product_A", "SMCI_product_B", "Delta_SMCI_product", "SMCI_min_A", "SMCI_min_B"} <= set(metrics.columns)
+    assert np.allclose(metrics["SMCI_A"], np.cbrt(metrics["SMCI_product_A"]))
+    assert np.allclose(metrics["SMCI_B"], np.cbrt(metrics["SMCI_product_B"]))
+    assert np.allclose(metrics["Delta_SMCI"], metrics["SMCI_B"] - metrics["SMCI_A"])
     assert summary["n_cells"] == 6
 
 def test_pilot_metrics_use_shared_scenario_scale_for_delta():

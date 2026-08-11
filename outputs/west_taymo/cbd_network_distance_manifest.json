@@ -1,0 +1,16 @@
+{
+  "source": "osm_download",
+  "graph": "data\\raw\\cbd_matching_drive_network.graphml",
+  "bbox_west_south_east_north": [
+    105.73273035151102,
+    20.98397540747626,
+    105.9579761024485,
+    21.038700000000002
+  ],
+  "nodes": 9664,
+  "edges": 23070,
+  "cbd": {
+    "lat": 21.0287,
+    "lon": 105.8524
+  }
+}

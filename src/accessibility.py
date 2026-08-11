@@ -118,9 +118,9 @@ def compute_rac_shared(
     }
 
 
-def compute_smci(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
+def compute_smci_product(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
     """
-    Sustainable Mobility Capability Index (Section 3.8), PRIMARY specification.
+    Legacy product-form Sustainable Mobility Capability Index.
     SMCI = NAI_norm * MAI_norm * RAC_norm
     (multiplicative, weak-link-sensitive, with zero annihilation).
 
@@ -134,11 +134,38 @@ def compute_smci(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarra
     itself and will ALWAYS give Spearman rho = 1.0. It tests nothing.
     Use `compute_smci_additive` below for the real robustness comparison.
     """
-    return norm01(nai) * norm01(mai) * norm01(rac)
+    return compute_smci_product_from_normalized(norm01(nai), norm01(mai), norm01(rac))
 
-def compute_smci_from_normalized(nai_norm: np.ndarray, mai_norm: np.ndarray, rac_norm: np.ndarray) -> np.ndarray:
-    """SMCI from already-normalized components, used when scenarios share normalization bounds."""
+def compute_smci_product_from_normalized(nai_norm: np.ndarray, mai_norm: np.ndarray, rac_norm: np.ndarray) -> np.ndarray:
+    """Legacy product SMCI from normalized components."""
     return np.asarray(nai_norm, dtype=float) * np.asarray(mai_norm, dtype=float) * np.asarray(rac_norm, dtype=float)
+
+
+def compute_smci_geometric(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
+    """Equal-weight geometric-mean SMCI from raw components."""
+    return compute_smci_geometric_from_normalized(norm01(nai), norm01(mai), norm01(rac))
+
+
+def compute_smci_geometric_from_normalized(
+    nai_norm: np.ndarray, mai_norm: np.ndarray, rac_norm: np.ndarray
+) -> np.ndarray:
+    """Primary zero-preserving SMCI scale from normalized components."""
+    return np.cbrt(compute_smci_product_from_normalized(nai_norm, mai_norm, rac_norm))
+
+
+def compute_smci_min(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
+    """Extreme bottleneck diagnostic from raw components."""
+    return compute_smci_min_from_normalized(norm01(nai), norm01(mai), norm01(rac))
+
+
+def compute_smci_min_from_normalized(nai_norm: np.ndarray, mai_norm: np.ndarray, rac_norm: np.ndarray) -> np.ndarray:
+    """Extreme bottleneck diagnostic from normalized components."""
+    return np.minimum.reduce((np.asarray(nai_norm, dtype=float), np.asarray(mai_norm, dtype=float), np.asarray(rac_norm, dtype=float)))
+
+
+# Backwards-compatible aliases for callers that still request the legacy product scale.
+compute_smci = compute_smci_product
+compute_smci_from_normalized = compute_smci_product_from_normalized
 
 
 def compute_smci_additive(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:

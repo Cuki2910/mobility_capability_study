@@ -175,8 +175,14 @@ def main() -> int:
     summary = pd.DataFrame(rows)
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
     summary.to_csv(args.output_csv, index=False)
+    cell_rows = [
+        metrics[["cell_id", "SMCI_A", "SMCI_B", "Delta_SMCI"]].assign(threshold_m=threshold)
+        for threshold, metrics in sorted(metrics_by_threshold.items())
+    ]
+    cells_output = args.output_csv.with_name("nai_threshold_sensitivity_cells.csv")
+    pd.concat(cell_rows, ignore_index=True).to_csv(cells_output, index=False)
     _write_markdown(summary, args.output_md, args.reference_threshold_m)
-    print(f"Wrote {args.output_csv} and {args.output_md}")
+    print(f"Wrote {args.output_csv}, {cells_output}, and {args.output_md}")
     return 0
 
 

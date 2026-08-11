@@ -4,9 +4,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.headline_metrics import SCHEMA_VERSION
 
 
 def _sha256(path: Path) -> str:
@@ -73,8 +78,8 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=Path("outputs/tables"))
     args = parser.parse_args()
     snapshot = json.loads(args.snapshot.read_text(encoding="utf-8"))
-    if snapshot.get("schema_version") != 2:
-        raise ValueError("headline snapshot schema_version must be 2")
+    if snapshot.get("schema_version") != SCHEMA_VERSION:
+        raise ValueError(f"headline snapshot schema_version must be {SCHEMA_VERSION}")
 
     provenance = pd.DataFrame([{
         "source_file": source,

@@ -38,6 +38,7 @@ def main() -> int:
     parser.add_argument("--population", type=Path, default=Path("data/interim/grid_worldpop.csv"))
     parser.add_argument("--cells-output", type=Path, default=Path("outputs/results/boundary_cell_metrics.csv"))
     parser.add_argument("--table-output", type=Path, default=Path("outputs/tables/boundary_discontinuity.csv"))
+    parser.add_argument("--bootstrap-output", type=Path, default=Path("outputs/tables/boundary_bootstrap.csv"))
     parser.add_argument("--report-output", type=Path, default=Path("outputs/validation/boundary_discontinuity.md"))
     parser.add_argument("--min-cells", type=int, default=5)
     parser.add_argument("--bootstrap-iterations", type=int, default=2000)
@@ -55,9 +56,11 @@ def main() -> int:
 
     args.cells_output.parent.mkdir(parents=True, exist_ok=True)
     args.table_output.parent.mkdir(parents=True, exist_ok=True)
+    args.bootstrap_output.parent.mkdir(parents=True, exist_ok=True)
     args.report_output.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(cells.drop(columns="geometry")).to_csv(args.cells_output, index=False)
     summary.to_csv(args.table_output, index=False)
+    bootstrap.to_csv(args.bootstrap_output, index=False)
 
     sparse = summary[summary["sparse_band"]]
     smci = bootstrap.loc[bootstrap["metric"] == "SMCI_B"].iloc[0]
@@ -103,7 +106,7 @@ def main() -> int:
         _markdown_table(summary),
     ]
     args.report_output.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"Wrote {args.cells_output}, {args.table_output}, {args.report_output}")
+    print(f"Wrote {args.cells_output}, {args.table_output}, {args.bootstrap_output}, {args.report_output}")
     return 0
 
 

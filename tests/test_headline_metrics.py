@@ -24,6 +24,9 @@ def _write_fixture(root: Path) -> None:
         "typology_A": ["A", "A", "B", "B"],
         "typology_B": ["A", "B", "B", "B"],
     })
+    metrics["SMCI_product_A"] = metrics["SMCI_A"] ** 3
+    metrics["SMCI_product_B"] = metrics["SMCI_B"] ** 3
+    metrics["Delta_SMCI_product"] = metrics["SMCI_product_B"] - metrics["SMCI_product_A"]
     metrics.to_csv(root / "data/processed/pilot_metrics.csv", index=False)
     pd.DataFrame({"cell_id": [0, 1, 2, 3], "pop_sum": [1., 1., 2., 4.]}).to_csv(
         root / "data/interim/grid_worldpop.csv", index=False)
