@@ -8,6 +8,7 @@ time based on highway-class priors plus configurable multipliers.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from pathlib import Path
 from typing import Mapping, MutableMapping
 
@@ -48,7 +49,11 @@ class MotorcycleCalibration:
 
     base_speed_kph: Mapping[str, float]
     multipliers: Mapping[str, float]
-    source_note: str = "Initial literature-calibration priors; replace with cited Hanoi/Vietnam values when available."
+    source_note: str = (
+        "Scenario-calibrated modeling assumptions (defaults); not verified literature values. "
+        "Pipeline uses data/raw/motorcycle_speed_calibration.csv for all production runs. "
+        "See docs/decisions.md DEC-030 for full provenance."
+    )
 
     @classmethod
     def defaults(cls) -> "MotorcycleCalibration":
@@ -70,9 +75,23 @@ def load_motorcycle_calibration(csv_path: str | Path | None = None) -> Motorcycl
     missing = required - set(table.columns)
     if missing:
         raise ValueError(f"Calibration CSV missing columns: {sorted(missing)}")
+    if table["highway"].astype(str).duplicated().any():
+        raise ValueError("Calibration CSV contains duplicate highway classes")
 
-    base = dict(zip(table["highway"], table["base_speed_kph"]))
-    mult = dict(zip(table["highway"], table["multiplier"]))
+    for column in ("base_speed_kph", "multiplier"):
+        values = pd.to_numeric(table[column], errors="coerce")
+        if values.isna().any() or not values.map(math.isfinite).all() or (values <= 0).any():
+            raise ValueError(f"Calibration CSV column {column} must contain finite positive values")
+        table[column] = values.astype(float)
+
+    computed = table["base_speed_kph"] * table["multiplier"]
+    if "motorcycle_speed_kph" in table.columns:
+        stated = pd.to_numeric(table["motorcycle_speed_kph"], errors="coerce")
+        if stated.isna().any() or not (computed - stated).abs().le(1e-6).all():
+            raise ValueError("Calibration CSV motorcycle_speed_kph must equal base_speed_kph * multiplier")
+
+    base = dict(zip(table["highway"].astype(str), table["base_speed_kph"]))
+    mult = dict(zip(table["highway"].astype(str), table["multiplier"]))
     base.setdefault("default", DEFAULT_BASE_SPEED_KPH["default"])
     mult.setdefault("default", DEFAULT_SPEED_MULTIPLIERS["default"])
     return MotorcycleCalibration(base, mult, f"Loaded from {csv_path}")

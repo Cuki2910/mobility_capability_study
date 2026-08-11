@@ -1,463 +1,463 @@
 cell_id,typology_primary,typology_timonly,SMCI_B_primary,SMCI_B_timonly,label_changed
-0,Motorcycle Lock-in,Motorcycle Lock-in,4.173906854952734e-05,0.0001571761524460622,False
-1,Motorcycle Lock-in,Motorcycle Lock-in,0.00017576393927566037,0.00041206375896515245,False
-2,Motorcycle Lock-in,Motorcycle Lock-in,0.001781875981085612,0.0015388681786805056,False
-3,Motorcycle Lock-in,Motorcycle Lock-in,0.0006038310769014815,0.0005796128354689492,False
-4,Motorcycle Lock-in,Motorcycle Lock-in,0.003021772489378246,0.0019950798409334547,False
-5,Motorcycle Lock-in,Motorcycle Lock-in,0.0034581330585979034,0.0022719535955749927,False
-6,Motorcycle Lock-in,Motorcycle Lock-in,0.007090665874519007,0.0037463113895657035,False
-7,Motorcycle Lock-in,Transit-Dependent,0.020954505169126635,0.0076213817820383455,True
-8,Motorcycle Lock-in,Motorcycle Lock-in,0.020323171098424034,0.0067950583481331565,False
-9,Motorcycle Lock-in,Motorcycle Lock-in,0.01838419856093784,0.0045764242289913675,False
+0,Fragmented Capability,Fragmented Capability,0.0026896434424513896,0.002554985830498997,False
+1,Fragmented Capability,Fragmented Capability,0.0048563967574951255,0.00444830894750658,False
+2,Motorcycle Lock-in,Motorcycle Lock-in,0.0021889217981459356,0.0014457613754473156,False
+3,Motorcycle Lock-in,Motorcycle Lock-in,0.001851877621590127,0.0012636955654715353,False
+4,Motorcycle Lock-in,Motorcycle Lock-in,0.0016663081393606363,0.0009296893558845522,False
+5,Motorcycle Lock-in,Motorcycle Lock-in,0.001837079274937199,0.001033614809279193,False
+6,Motorcycle Lock-in,Motorcycle Lock-in,0.006821964892549454,0.00326340611185088,False
+7,Fragmented Capability,Integrated Capability,0.02639532947816858,0.009184381726521357,True
+8,Fragmented Capability,Fragmented Capability,0.02587676046049605,0.008410911862801582,False
+9,Motorcycle Lock-in,Motorcycle Lock-in,0.0074654648329754,0.0017655969801487707,False
 10,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 11,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 12,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-13,Motorcycle Lock-in,Motorcycle Lock-in,0.0013757931549844419,0.00020382299786476083,False
-14,Motorcycle Lock-in,Motorcycle Lock-in,0.005045824216543221,0.000684517896016458,False
-15,Motorcycle Lock-in,Motorcycle Lock-in,0.0035700177648959677,0.00046499707801617293,False
-16,Motorcycle Lock-in,Motorcycle Lock-in,0.004137019601323185,0.0006244312459140197,False
-17,Transit-Dependent,Transit-Dependent,0.04323592495401395,0.028750464576137107,False
-18,Motorcycle Lock-in,Motorcycle Lock-in,0.01102057871695238,0.0021258546335553275,False
-19,Motorcycle Lock-in,Motorcycle Lock-in,0.011269723011181927,0.0018847107538829515,False
-20,Motorcycle Lock-in,Motorcycle Lock-in,0.003123631116137363,0.0006491478482543393,False
-21,Motorcycle Lock-in,Motorcycle Lock-in,0.004051519085474759,0.0008142932886061602,False
-22,Motorcycle Lock-in,Motorcycle Lock-in,0.00012758970930209558,0.0003020324981165693,False
-23,Motorcycle Lock-in,Motorcycle Lock-in,0.000600175180321378,0.0008467557848645024,False
-24,Motorcycle Lock-in,Motorcycle Lock-in,0.0019121656971494263,0.0014547292526515552,False
-25,Fragmented Capability,Fragmented Capability,0.006405661198483568,0.002597099300368374,False
-26,Motorcycle Lock-in,Motorcycle Lock-in,0.0078100737910528,0.0038738469207929616,False
-27,Fragmented Capability,Fragmented Capability,0.012196688525223001,0.005249437212179485,False
-28,Fragmented Capability,Fragmented Capability,0.020145630942070097,0.007388992702457252,False
-29,Fragmented Capability,Fragmented Capability,0.016427865207062648,0.004231662614509647,False
-30,Motorcycle Lock-in,Motorcycle Lock-in,0.009179766054874947,0.0014847194114236035,False
-31,Motorcycle Lock-in,Motorcycle Lock-in,0.004404558776201723,0.0007261534994669927,False
-32,Motorcycle Lock-in,Motorcycle Lock-in,0.009982589768513265,0.0016147745331845128,False
-33,Motorcycle Lock-in,Motorcycle Lock-in,0.007630816731007827,0.0012608176827115895,False
+13,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+14,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+15,Motorcycle Lock-in,Motorcycle Lock-in,0.0020475937959628103,0.0002702631427236864,False
+16,Motorcycle Lock-in,Motorcycle Lock-in,0.0023749336014261585,0.0003635818179028165,False
+17,Transit-Dependent,Transit-Dependent,0.04404969860561829,0.029432261479877028,False
+18,Fragmented Capability,Fragmented Capability,0.014380992904454092,0.0027733724358901613,False
+19,Motorcycle Lock-in,Motorcycle Lock-in,0.00703474205552254,0.0011673094163950912,False
+20,Motorcycle Lock-in,Motorcycle Lock-in,0.0014780190757712804,0.0003036251510997759,False
+21,Motorcycle Lock-in,Motorcycle Lock-in,0.0037724492214378565,0.0007533699227305251,False
+22,Fragmented Capability,Fragmented Capability,0.0034080609906384667,0.002896580529082132,False
+23,Fragmented Capability,Fragmented Capability,0.0054352712611095,0.004167928314003755,False
+24,Motorcycle Lock-in,Motorcycle Lock-in,0.002163055426469861,0.0012909072401068853,False
+25,Motorcycle Lock-in,Motorcycle Lock-in,0.003668522270420457,0.0012679433079778992,False
+26,Motorcycle Lock-in,Motorcycle Lock-in,0.006031883578903408,0.0026651412936688434,False
+27,Fragmented Capability,Fragmented Capability,0.012718343088701456,0.005047261182378686,False
+28,Fragmented Capability,Fragmented Capability,0.025494023198358657,0.008912511241422701,False
+29,Fragmented Capability,Fragmented Capability,0.015936107371079793,0.0038485584847028965,False
+30,Motorcycle Lock-in,Motorcycle Lock-in,0.0073814780043551164,0.001113307348178942,False
+31,Motorcycle Lock-in,Motorcycle Lock-in,0.0027132122970209504,0.00040966050825910755,False
+32,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+33,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 34,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-35,Motorcycle Lock-in,Motorcycle Lock-in,0.003283398414790978,0.0004420183518857092,False
-36,Motorcycle Lock-in,Motorcycle Lock-in,0.0012457816332644611,0.00017209216995555478,False
-37,Motorcycle Lock-in,Motorcycle Lock-in,0.008945867616376984,0.0010808405147554826,False
-38,Transit-Dependent,Transit-Dependent,0.057208211510118026,0.05757806670380139,False
-39,Transit-Dependent,Transit-Dependent,0.059232831208027296,0.058324965971185756,False
-40,Motorcycle Lock-in,Motorcycle Lock-in,0.01035022465740565,0.002038749250569266,False
-41,Fragmented Capability,Fragmented Capability,0.021547473936868643,0.003517163960116694,False
-42,Motorcycle Lock-in,Motorcycle Lock-in,0.0037683085481623494,0.0007356446799698051,False
-43,Motorcycle Lock-in,Motorcycle Lock-in,0.00925138801113998,0.0017790310384395054,False
-44,Motorcycle Lock-in,Motorcycle Lock-in,0.0005418497446306929,0.0005721891600828661,False
-45,Motorcycle Lock-in,Motorcycle Lock-in,0.0008176273409952181,0.0007643556899431238,False
-46,Fragmented Capability,Fragmented Capability,0.004759887196441379,0.0020155726347767964,False
-47,Fragmented Capability,Fragmented Capability,0.005938441306926291,0.0023463916896418594,False
-48,Fragmented Capability,Fragmented Capability,0.008349974876827568,0.002890080722414435,False
-49,Fragmented Capability,Fragmented Capability,0.013425878371161297,0.004334602113020458,False
-50,Fragmented Capability,Fragmented Capability,0.019922125542015237,0.004819727998117849,False
-51,Fragmented Capability,Fragmented Capability,0.023995978631639193,0.005832232686035103,False
-52,Fragmented Capability,Fragmented Capability,0.024139923648559086,0.005147089524939104,False
-53,Fragmented Capability,Fragmented Capability,0.012416175114687166,0.001357680060539846,False
-54,Motorcycle Lock-in,Motorcycle Lock-in,0.01033679329427987,0.0009420343733475729,False
+35,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+36,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+37,Motorcycle Lock-in,Motorcycle Lock-in,0.005101548744165487,0.0006258001240283648,False
+38,Transit-Dependent,Transit-Dependent,0.05933712241249511,0.05969244217863101,False
+39,Transit-Dependent,Transit-Dependent,0.06135066588601596,0.06040947757929511,False
+40,Motorcycle Lock-in,Motorcycle Lock-in,0.010916013259395488,0.002142339583375676,False
+41,Motorcycle Lock-in,Motorcycle Lock-in,0.007576635534700736,0.0012265110580636969,False
+42,Motorcycle Lock-in,Motorcycle Lock-in,0.001751761207581084,0.00034004337731719853,False
+43,Motorcycle Lock-in,Motorcycle Lock-in,0.008670074312941901,0.001653044535527286,False
+44,Fragmented Capability,Fragmented Capability,0.003304325501020353,0.0019712922883947416,False
+45,Fragmented Capability,Fragmented Capability,0.003702934351394079,0.0021562255654273294,False
+46,Motorcycle Lock-in,Motorcycle Lock-in,0.005021280447704617,0.001992093443049275,False
+47,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+48,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+49,Fragmented Capability,Fragmented Capability,0.010757129367207099,0.0031753374285377165,False
+50,Fragmented Capability,Fragmented Capability,0.02318627906186708,0.005271464173340882,False
+51,Fragmented Capability,Fragmented Capability,0.038940133839217954,0.00914211044498094,False
+52,Fragmented Capability,Fragmented Capability,0.024022034596173185,0.004827876345892275,False
+53,Fragmented Capability,Fragmented Capability,0.010426882627774914,0.0010710712899836515,False
+54,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 55,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 56,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 57,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-58,Integrated Capability,Integrated Capability,0.05575034056188693,0.012777343393257904,False
-59,Integrated Capability,Integrated Capability,0.07479170931561979,0.018308056274005613,False
-60,Motorcycle Lock-in,Motorcycle Lock-in,0.007853042960540691,0.0028138258531629485,False
-61,Transit-Dependent,Transit-Dependent,0.029485945660080216,0.008702937369144972,False
-62,Integrated Capability,Integrated Capability,0.16830358511832857,0.05642874830334848,False
-63,Fragmented Capability,Integrated Capability,0.0829158489743819,0.02389615242438252,True
-64,Fragmented Capability,Fragmented Capability,0.029797058967427504,0.004168446711843564,False
-65,Motorcycle Lock-in,Motorcycle Lock-in,0.010686870922136379,0.0020370271212979073,False
-66,Fragmented Capability,Fragmented Capability,0.0014484286706794728,0.0011010861908047173,False
-67,Fragmented Capability,Fragmented Capability,0.002187364908382061,0.0015718357030865106,False
-68,Motorcycle Lock-in,Motorcycle Lock-in,0.0028834011597090076,0.0008919064256611623,False
-69,Motorcycle Lock-in,Motorcycle Lock-in,0.0007212045705118628,0.0002616179256795837,False
-70,Fragmented Capability,Fragmented Capability,0.01054810592755827,0.002570069819668329,False
-71,Fragmented Capability,Fragmented Capability,0.014610664647100978,0.004403995310567636,False
-72,Fragmented Capability,Fragmented Capability,0.021504826737716084,0.0054039528795920624,False
-73,Fragmented Capability,Fragmented Capability,0.02770644584031291,0.005914268575768149,False
-74,Fragmented Capability,Fragmented Capability,0.01652559399785742,0.0020418164497444037,False
-75,Fragmented Capability,Fragmented Capability,0.015042887647747085,0.001673332525749389,False
-76,Motorcycle Lock-in,Motorcycle Lock-in,0.015106358294729812,0.0018382921969491216,False
-77,Motorcycle Lock-in,Motorcycle Lock-in,0.002364764590405633,0.0002566960163731735,False
-78,Motorcycle Lock-in,Motorcycle Lock-in,0.001075824334364987,5.626956333832471e-05,False
-79,Motorcycle Lock-in,Motorcycle Lock-in,0.004737088334351465,0.0004510300186592677,False
-80,Integrated Capability,Integrated Capability,0.10521362637418918,0.03333137372573135,False
-81,Integrated Capability,Integrated Capability,0.09489820992021288,0.029050207846371915,False
-82,Integrated Capability,Integrated Capability,0.17269241803087235,0.055901087785125154,False
-83,Integrated Capability,Integrated Capability,0.20061211546822827,0.06390113891351994,False
-84,Motorcycle Lock-in,Motorcycle Lock-in,0.00597410440311113,0.0022248713738728366,False
-85,Integrated Capability,Integrated Capability,0.15654821605856847,0.05250541754588718,False
-86,Fragmented Capability,Fragmented Capability,0.05645408750725134,0.0170565254148661,False
-87,Fragmented Capability,Fragmented Capability,0.041585643892613926,0.012289119162645905,False
-88,Motorcycle Lock-in,Motorcycle Lock-in,0.00027338295562191013,0.00032857496999269103,False
-89,Motorcycle Lock-in,Motorcycle Lock-in,0.000534807118852352,0.0004936214566403504,False
-90,Motorcycle Lock-in,Motorcycle Lock-in,0.0019148098555229077,0.0005388356868148255,False
-91,Motorcycle Lock-in,Motorcycle Lock-in,0.0007554078431173764,0.0002042400326359088,False
-92,Fragmented Capability,Fragmented Capability,0.010079838851155074,0.0022683620135243087,False
-93,Fragmented Capability,Fragmented Capability,0.012355824922220928,0.0023740165578708438,False
-94,Fragmented Capability,Fragmented Capability,0.017278663978180137,0.0030852527231557876,False
-95,Fragmented Capability,Fragmented Capability,0.01968244526153198,0.0027979387234183532,False
-96,Fragmented Capability,Fragmented Capability,0.017932858632078594,0.002292023198841501,False
-97,Fragmented Capability,Fragmented Capability,0.017532024876905365,0.0018531738519440438,False
-98,Fragmented Capability,Fragmented Capability,0.017906765986377332,0.001592205319493658,False
-99,Motorcycle Lock-in,Motorcycle Lock-in,0.010996431917503704,0.0008776313082467752,False
-100,Integrated Capability,Integrated Capability,0.07979173464635804,0.017753816999969103,False
-101,Transit-Dependent,Transit-Dependent,0.040106306447189495,0.009079047103697203,False
-102,Integrated Capability,Integrated Capability,0.1264151159485855,0.040672296060959665,False
-103,Integrated Capability,Integrated Capability,0.18921608831536751,0.0639456004718346,False
-104,Integrated Capability,Integrated Capability,0.269072674949499,0.10039399657433906,False
-105,Integrated Capability,Integrated Capability,0.2426940900899819,0.08166742460564308,False
-106,Integrated Capability,Integrated Capability,0.20367588021916336,0.05957984505107815,False
-107,Integrated Capability,Integrated Capability,0.19084818243777343,0.053616810053451994,False
-108,Integrated Capability,Integrated Capability,0.15208555190266754,0.04726496021844688,False
-109,Fragmented Capability,Fragmented Capability,0.040091993518976986,0.013084727581363031,False
-110,Motorcycle Lock-in,Motorcycle Lock-in,0.0003172469226695466,0.00036160659045181385,False
+58,Transit-Dependent,Transit-Dependent,0.020435392696420317,0.004808209171555065,False
+59,Transit-Dependent,Transit-Dependent,0.030164769654227108,0.007588263073625549,False
+60,Motorcycle Lock-in,Motorcycle Lock-in,0.011123079263730637,0.003956070766723973,False
+61,Integrated Capability,Integrated Capability,0.029236118791769173,0.008727664727150619,False
+62,Integrated Capability,Integrated Capability,0.11970859981870027,0.04196456211429937,False
+63,Integrated Capability,Integrated Capability,0.05643652922917952,0.016338350820105898,False
+64,Fragmented Capability,Fragmented Capability,0.01684470109970958,0.00234612787311375,False
+65,Motorcycle Lock-in,Motorcycle Lock-in,0.008899172529478085,0.001682037828518387,False
+66,Fragmented Capability,Fragmented Capability,0.0047796981989474295,0.002524192617393977,False
+67,Fragmented Capability,Fragmented Capability,0.005600820358570304,0.0029699206349484727,False
+68,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+69,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+70,Motorcycle Lock-in,Motorcycle Lock-in,0.0015820690356791785,0.00035534830316030563,False
+71,Fragmented Capability,Fragmented Capability,0.013709677931376212,0.003808021362916784,False
+72,Fragmented Capability,Fragmented Capability,0.026345531508791136,0.006215246777594369,False
+73,Fragmented Capability,Fragmented Capability,0.04002695510316022,0.00805124266876104,False
+74,Fragmented Capability,Fragmented Capability,0.022848263810043557,0.0026808402667604504,False
+75,Fragmented Capability,Fragmented Capability,0.017672743550706953,0.001873208876335449,False
+76,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+77,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+78,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+79,Motorcycle Lock-in,Motorcycle Lock-in,0.001963590726505089,0.00018397534049525784,False
+80,Integrated Capability,Integrated Capability,0.07917628386509694,0.026752687692480716,False
+81,Integrated Capability,Integrated Capability,0.07216670823314937,0.023534597766450054,False
+82,Integrated Capability,Integrated Capability,0.17483370429503203,0.05998748314159759,False
+83,Integrated Capability,Integrated Capability,0.20522752689816642,0.06902660446799148,False
+84,Motorcycle Lock-in,Motorcycle Lock-in,0.0037428082523010622,0.001390748139446814,False
+85,Integrated Capability,Integrated Capability,0.08575642175277946,0.029729458571000695,False
+86,Fragmented Capability,Integrated Capability,0.0351906435514817,0.010623935930986367,True
+87,Fragmented Capability,Fragmented Capability,0.027489453645721168,0.008197264068189058,False
+88,Motorcycle Lock-in,Motorcycle Lock-in,0.0023034951684506454,0.0015637513189114469,False
+89,Fragmented Capability,Fragmented Capability,0.0028129346963349173,0.0015601463263613827,False
+90,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+91,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+92,Motorcycle Lock-in,Motorcycle Lock-in,0.0018783163139989077,0.00039571628534559275,False
+93,Fragmented Capability,Fragmented Capability,0.015682675220108487,0.002851386287397872,False
+94,Fragmented Capability,Fragmented Capability,0.0256503877275843,0.004348289489224371,False
+95,Fragmented Capability,Fragmented Capability,0.0288691543117049,0.0038706811551883365,False
+96,Fragmented Capability,Fragmented Capability,0.027638730234509898,0.0033731952248136207,False
+97,Fragmented Capability,Fragmented Capability,0.01757310267172422,0.001772693250597864,False
+98,Motorcycle Lock-in,Motorcycle Lock-in,0.011913579607539708,0.001017076586203086,False
+99,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+100,Transit-Dependent,Transit-Dependent,0.02152370658132931,0.004820191119769668,False
+101,Transit-Dependent,Transit-Dependent,0.0,0.0,False
+102,Integrated Capability,Integrated Capability,0.11536225497812357,0.039709969254439405,False
+103,Integrated Capability,Integrated Capability,0.2206749813898093,0.08017118614129358,False
+104,Integrated Capability,Integrated Capability,0.27658426831826055,0.11091325724686182,False
+105,Integrated Capability,Integrated Capability,0.20476802506919192,0.07245199885269177,False
+106,Integrated Capability,Integrated Capability,0.1785085415534343,0.05312036819696593,False
+107,Integrated Capability,Integrated Capability,0.1862591253539849,0.05348177825661764,False
+108,Integrated Capability,Integrated Capability,0.1438296805523584,0.04410692786610756,False
+109,Fragmented Capability,Integrated Capability,0.023510309159609465,0.007735214489594662,True
+110,Fragmented Capability,Fragmented Capability,0.002782421554720297,0.0018083028573857094,False
 111,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-112,Motorcycle Lock-in,Motorcycle Lock-in,0.0011067856119474561,0.00026346861064033663,False
-113,Motorcycle Lock-in,Motorcycle Lock-in,0.0011598796957843745,0.00027182861692657444,False
-114,Motorcycle Lock-in,Motorcycle Lock-in,0.009434324378853847,0.0021988237035778305,False
-115,Motorcycle Lock-in,Motorcycle Lock-in,0.007719946996247217,0.0015000580488672582,False
-116,Fragmented Capability,Fragmented Capability,0.018996449777708355,0.0028985248724489984,False
-117,Fragmented Capability,Fragmented Capability,0.022401727302807317,0.0032084250867462634,False
-118,Fragmented Capability,Fragmented Capability,0.021202795003915136,0.0027482891062206804,False
-119,Fragmented Capability,Fragmented Capability,0.020665193637713464,0.0024035070213284764,False
-120,Motorcycle Lock-in,Motorcycle Lock-in,0.011198139719155644,0.0007285279848108433,False
-121,Transit-Dependent,Transit-Dependent,0.02908218536676248,0.006387958950103495,False
-122,Integrated Capability,Integrated Capability,0.08674483129297897,0.022882309183415588,False
-123,Integrated Capability,Integrated Capability,0.20706730163661607,0.06310494640144963,False
-124,Integrated Capability,Integrated Capability,0.12578604137761856,0.046167072742765394,False
-125,Integrated Capability,Integrated Capability,0.221309760276428,0.06092688818147574,False
-126,Integrated Capability,Integrated Capability,0.2658047025919559,0.0829438925335669,False
-127,Integrated Capability,Integrated Capability,0.24346970845024155,0.06489094155223366,False
-128,Integrated Capability,Integrated Capability,0.20380929050819566,0.05724841137825623,False
-129,Integrated Capability,Integrated Capability,0.2165297024657362,0.057178349245441816,False
-130,Integrated Capability,Integrated Capability,0.14474114690423245,0.04410222304075781,False
-131,Integrated Capability,Integrated Capability,0.08118369036632433,0.024462469721084956,False
+112,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+113,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+114,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+115,Motorcycle Lock-in,Motorcycle Lock-in,0.002336512936255952,0.0004283525593596262,False
+116,Fragmented Capability,Fragmented Capability,0.018741262938131335,0.0026838607251949954,False
+117,Fragmented Capability,Fragmented Capability,0.02912367393173823,0.003927093392898968,False
+118,Fragmented Capability,Fragmented Capability,0.026241253480218725,0.0032751280917233225,False
+119,Fragmented Capability,Fragmented Capability,0.021333356701676215,0.0024056249173199772,False
+120,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+121,Transit-Dependent,Transit-Dependent,0.0,0.0,False
+122,Integrated Capability,Integrated Capability,0.06559520183599683,0.0174354896228925,False
+123,Integrated Capability,Integrated Capability,0.06745358639749609,0.021940367356787463,False
+124,Integrated Capability,Integrated Capability,0.1147662939814928,0.04470721677674565,False
+125,Integrated Capability,Integrated Capability,0.24883167853310975,0.07354213473560284,False
+126,Integrated Capability,Integrated Capability,0.3272484319378334,0.1094479875795871,False
+127,Integrated Capability,Integrated Capability,0.2756403969007851,0.07564478469747285,False
+128,Integrated Capability,Integrated Capability,0.17748898737698704,0.051050406683481736,False
+129,Integrated Capability,Integrated Capability,0.21851336296241824,0.05867406737162706,False
+130,Integrated Capability,Integrated Capability,0.13743971064728733,0.04116153806507554,False
+131,Integrated Capability,Integrated Capability,0.06794979144428087,0.01969254565633606,False
 132,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 133,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-134,Motorcycle Lock-in,Motorcycle Lock-in,0.0012868775245952165,0.00027633722143762077,False
-135,Motorcycle Lock-in,Motorcycle Lock-in,0.0025298827659161623,0.0005555644566480873,False
-136,Motorcycle Lock-in,Motorcycle Lock-in,0.0033440907720608736,0.0008238646291474979,False
-137,Motorcycle Lock-in,Motorcycle Lock-in,0.005375874069749386,0.0009631917604976177,False
-138,Fragmented Capability,Fragmented Capability,0.02018530466284127,0.00301822960540955,False
-139,Fragmented Capability,Fragmented Capability,0.022438041801471343,0.0032997355593134977,False
-140,Fragmented Capability,Fragmented Capability,0.020146130680738488,0.002055129369915148,False
-141,Fragmented Capability,Fragmented Capability,0.013555168013425578,0.0007898780569415083,False
-142,Integrated Capability,Integrated Capability,0.1574354941081161,0.042813924158387584,False
-143,Integrated Capability,Integrated Capability,0.14721004729616521,0.04034423405646673,False
-144,Integrated Capability,Integrated Capability,0.17430441425630147,0.037744623080566,False
-145,Integrated Capability,Integrated Capability,0.19734283183583295,0.03261048669418826,False
-146,Integrated Capability,Integrated Capability,0.16750150588436055,0.034951024773959484,False
-147,Integrated Capability,Integrated Capability,0.21983758292628713,0.04671372965091931,False
-148,Integrated Capability,Integrated Capability,0.2849152536779352,0.0741651971197306,False
-149,Integrated Capability,Integrated Capability,0.27695471580285225,0.06939799732980353,False
-150,Integrated Capability,Integrated Capability,0.30650882450789263,0.08211226651623417,False
-151,Integrated Capability,Integrated Capability,0.2191876924196071,0.0571545107479472,False
-152,Integrated Capability,Integrated Capability,0.19887732411360848,0.06267714010494496,False
-153,Integrated Capability,Integrated Capability,0.09787288998848953,0.03488733413658044,False
+134,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+135,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+136,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+137,Motorcycle Lock-in,Motorcycle Lock-in,0.004842335719348304,0.000826341843756261,False
+138,Fragmented Capability,Fragmented Capability,0.01975660119572899,0.002779940888609751,False
+139,Motorcycle Lock-in,Motorcycle Lock-in,0.010994594449490079,0.00152677729645608,False
+140,Fragmented Capability,Fragmented Capability,0.017950366224976966,0.0017612353680949732,False
+141,Motorcycle Lock-in,Motorcycle Lock-in,0.002556933396785391,0.0001559714896624757,False
+142,Integrated Capability,Integrated Capability,0.1609678075495008,0.04562162346541754,False
+143,Integrated Capability,Integrated Capability,0.1690638480008478,0.049438209257788836,False
+144,Integrated Capability,Integrated Capability,0.12941701222029342,0.029424295164463515,False
+145,Transit-Dependent,Motorcycle Lock-in,0.026529621230736003,0.004499585073163789,True
+146,Integrated Capability,Integrated Capability,0.13299275315216869,0.029974115054590463,False
+147,Integrated Capability,Integrated Capability,0.20383301010102545,0.04468827686678823,False
+148,Integrated Capability,Integrated Capability,0.31484560387404315,0.08816918106038746,False
+149,Integrated Capability,Integrated Capability,0.28081584688820593,0.0716184517237515,False
+150,Integrated Capability,Integrated Capability,0.2991779325418253,0.08116540227766077,False
+151,Integrated Capability,Integrated Capability,0.19475149352286816,0.052076387318242816,False
+152,Integrated Capability,Integrated Capability,0.18334943151412247,0.05858969036939981,False
+153,Integrated Capability,Integrated Capability,0.09121196733403168,0.030405043332251594,False
 154,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 155,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-156,Motorcycle Lock-in,Motorcycle Lock-in,0.001018764959209343,0.00023648153825616235,False
-157,Motorcycle Lock-in,Motorcycle Lock-in,0.0016153385868197666,0.00030552878773209934,False
-158,Motorcycle Lock-in,Motorcycle Lock-in,0.002959430701042961,0.0005311427556944812,False
-159,Motorcycle Lock-in,Motorcycle Lock-in,0.00743813013064428,0.0012109042754957903,False
-160,Motorcycle Lock-in,Motorcycle Lock-in,0.00898557198159518,0.0015453539700305673,False
-161,Fragmented Capability,Fragmented Capability,0.017212786828101453,0.0014993802835504009,False
-162,Integrated Capability,Integrated Capability,0.07157412378585988,0.01817599604549509,False
-163,Integrated Capability,Integrated Capability,0.1985499867082539,0.061679693618653254,False
-164,Integrated Capability,Integrated Capability,0.16016639045621908,0.03520120341912811,False
-165,Integrated Capability,Integrated Capability,0.14759862129560591,0.030625809848923678,False
-166,Integrated Capability,Integrated Capability,0.18945532771132445,0.04561009239520336,False
-167,Integrated Capability,Integrated Capability,0.18191024112604542,0.03507665954661202,False
-168,Integrated Capability,Integrated Capability,0.20463981847506688,0.0385757489086168,False
-169,Integrated Capability,Integrated Capability,0.13739413330837638,0.030082414728992396,False
-170,Integrated Capability,Integrated Capability,0.21859306745452525,0.04407678958997495,False
-171,Integrated Capability,Integrated Capability,0.24063406811855775,0.05142193114818395,False
-172,Integrated Capability,Integrated Capability,0.26842829950927344,0.06653009636289488,False
-173,Integrated Capability,Integrated Capability,0.20689720227098024,0.05364902653531765,False
-174,Integrated Capability,Integrated Capability,0.16850777074064024,0.04672156626380241,False
-175,Integrated Capability,Integrated Capability,0.11086211088630958,0.03607867322042798,False
+156,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+157,Motorcycle Lock-in,Motorcycle Lock-in,0.003032730955138055,0.0005458015569621675,False
+158,Motorcycle Lock-in,Motorcycle Lock-in,0.0027161820038278926,0.00046301218048539774,False
+159,Motorcycle Lock-in,Motorcycle Lock-in,0.005399504278374654,0.0008316289634425533,False
+160,Motorcycle Lock-in,Motorcycle Lock-in,0.005450219984086875,0.0008893085372563143,False
+161,Motorcycle Lock-in,Motorcycle Lock-in,0.0028910173376842543,0.00024331346960775464,False
+162,Transit-Dependent,Transit-Dependent,0.009997463603377684,0.0024937339215788663,False
+163,Integrated Capability,Integrated Capability,0.20065644035228306,0.06384241857309128,False
+164,Integrated Capability,Integrated Capability,0.18620096863174576,0.04261490559615621,False
+165,Integrated Capability,Integrated Capability,0.2031964614106215,0.043786793469196804,False
+166,Integrated Capability,Integrated Capability,0.22105710347099422,0.055553153672780714,False
+167,Integrated Capability,Integrated Capability,0.10832000316124989,0.022237702240185085,False
+168,Integrated Capability,Integrated Capability,0.08788619524133374,0.017609889782464343,False
+169,Integrated Capability,Integrated Capability,0.07898732566407525,0.01825050009668368,False
+170,Integrated Capability,Integrated Capability,0.13924224672847269,0.028342665185260657,False
+171,Integrated Capability,Integrated Capability,0.17665352096897918,0.03800696947137034,False
+172,Integrated Capability,Integrated Capability,0.22214733594745376,0.055740236990313254,False
+173,Integrated Capability,Integrated Capability,0.2210540336716707,0.05851941447891805,False
+174,Integrated Capability,Integrated Capability,0.1614361110036591,0.045190716640898625,False
+175,Integrated Capability,Integrated Capability,0.12411119029730883,0.03933521789869052,False
 176,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 177,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-178,Motorcycle Lock-in,Motorcycle Lock-in,0.0011353181836846406,0.00025163645046376423,False
-179,Motorcycle Lock-in,Motorcycle Lock-in,0.0015993305195422006,0.0003040007655829022,False
-180,Motorcycle Lock-in,Motorcycle Lock-in,0.003446120289430203,0.0005267123612857563,False
-181,Motorcycle Lock-in,Motorcycle Lock-in,0.006476393779132114,0.0009806830137672725,False
-182,Motorcycle Lock-in,Motorcycle Lock-in,0.005496615799292536,0.0007760615538456448,False
-183,Integrated Capability,Integrated Capability,0.12242232754106236,0.027101608695191987,False
-184,Integrated Capability,Integrated Capability,0.13335821453115743,0.028892310679704897,False
-185,Integrated Capability,Integrated Capability,0.19349224651859512,0.044520041958825016,False
-186,Integrated Capability,Integrated Capability,0.1946619289038085,0.043042494594886745,False
-187,Integrated Capability,Integrated Capability,0.21564757459889844,0.04636414456590392,False
-188,Integrated Capability,Integrated Capability,0.2657731889769736,0.0603949985886371,False
-189,Integrated Capability,Integrated Capability,0.2089996016614383,0.044808434140236254,False
-190,Integrated Capability,Integrated Capability,0.19367633946642399,0.03598624755597191,False
-191,Integrated Capability,Integrated Capability,0.3398403504112379,0.07920108833491245,False
-192,Integrated Capability,Integrated Capability,0.12648420558883433,0.022751536869773315,False
-193,Integrated Capability,Fragmented Capability,0.11099823654345367,0.022797292379280933,True
-194,Integrated Capability,Integrated Capability,0.25370077324874396,0.056743082980261185,False
-195,Integrated Capability,Integrated Capability,0.20592716727545549,0.049806658168794586,False
-196,Integrated Capability,Integrated Capability,0.16038538735635288,0.04189528215733132,False
-197,Integrated Capability,Integrated Capability,0.14677272195643093,0.05393292381661506,False
+178,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+179,Motorcycle Lock-in,Motorcycle Lock-in,0.002967411467147563,0.0005399685015203358,False
+180,Motorcycle Lock-in,Motorcycle Lock-in,0.0032058283461436237,0.0004621235316766155,False
+181,Motorcycle Lock-in,Motorcycle Lock-in,0.00594093741205623,0.0008501150704947134,False
+182,Motorcycle Lock-in,Motorcycle Lock-in,0.0033962959539693485,0.0004569067023533586,False
+183,Integrated Capability,Integrated Capability,0.06607823582452615,0.014738174152358084,False
+184,Integrated Capability,Integrated Capability,0.12583144324162404,0.027675208153913992,False
+185,Integrated Capability,Integrated Capability,0.2395220263445659,0.056508825230289786,False
+186,Integrated Capability,Integrated Capability,0.2642313979399099,0.06021851753363924,False
+187,Integrated Capability,Integrated Capability,0.26058922374577226,0.058380611115507644,False
+188,Integrated Capability,Integrated Capability,0.17567047991845627,0.042153539686090806,False
+189,Integrated Capability,Integrated Capability,0.13226327602012003,0.030179198050260935,False
+190,Integrated Capability,Integrated Capability,0.11809806469525279,0.02340426086217592,False
+191,Integrated Capability,Integrated Capability,0.15319057431758693,0.03778529195694895,False
+192,Transit-Dependent,Transit-Dependent,0.018740593907854673,0.0034501117564461198,False
+193,Integrated Capability,Fragmented Capability,0.047352082184945694,0.009761792580106564,True
+194,Integrated Capability,Integrated Capability,0.21057387762241692,0.04788899635414177,False
+195,Integrated Capability,Integrated Capability,0.18381910580614846,0.04466370150250828,False
+196,Integrated Capability,Integrated Capability,0.1565976944578277,0.04047379413457078,False
+197,Integrated Capability,Integrated Capability,0.056794853537902555,0.020866084066740846,False
 198,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 199,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 200,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-201,Motorcycle Lock-in,Motorcycle Lock-in,0.001729894285566284,0.0002745340909353018,False
-202,Motorcycle Lock-in,Motorcycle Lock-in,0.0036697073893962344,0.0005710588439582874,False
-203,Motorcycle Lock-in,Motorcycle Lock-in,0.0027189175125056863,0.0006053946255028985,False
-204,Motorcycle Lock-in,Motorcycle Lock-in,0.01839334886689746,0.0021723935934742588,False
-205,Integrated Capability,Integrated Capability,0.11107440987171555,0.02479499779339368,False
-206,Integrated Capability,Integrated Capability,0.10863004651990815,0.023989644059647076,False
-207,Integrated Capability,Integrated Capability,0.2750156707969069,0.06869267256408293,False
-208,Integrated Capability,Integrated Capability,0.28998950766802,0.0638026216227968,False
-209,Integrated Capability,Integrated Capability,0.3340246988681643,0.06910953887434335,False
-210,Integrated Capability,Integrated Capability,0.2925634274430247,0.05979496342406776,False
-211,Integrated Capability,Integrated Capability,0.33822867389288025,0.07071329677490376,False
-212,Integrated Capability,Integrated Capability,0.2438511876029473,0.05404297493682872,False
-213,Integrated Capability,Integrated Capability,0.18910017045508984,0.03738425514811955,False
-214,Integrated Capability,Integrated Capability,0.14298881506770067,0.023659368659516858,False
-215,Integrated Capability,Integrated Capability,0.2690787005746914,0.06158760049056705,False
-216,Integrated Capability,Integrated Capability,0.14187324652025457,0.03260950989782755,False
-217,Integrated Capability,Fragmented Capability,0.05742820974001031,0.012707550393510176,True
-218,Integrated Capability,Integrated Capability,0.1624540560542582,0.05307911047290969,False
-219,Integrated Capability,Integrated Capability,0.15853853634072784,0.05347965645270736,False
+201,Motorcycle Lock-in,Motorcycle Lock-in,0.0032166250097246246,0.00048465333176491435,False
+202,Motorcycle Lock-in,Motorcycle Lock-in,0.0034090698907568223,0.0005037961563197785,False
+203,Motorcycle Lock-in,Motorcycle Lock-in,0.005201188968075809,0.001139035063547971,False
+204,Motorcycle Lock-in,Motorcycle Lock-in,0.0037390972392465143,0.0004211728415147825,False
+205,Integrated Capability,Integrated Capability,0.05163512012129359,0.011531973210902007,False
+206,Integrated Capability,Integrated Capability,0.06090867131545611,0.013480566527393286,False
+207,Integrated Capability,Integrated Capability,0.25142729108461825,0.06404991411552911,False
+208,Integrated Capability,Integrated Capability,0.340251246531966,0.0769080015645951,False
+209,Integrated Capability,Integrated Capability,0.2801441208237172,0.06079917913228223,False
+210,Integrated Capability,Integrated Capability,0.213535473513923,0.0462589013997722,False
+211,Integrated Capability,Integrated Capability,0.2491293494832261,0.055706031831950165,False
+212,Integrated Capability,Integrated Capability,0.17528975810344272,0.04184288238791229,False
+213,Integrated Capability,Integrated Capability,0.10992000284971866,0.02343572480408034,False
+214,Integrated Capability,Integrated Capability,0.04495794398358283,0.007672414635603361,False
+215,Integrated Capability,Integrated Capability,0.17522133993019007,0.04098328533986941,False
+216,Integrated Capability,Integrated Capability,0.0899158488875407,0.021077936683099513,False
+217,Fragmented Capability,Fragmented Capability,0.03293085544277352,0.007328452106190021,False
+218,Integrated Capability,Integrated Capability,0.11798978862153829,0.03874907964888942,False
+219,Integrated Capability,Integrated Capability,0.10074731431798763,0.03407046281983024,False
 220,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 221,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-222,Motorcycle Lock-in,Motorcycle Lock-in,0.001795111957575321,0.00033037001890324336,False
-223,Motorcycle Lock-in,Motorcycle Lock-in,0.0019133105987529965,0.0003750215501570864,False
-224,Motorcycle Lock-in,Motorcycle Lock-in,0.0029666547763789993,0.0003852533009107843,False
-225,Motorcycle Lock-in,Motorcycle Lock-in,0.0034341182755169967,0.00042472894624114244,False
-226,Motorcycle Lock-in,Motorcycle Lock-in,0.009214512203160408,0.0007574501567882766,False
-227,Integrated Capability,Integrated Capability,0.0635505753908692,0.013550444491380962,False
-228,Integrated Capability,Integrated Capability,0.13752804078077357,0.02914613711974105,False
-229,Integrated Capability,Integrated Capability,0.22479891853010084,0.05021429462737278,False
-230,Integrated Capability,Integrated Capability,0.3368353180939302,0.07983748606989396,False
-231,Integrated Capability,Integrated Capability,0.345051725846174,0.06892677677976033,False
-232,Integrated Capability,Integrated Capability,0.1446940327280147,0.038113741026862,False
-233,Integrated Capability,Integrated Capability,0.14033491227328515,0.036803975991539284,False
-234,Integrated Capability,Integrated Capability,0.21907068391793214,0.04453442796986789,False
-235,Integrated Capability,Integrated Capability,0.14830365491063877,0.026755886785824502,False
-236,Integrated Capability,Integrated Capability,0.1820586145547541,0.03190109654507495,False
-237,Integrated Capability,Integrated Capability,0.17075576758498795,0.03371314522470605,False
-238,Integrated Capability,Integrated Capability,0.16528445685600146,0.03612550455047984,False
-239,Integrated Capability,Integrated Capability,0.11775526777979732,0.03313955354746039,False
-240,Integrated Capability,Integrated Capability,0.1293424335839541,0.03720224627570224,False
-241,Integrated Capability,Integrated Capability,0.07544223298687017,0.02145634222555395,False
+222,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+223,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+224,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+225,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+226,Motorcycle Lock-in,Motorcycle Lock-in,0.002713313504094924,0.0002295722224711961,False
+227,Transit-Dependent,Transit-Dependent,0.02265619739381692,0.004883415386605969,False
+228,Integrated Capability,Integrated Capability,0.09257677412951726,0.019749435086861555,False
+229,Integrated Capability,Integrated Capability,0.14351447123966538,0.03265062610710869,False
+230,Integrated Capability,Integrated Capability,0.3680957321602502,0.08942768206089043,False
+231,Integrated Capability,Integrated Capability,0.306876053133272,0.06421810879619559,False
+232,Integrated Capability,Integrated Capability,0.09374493683720446,0.025528141318179827,False
+233,Integrated Capability,Integrated Capability,0.09112857434627687,0.02468165899230674,False
+234,Integrated Capability,Integrated Capability,0.15059276550634637,0.03276233023934197,False
+235,Integrated Capability,Integrated Capability,0.11324258559752168,0.021998300808416613,False
+236,Integrated Capability,Integrated Capability,0.10597233226986112,0.01918033647557575,False
+237,Integrated Capability,Integrated Capability,0.07568580540890371,0.0153436863874857,False
+238,Integrated Capability,Integrated Capability,0.05260680358541857,0.011742184307701421,False
+239,Integrated Capability,Integrated Capability,0.05530809684285174,0.015847728525808034,False
+240,Integrated Capability,Integrated Capability,0.0529217198721685,0.015444015610831693,False
+241,Integrated Capability,Integrated Capability,0.0462840247316381,0.013349209215486367,False
 242,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 243,Transit-Dependent,Transit-Dependent,0.0,0.0,False
 244,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-245,Motorcycle Lock-in,Motorcycle Lock-in,0.002224705091751977,0.00021898067635676776,False
-246,Motorcycle Lock-in,Motorcycle Lock-in,0.005576775509844764,0.000550399109021396,False
-247,Motorcycle Lock-in,Motorcycle Lock-in,0.002443353779547084,0.0002339375013928623,False
-248,Motorcycle Lock-in,Motorcycle Lock-in,0.002000863327952272,0.0001802304201055359,False
-249,Integrated Capability,Integrated Capability,0.0909182289970728,0.021950431504670666,False
-250,Integrated Capability,Integrated Capability,0.09946755847966217,0.02242088606332754,False
-251,Integrated Capability,Integrated Capability,0.2327791190645164,0.054971002874350805,False
-252,Integrated Capability,Integrated Capability,0.26610286260630356,0.05785797668524006,False
-253,Integrated Capability,Integrated Capability,0.1532097248543471,0.0404264539672556,False
-254,Integrated Capability,Integrated Capability,0.23153273732521318,0.04422635032687802,False
-255,Integrated Capability,Integrated Capability,0.1746896754805376,0.041596594642710545,False
-256,Integrated Capability,Integrated Capability,0.21575051177615784,0.040881465989114796,False
-257,Integrated Capability,Integrated Capability,0.14056418565296544,0.024373412491654006,False
-258,Integrated Capability,Integrated Capability,0.12174440489244442,0.019244783197212376,False
-259,Integrated Capability,Integrated Capability,0.09941526111287544,0.01672329430736073,False
-260,Integrated Capability,Integrated Capability,0.0807243699507521,0.016000400902891367,False
-261,Transit-Dependent,Transit-Dependent,0.05469521764444263,0.014898329737830859,False
-262,Transit-Dependent,Transit-Dependent,0.05432924180681511,0.018561430844985127,False
-263,Transit-Dependent,Transit-Dependent,0.024650578952617016,0.009189188921062581,False
+245,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+246,Motorcycle Lock-in,Motorcycle Lock-in,0.0021952701538148637,0.00021362541726702958,False
+247,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+248,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+249,Integrated Capability,Integrated Capability,0.08561311014974712,0.021199185039070458,False
+250,Integrated Capability,Integrated Capability,0.09048625076265948,0.020478992071254896,False
+251,Integrated Capability,Integrated Capability,0.17219678889381976,0.04135155730969191,False
+252,Integrated Capability,Integrated Capability,0.18505753874571917,0.04110749849781314,False
+253,Integrated Capability,Integrated Capability,0.09468385623213812,0.025890393667753763,False
+254,Integrated Capability,Integrated Capability,0.22635876487066636,0.04595646215923649,False
+255,Integrated Capability,Integrated Capability,0.13781750748495666,0.0346791677257539,False
+256,Integrated Capability,Integrated Capability,0.14429617159274716,0.029267305483467558,False
+257,Integrated Capability,Integrated Capability,0.13467668363416002,0.025034450064795825,False
+258,Integrated Capability,Integrated Capability,0.0951487940058426,0.015531518604307397,False
+259,Integrated Capability,Integrated Capability,0.08316684802352597,0.014508973765759898,False
+260,Integrated Capability,Integrated Capability,0.04805004178934882,0.009725472961023185,False
+261,Transit-Dependent,Transit-Dependent,0.04083947625524511,0.011375142222241813,False
+262,Transit-Dependent,Transit-Dependent,0.04008104568661763,0.013826361687926008,False
+263,Transit-Dependent,Transit-Dependent,0.024416491841848645,0.009152306526324224,False
 264,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 265,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 266,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
 267,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-268,Motorcycle Lock-in,Motorcycle Lock-in,0.007690134929809369,0.0008799476556429225,False
-269,Motorcycle Lock-in,Motorcycle Lock-in,0.010710328722383292,0.001231140360649818,False
-270,Integrated Capability,Integrated Capability,0.05367336823165677,0.012877202703507508,False
-271,Integrated Capability,Integrated Capability,0.0725223013278559,0.016353378795481537,False
-272,Integrated Capability,Integrated Capability,0.12629819711506052,0.03015371933787389,False
-273,Integrated Capability,Integrated Capability,0.18417213044135977,0.043052123837890595,False
-274,Integrated Capability,Integrated Capability,0.19665442288712484,0.04248520593563291,False
-275,Integrated Capability,Integrated Capability,0.17272597638163198,0.04448676323839179,False
-276,Integrated Capability,Integrated Capability,0.18848964002851026,0.0486091650122135,False
-277,Integrated Capability,Integrated Capability,0.3117739778270073,0.06943010078728408,False
-278,Integrated Capability,Integrated Capability,0.22243350692008598,0.050027970470614774,False
-279,Integrated Capability,Integrated Capability,0.12039188713914022,0.020809029394909907,False
-280,Integrated Capability,Fragmented Capability,0.09498265782568534,0.014762085029396875,True
-281,Integrated Capability,Integrated Capability,0.10957439015282283,0.020231675589806014,False
-282,Integrated Capability,Integrated Capability,0.0884404862185917,0.021622751328439875,False
-283,Transit-Dependent,Transit-Dependent,0.04904284678903764,0.01388979922637224,False
-284,Transit-Dependent,Transit-Dependent,0.027953575425672512,0.01144318294467996,False
-285,Transit-Dependent,Transit-Dependent,0.026164831804648007,0.01146227203108885,False
+268,Motorcycle Lock-in,Motorcycle Lock-in,0.002106874405041459,0.00023702776781456757,False
+269,Motorcycle Lock-in,Motorcycle Lock-in,0.004573119300787761,0.0005107418011735309,False
+270,Transit-Dependent,Transit-Dependent,0.029504879451219147,0.007063804690139125,False
+271,Integrated Capability,Integrated Capability,0.060867643453310694,0.01383489638308519,False
+272,Integrated Capability,Integrated Capability,0.13689905805314706,0.03314404770489068,False
+273,Integrated Capability,Integrated Capability,0.15123192077347034,0.03592908144765014,False
+274,Integrated Capability,Integrated Capability,0.14681398894629866,0.032320162433039874,False
+275,Integrated Capability,Integrated Capability,0.12196458160534152,0.03260599638784371,False
+276,Integrated Capability,Integrated Capability,0.12762047785189695,0.03419113315934929,False
+277,Integrated Capability,Integrated Capability,0.21081540106298605,0.05027441167447777,False
+278,Integrated Capability,Integrated Capability,0.08991845454507175,0.021798730167502643,False
+279,Integrated Capability,Integrated Capability,0.07858200156074323,0.014503961793056405,False
+280,Integrated Capability,Fragmented Capability,0.07933180868206502,0.012757006505034833,True
+281,Integrated Capability,Integrated Capability,0.05821057540190683,0.011043902308457077,False
+282,Transit-Dependent,Transit-Dependent,0.032258250623791326,0.007983123233150426,False
+283,Transit-Dependent,Transit-Dependent,0.031035617223504963,0.008878432799330628,False
+284,Integrated Capability,Integrated Capability,0.03013110183979097,0.012447110362931803,False
+285,Integrated Capability,Integrated Capability,0.0322624442813711,0.014224962227027432,False
 286,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-287,Motorcycle Lock-in,Motorcycle Lock-in,0.0046499268285420175,0.0015149627430247371,False
-288,Motorcycle Lock-in,Motorcycle Lock-in,0.007617859498721448,0.002281248867485922,False
-289,Motorcycle Lock-in,Motorcycle Lock-in,0.00557567453121011,0.0017465017259552748,False
-290,Motorcycle Lock-in,Motorcycle Lock-in,0.019389699171946547,0.004708630880567385,False
-291,Motorcycle Lock-in,Motorcycle Lock-in,0.009684504045478824,0.0011567370427086072,False
-292,Fragmented Capability,Fragmented Capability,0.013895188065456901,0.0011239349276531887,False
-293,Integrated Capability,Integrated Capability,0.09306777569032512,0.02140114740435377,False
-294,Integrated Capability,Integrated Capability,0.10053625818914647,0.023286141740346985,False
-295,Integrated Capability,Integrated Capability,0.11650068227042451,0.02753629749875914,False
-296,Integrated Capability,Integrated Capability,0.15987902877431343,0.03538785136040439,False
-297,Integrated Capability,Integrated Capability,0.186728326020975,0.03630291964058802,False
-298,Integrated Capability,Integrated Capability,0.23677434311439519,0.04282125728262023,False
-299,Integrated Capability,Integrated Capability,0.2535721835470806,0.055794213921278785,False
+287,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+288,Motorcycle Lock-in,Motorcycle Lock-in,0.0033516283048245755,0.0009475013245069506,False
+289,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+290,Motorcycle Lock-in,Motorcycle Lock-in,0.0038524379195353765,0.0008671892599342234,False
+291,Motorcycle Lock-in,Motorcycle Lock-in,0.004681865055334503,0.0005466361849529251,False
+292,Motorcycle Lock-in,Motorcycle Lock-in,0.0040189140877311715,0.00031397732315885016,False
+293,Integrated Capability,Integrated Capability,0.10260460637458138,0.02408146625631202,False
+294,Integrated Capability,Integrated Capability,0.10415287970499586,0.02464792394988745,False
+295,Integrated Capability,Integrated Capability,0.0976470209111644,0.023588800267697413,False
+296,Integrated Capability,Integrated Capability,0.10250243132220248,0.023218921359664087,False
+297,Integrated Capability,Integrated Capability,0.13660191633517219,0.028099756816821204,False
+298,Integrated Capability,Integrated Capability,0.1458814939736273,0.02813015390785994,False
+299,Integrated Capability,Integrated Capability,0.16999049633722932,0.04062577360651047,False
 300,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
-301,Transit-Dependent,Motorcycle Lock-in,0.019208064008100323,0.003199316381924724,True
-302,Integrated Capability,Fragmented Capability,0.05648769304225587,0.00903306665148376,True
-303,Integrated Capability,Integrated Capability,0.1138845043096254,0.021846396626243287,False
-304,Integrated Capability,Integrated Capability,0.09580887251865554,0.02251783257529486,False
-305,Integrated Capability,Integrated Capability,0.08217468280665445,0.024641469308011216,False
-306,Transit-Dependent,Transit-Dependent,0.03881463624670717,0.014431833142850313,False
-307,Transit-Dependent,Transit-Dependent,0.03253594417804781,0.011396162785810347,False
-308,Motorcycle Lock-in,Motorcycle Lock-in,0.005887448288197521,0.0024029821496283576,False
-309,Motorcycle Lock-in,Motorcycle Lock-in,0.005646461780165623,0.0022159749174625594,False
-310,Motorcycle Lock-in,Motorcycle Lock-in,0.009110453090007775,0.0029743799197084852,False
-311,Motorcycle Lock-in,Motorcycle Lock-in,0.011746739035556515,0.003502898767170238,False
-312,Motorcycle Lock-in,Motorcycle Lock-in,0.012652861650281948,0.0032759272608866652,False
-313,Fragmented Capability,Fragmented Capability,0.027487218609486073,0.0061721719872974,False
-314,Fragmented Capability,Fragmented Capability,0.02798183478317893,0.006076645725175577,False
-315,Integrated Capability,Fragmented Capability,0.05882745555238451,0.0126153035507631,True
-316,Integrated Capability,Integrated Capability,0.09413114717377057,0.022306938035743958,False
-317,Integrated Capability,Integrated Capability,0.11395970883085542,0.027938448983263912,False
-318,Integrated Capability,Integrated Capability,0.1515764327489051,0.037780177868483485,False
-319,Integrated Capability,Integrated Capability,0.16005238701933025,0.03194984889507581,False
-320,Integrated Capability,Integrated Capability,0.13516825507480523,0.025266613550732477,False
-321,Integrated Capability,Integrated Capability,0.1534826936528607,0.034397965499197165,False
-322,Integrated Capability,Integrated Capability,0.0961959834947014,0.01867636044636823,False
+301,Transit-Dependent,Motorcycle Lock-in,0.0,0.0,True
+302,Transit-Dependent,Motorcycle Lock-in,0.0,0.0,True
+303,Integrated Capability,Integrated Capability,0.05039161377744515,0.009909115074011682,False
+304,Transit-Dependent,Transit-Dependent,0.041448694487530906,0.009984518017224941,False
+305,Transit-Dependent,Transit-Dependent,0.03500269525273182,0.010596143414064415,False
+306,Integrated Capability,Integrated Capability,0.05848636297013156,0.02156406823419991,False
+307,Integrated Capability,Integrated Capability,0.04923038287939841,0.017234914039217012,False
+308,Motorcycle Lock-in,Motorcycle Lock-in,0.0025741108677172666,0.000998752385492676,False
+309,Motorcycle Lock-in,Motorcycle Lock-in,0.0024616396599781124,0.0009171331670945574,False
+310,Motorcycle Lock-in,Motorcycle Lock-in,0.006445570477957271,0.0019839682529278506,False
+311,Motorcycle Lock-in,Motorcycle Lock-in,0.013967285935806453,0.003918289736361146,False
+312,Fragmented Capability,Fragmented Capability,0.018966034006628506,0.004580060926909483,False
+313,Fragmented Capability,Fragmented Capability,0.022118838819248723,0.004598125028800985,False
+314,Fragmented Capability,Fragmented Capability,0.022249071583308196,0.0044712777293337835,False
+315,Integrated Capability,Fragmented Capability,0.040507446903960395,0.008409883342901171,True
+316,Integrated Capability,Integrated Capability,0.11241018729046327,0.02734704383139966,False
+317,Integrated Capability,Integrated Capability,0.11161372673325065,0.028278439034609155,False
+318,Integrated Capability,Integrated Capability,0.13680778456322903,0.0352370345390554,False
+319,Integrated Capability,Integrated Capability,0.12064221474463138,0.025409435933839007,False
+320,Integrated Capability,Integrated Capability,0.09138690484157173,0.01818093677351113,False
+321,Integrated Capability,Integrated Capability,0.0916152184196161,0.02220702765995379,False
+322,Transit-Dependent,Transit-Dependent,0.05052480752201447,0.010579107372895477,False
 323,Transit-Dependent,Motorcycle Lock-in,0.0,0.0,True
-324,Integrated Capability,Integrated Capability,0.06526378571135287,0.012057910659273004,False
-325,Integrated Capability,Integrated Capability,0.05975021755989666,0.012907221318233792,False
-326,Integrated Capability,Integrated Capability,0.0705144199788421,0.01564837911686383,False
-327,Integrated Capability,Integrated Capability,0.041703058752097996,0.00928872537819512,False
-328,Integrated Capability,Integrated Capability,0.03930047987078874,0.009071094518517274,False
-329,Transit-Dependent,Transit-Dependent,0.03515574336431352,0.013009681910474621,False
-330,Motorcycle Lock-in,Motorcycle Lock-in,0.002515545053415982,0.0010888163003020552,False
-331,Motorcycle Lock-in,Motorcycle Lock-in,0.008873688083170156,0.003040020074899661,False
-332,Motorcycle Lock-in,Motorcycle Lock-in,0.008743067643378928,0.0030536052850364892,False
-333,Motorcycle Lock-in,Motorcycle Lock-in,0.013682241844796111,0.004356066619312927,False
-334,Motorcycle Lock-in,Motorcycle Lock-in,0.02123984173460294,0.005840642316835423,False
-335,Fragmented Capability,Fragmented Capability,0.030332442441294443,0.007940326769438576,False
-336,Fragmented Capability,Fragmented Capability,0.03623747229122256,0.008049001612007963,False
-337,Fragmented Capability,Fragmented Capability,0.046866880335331984,0.009753143924691504,False
-338,Integrated Capability,Integrated Capability,0.07688462565721048,0.018139663841817037,False
-339,Integrated Capability,Integrated Capability,0.085858449735731,0.020979767435392045,False
-340,Integrated Capability,Integrated Capability,0.10472621058628702,0.024109494347850164,False
-341,Integrated Capability,Integrated Capability,0.0767947202439989,0.015166163970060919,False
-342,Integrated Capability,Integrated Capability,0.08257855304021823,0.014321812148917912,False
-343,Integrated Capability,Integrated Capability,0.09341014441865382,0.01990537931232568,False
-344,Transit-Dependent,Transit-Dependent,0.0446334084819374,0.008353475287681388,False
-345,Transit-Dependent,Transit-Dependent,0.04353182017437156,0.008187211905506251,False
-346,Transit-Dependent,Transit-Dependent,0.02562880571082532,0.006316314697484523,False
-347,Integrated Capability,Integrated Capability,0.05869721173768736,0.014213890636844393,False
-348,Integrated Capability,Integrated Capability,0.051594553490178136,0.012275993735399154,False
-349,Integrated Capability,Integrated Capability,0.05216075160161399,0.012546905378101257,False
-350,Integrated Capability,Integrated Capability,0.040776669826012614,0.010653931814224088,False
-351,Motorcycle Lock-in,Motorcycle Lock-in,0.024518067638663568,0.0065518741152130475,False
-352,Motorcycle Lock-in,Motorcycle Lock-in,0.001095859852031779,0.0004901111819431942,False
-353,Motorcycle Lock-in,Motorcycle Lock-in,0.008792638374825421,0.003188936471750024,False
-354,Motorcycle Lock-in,Motorcycle Lock-in,0.007643170733121356,0.002591823286679841,False
-355,Motorcycle Lock-in,Motorcycle Lock-in,0.01495819053347951,0.004661297423776976,False
-356,Motorcycle Lock-in,Motorcycle Lock-in,0.01969724287696488,0.005504963732062035,False
-357,Fragmented Capability,Fragmented Capability,0.029057852830169404,0.007888581812727193,False
-358,Fragmented Capability,Fragmented Capability,0.032194409861328696,0.007520875351647005,False
-359,Integrated Capability,Integrated Capability,0.059514639842612724,0.013774442640011424,False
-360,Integrated Capability,Integrated Capability,0.06421867160980861,0.01540453040033738,False
-361,Integrated Capability,Integrated Capability,0.0788274303156667,0.019019428775002546,False
-362,Integrated Capability,Integrated Capability,0.09465193224478627,0.018363243280696488,False
-363,Integrated Capability,Integrated Capability,0.07967342827995394,0.015834619533189008,False
-364,Integrated Capability,Integrated Capability,0.07098081676813296,0.012717899282594173,False
+324,Transit-Dependent,Transit-Dependent,0.0,0.0,False
+325,Transit-Dependent,Transit-Dependent,0.026070728969568847,0.005771284598387976,False
+326,Transit-Dependent,Transit-Dependent,0.03778697118053789,0.008605667459371203,False
+327,Transit-Dependent,Transit-Dependent,0.015092430032389985,0.0035459745642918957,False
+328,Integrated Capability,Integrated Capability,0.04295021983365946,0.010488346898610957,False
+329,Integrated Capability,Integrated Capability,0.05295246731421158,0.01948129844054489,False
+330,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+331,Motorcycle Lock-in,Motorcycle Lock-in,0.006341730960419627,0.002049429981736947,False
+332,Motorcycle Lock-in,Motorcycle Lock-in,0.009385234755926229,0.003078536884548751,False
+333,Fragmented Capability,Fragmented Capability,0.01719228898617383,0.005112212420444256,False
+334,Fragmented Capability,Fragmented Capability,0.024768863287097768,0.006399378923186938,False
+335,Fragmented Capability,Fragmented Capability,0.03778707417149181,0.009251548995425726,False
+336,Fragmented Capability,Fragmented Capability,0.03793282503599804,0.007914901861010114,False
+337,Fragmented Capability,Fragmented Capability,0.025853519056441492,0.0050732141624697255,False
+338,Integrated Capability,Integrated Capability,0.060607826661263846,0.014951798728246755,False
+339,Integrated Capability,Integrated Capability,0.07635237084683877,0.019392413736780915,False
+340,Integrated Capability,Integrated Capability,0.08591773888213271,0.020482914836036658,False
+341,Integrated Capability,Integrated Capability,0.08112240044228282,0.016947111140475132,False
+342,Integrated Capability,Integrated Capability,0.06993433285004524,0.012936259392261291,False
+343,Integrated Capability,Integrated Capability,0.0922940810401304,0.021224101096047665,False
+344,Transit-Dependent,Transit-Dependent,0.04334985272174848,0.008656120104735094,False
+345,Transit-Dependent,Transit-Dependent,0.021075902878781104,0.0042026603902467225,False
+346,Transit-Dependent,Transit-Dependent,0.0,0.0,False
+347,Transit-Dependent,Transit-Dependent,0.01027504895703097,0.0025867035667510247,False
+348,Integrated Capability,Integrated Capability,0.04543752405394502,0.01116639786912859,False
+349,Integrated Capability,Integrated Capability,0.04509434308522423,0.010998359501085872,False
+350,Integrated Capability,Integrated Capability,0.04267196905158997,0.01125969678058888,False
+351,Transit-Dependent,Transit-Dependent,0.022360598438549817,0.006301938058220734,False
+352,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+353,Motorcycle Lock-in,Motorcycle Lock-in,0.005179803996408105,0.0017801364017591625,False
+354,Motorcycle Lock-in,Motorcycle Lock-in,0.005476356811321993,0.0017457926997079337,False
+355,Fragmented Capability,Fragmented Capability,0.01856793031872951,0.005408534586701929,False
+356,Fragmented Capability,Fragmented Capability,0.018707909061673196,0.004921917239649387,False
+357,Fragmented Capability,Fragmented Capability,0.03373608062066504,0.00857431631784785,False
+358,Fragmented Capability,Fragmented Capability,0.03369904734379796,0.007452261761715082,False
+359,Integrated Capability,Fragmented Capability,0.035625521388455164,0.007830913864244022,True
+360,Integrated Capability,Integrated Capability,0.043514596810495784,0.010916775517547075,False
+361,Integrated Capability,Integrated Capability,0.0828680482291051,0.02103364272893755,False
+362,Integrated Capability,Integrated Capability,0.07470904711924913,0.01473644430937032,False
+363,Integrated Capability,Integrated Capability,0.05849954451655839,0.012332947883536352,False
+364,Integrated Capability,Integrated Capability,0.04659244502757774,0.00891702871492241,False
 365,Transit-Dependent,Transit-Dependent,0.0,0.0,False
 366,Transit-Dependent,Transit-Dependent,0.0,0.0,False
-367,Transit-Dependent,Transit-Dependent,0.026084084710043146,0.005933523781207162,False
-368,Transit-Dependent,Transit-Dependent,0.024399339680446813,0.005707205745070154,False
-369,Transit-Dependent,Transit-Dependent,0.02674503894908324,0.007080297568732421,False
-370,Integrated Capability,Integrated Capability,0.06276553227482348,0.015177838008317374,False
-371,Transit-Dependent,Motorcycle Lock-in,0.030608669805693964,0.007157923171564121,True
-372,Motorcycle Lock-in,Motorcycle Lock-in,0.025624776452687844,0.005844132229416093,False
-373,Transit-Dependent,Transit-Dependent,0.019512891258644114,0.00645602102330898,False
-374,Motorcycle Lock-in,Motorcycle Lock-in,0.0019739264590924394,0.0007279097023357072,False
-375,Motorcycle Lock-in,Motorcycle Lock-in,0.0022302314535066026,0.0004517947655620279,False
-376,Motorcycle Lock-in,Motorcycle Lock-in,0.0019058109380313884,0.0007374137531994384,False
-377,Motorcycle Lock-in,Motorcycle Lock-in,0.0008947567316765416,0.00016447222370402317,False
-378,Motorcycle Lock-in,Motorcycle Lock-in,0.013620326000987358,0.0041409442902367284,False
-379,Fragmented Capability,Fragmented Capability,0.02601101569832093,0.006608616037303386,False
-380,Fragmented Capability,Fragmented Capability,0.03238876632481956,0.007605032534372954,False
-381,Integrated Capability,Integrated Capability,0.05767322486748385,0.013373362487414117,False
-382,Integrated Capability,Fragmented Capability,0.06497897727136691,0.01265939543487678,True
-383,Integrated Capability,Fragmented Capability,0.056842509211359325,0.010862382426843153,True
-384,Integrated Capability,Integrated Capability,0.06471697223352155,0.01246087355019436,False
-385,Integrated Capability,Integrated Capability,0.06876445560315618,0.012488191678495396,False
-386,Transit-Dependent,Transit-Dependent,0.006854671423394005,0.0017428640242922813,False
+367,Transit-Dependent,Transit-Dependent,0.0,0.0,False
+368,Transit-Dependent,Transit-Dependent,0.0,0.0,False
+369,Transit-Dependent,Transit-Dependent,0.011598891245220325,0.0031962587679004433,False
+370,Transit-Dependent,Transit-Dependent,0.03197347004087066,0.008077917782806275,False
+371,Transit-Dependent,Transit-Dependent,0.018461932450501383,0.0045453903995407345,False
+372,Motorcycle Lock-in,Motorcycle Lock-in,0.020740166255379954,0.005013332169190944,False
+373,Transit-Dependent,Transit-Dependent,0.017432701156700592,0.005984372827644779,False
+374,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+375,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+376,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+377,Motorcycle Lock-in,Motorcycle Lock-in,0.000880075368965813,0.00015919786517030579,False
+378,Fragmented Capability,Fragmented Capability,0.01706725195343032,0.004876561962348318,False
+379,Fragmented Capability,Fragmented Capability,0.0235951127477036,0.005615045744246712,False
+380,Motorcycle Lock-in,Motorcycle Lock-in,0.01916001779545953,0.004271539342677623,False
+381,Integrated Capability,Fragmented Capability,0.036779982472041874,0.008100066727575078,True
+382,Transit-Dependent,Transit-Dependent,0.03237447619056341,0.006023689690212701,False
+383,Transit-Dependent,Motorcycle Lock-in,0.026510171911908624,0.005121398460650636,True
+384,Integrated Capability,Fragmented Capability,0.06808099473827434,0.013382730171411457,True
+385,Integrated Capability,Integrated Capability,0.06552620387437656,0.012367501075787612,False
+386,Transit-Dependent,Transit-Dependent,0.0,0.0,False
 387,Transit-Dependent,Transit-Dependent,0.0,0.0,False
 388,Transit-Dependent,Transit-Dependent,0.0,0.0,False
 389,Transit-Dependent,Transit-Dependent,0.0,0.0,False
-390,Transit-Dependent,Transit-Dependent,0.03940789681805678,0.010422004667463961,False
-391,Integrated Capability,Integrated Capability,0.03768447892335911,0.009626742387963962,False
-392,Transit-Dependent,Motorcycle Lock-in,0.025560337806160877,0.0060274324391574995,True
-393,Fragmented Capability,Fragmented Capability,0.028912053893818946,0.007229002085289064,False
-394,Motorcycle Lock-in,Motorcycle Lock-in,0.009070894536929053,0.003650997776623631,False
-395,Motorcycle Lock-in,Transit-Dependent,0.01418697160505172,0.005359050093005196,True
-396,Motorcycle Lock-in,Motorcycle Lock-in,0.0004244752022454756,9.417221586368436e-05,False
-397,Motorcycle Lock-in,Motorcycle Lock-in,0.0022628610105227885,0.00045619076605543977,False
-398,Motorcycle Lock-in,Motorcycle Lock-in,0.0019302205772735875,0.0004124308977958977,False
-399,Motorcycle Lock-in,Motorcycle Lock-in,0.001372426091159055,0.00021875025021602867,False
-400,Motorcycle Lock-in,Motorcycle Lock-in,0.001365985927130304,0.0002207119412865745,False
-401,Motorcycle Lock-in,Motorcycle Lock-in,0.018192001069677614,0.004670499928292759,False
-402,Motorcycle Lock-in,Motorcycle Lock-in,0.008906447484774156,0.0020526225138111456,False
-403,Transit-Dependent,Motorcycle Lock-in,0.016296923562209326,0.004221419829303565,True
-404,Motorcycle Lock-in,Motorcycle Lock-in,0.02035564117371433,0.003906736107915693,False
-405,Motorcycle Lock-in,Motorcycle Lock-in,0.018234998804215148,0.003272947382896089,False
-406,Integrated Capability,Integrated Capability,0.06004693343191352,0.011032803287961588,False
-407,Transit-Dependent,Motorcycle Lock-in,0.034581547203774717,0.006571201716911379,True
-408,Integrated Capability,Integrated Capability,0.05141503022419686,0.010430240000506472,False
-409,Integrated Capability,Integrated Capability,0.04514616974866275,0.010528996810217735,False
-410,Transit-Dependent,Transit-Dependent,0.026292021647501794,0.007760946387269752,False
-411,Transit-Dependent,Transit-Dependent,0.03983033499341656,0.009864673214997616,False
-412,Transit-Dependent,Transit-Dependent,0.03361298550115896,0.009302588348956507,False
-413,Integrated Capability,Integrated Capability,0.04394787390765341,0.01132076472778809,False
-414,Fragmented Capability,Integrated Capability,0.03141175975797035,0.008577005392152141,True
-415,Motorcycle Lock-in,Transit-Dependent,0.02814604789575217,0.009622382734888125,True
-416,Transit-Dependent,Transit-Dependent,0.026615710828045473,0.009406853943379508,False
-417,Motorcycle Lock-in,Transit-Dependent,0.018110504378310622,0.007083282130556924,True
-418,Motorcycle Lock-in,Motorcycle Lock-in,0.00037257960159682655,8.633110296375753e-05,False
-419,Motorcycle Lock-in,Motorcycle Lock-in,0.001075773344673255,0.00022055238484526085,False
-420,Motorcycle Lock-in,Motorcycle Lock-in,0.000946595174242896,0.00017076496442016965,False
-421,Motorcycle Lock-in,Motorcycle Lock-in,0.0011040902708008673,0.0001747769708918783,False
-422,Motorcycle Lock-in,Motorcycle Lock-in,0.00140150929659165,0.0002049015018016983,False
-423,Motorcycle Lock-in,Motorcycle Lock-in,0.005543439698398923,0.0007179843718222737,False
-424,Motorcycle Lock-in,Motorcycle Lock-in,0.006436074650512062,0.0009079547685880319,False
-425,Motorcycle Lock-in,Motorcycle Lock-in,0.005056647856677352,0.0007634175580412252,False
-426,Transit-Dependent,Transit-Dependent,0.013633806142465192,0.004247819172226781,False
-427,Motorcycle Lock-in,Motorcycle Lock-in,0.006880518914832476,0.0020781603494389672,False
-428,Transit-Dependent,Motorcycle Lock-in,0.014137991313364219,0.0032566140647834656,True
-429,Transit-Dependent,Transit-Dependent,0.003325863246139926,0.0009335857764873814,False
-430,Transit-Dependent,Transit-Dependent,0.03204661490780321,0.008174443412921078,False
-431,Integrated Capability,Integrated Capability,0.04479146793457772,0.010497867633468749,False
-432,Transit-Dependent,Transit-Dependent,0.03136343867776399,0.008609045290926329,False
-433,Transit-Dependent,Transit-Dependent,0.03834416032361892,0.009867693291954307,False
-434,Transit-Dependent,Transit-Dependent,0.03268758826899527,0.008628112493571805,False
-435,Integrated Capability,Integrated Capability,0.03943825987607171,0.011790121820032714,False
-436,Transit-Dependent,Transit-Dependent,0.030811541926906695,0.009858042789133532,False
-437,Motorcycle Lock-in,Transit-Dependent,0.026271606753209584,0.009634275299701584,True
-438,Motorcycle Lock-in,Transit-Dependent,0.0184689505918281,0.00735680836055099,True
-439,Motorcycle Lock-in,Transit-Dependent,0.017767461092452974,0.007067029388328604,True
-440,Motorcycle Lock-in,Motorcycle Lock-in,0.00037257960159682655,8.633110296375753e-05,False
-441,Motorcycle Lock-in,Motorcycle Lock-in,0.001075773344673255,0.00022055238484526085,False
-442,Motorcycle Lock-in,Motorcycle Lock-in,0.0010304309648911892,0.00016691437997931808,False
-443,Motorcycle Lock-in,Motorcycle Lock-in,0.0010464413992191713,0.00016863890029645504,False
-444,Motorcycle Lock-in,Motorcycle Lock-in,0.001426379664319719,0.00020731843030375434,False
-445,Motorcycle Lock-in,Motorcycle Lock-in,0.0037146292941625664,0.0004944261940368911,False
-446,Motorcycle Lock-in,Motorcycle Lock-in,0.004543285996037995,0.0006762895510604787,False
-447,Motorcycle Lock-in,Motorcycle Lock-in,0.010369314457944945,0.0032128205638762546,False
-448,Motorcycle Lock-in,Motorcycle Lock-in,0.010369314457944945,0.0032128205638762546,False
-449,Motorcycle Lock-in,Transit-Dependent,0.010883497534709784,0.0034459898279737364,True
-450,Transit-Dependent,Transit-Dependent,0.014202880796914615,0.003491693561196905,False
-451,Transit-Dependent,Transit-Dependent,0.010891865797548755,0.0030102004097763203,False
-452,Transit-Dependent,Transit-Dependent,0.039253473930230785,0.010820304285624055,False
-453,Transit-Dependent,Transit-Dependent,0.028444852019819628,0.008058607206415264,False
-454,Transit-Dependent,Transit-Dependent,0.02639300791039857,0.006963514225747808,False
-455,Transit-Dependent,Transit-Dependent,0.034349433694846034,0.008772987506839476,False
-456,Transit-Dependent,Transit-Dependent,0.02950870430506379,0.007837325484719096,False
-457,Integrated Capability,Integrated Capability,0.02854392078960155,0.008960211800330629,False
-458,Fragmented Capability,Integrated Capability,0.02833395787025629,0.008828877848134025,True
-459,Motorcycle Lock-in,Transit-Dependent,0.016666776893518632,0.006333345592267787,True
-460,Motorcycle Lock-in,Transit-Dependent,0.016441832327909668,0.00630104743432086,True
-461,Motorcycle Lock-in,Transit-Dependent,0.01329044498780965,0.00521250707638852,True
+390,Transit-Dependent,Transit-Dependent,0.026156048566703657,0.007215139843897284,False
+391,Transit-Dependent,Transit-Dependent,0.006750515158868134,0.0017937940450914098,False
+392,Transit-Dependent,Motorcycle Lock-in,0.005749675353622594,0.0014168805934090204,True
+393,Motorcycle Lock-in,Motorcycle Lock-in,0.021027386543130088,0.00552486476511563,False
+394,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+395,Motorcycle Lock-in,Transit-Dependent,0.004237264740046722,0.0016587606645067493,True
+396,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+397,Motorcycle Lock-in,Motorcycle Lock-in,0.0010828035150117,0.00021696407668413074,False
+398,Motorcycle Lock-in,Motorcycle Lock-in,0.0012512666631092927,0.00026390367837999195,False
+399,Motorcycle Lock-in,Motorcycle Lock-in,0.0026067078693874134,0.0004136778197982509,False
+400,Motorcycle Lock-in,Motorcycle Lock-in,0.0025985576261653813,0.0004177462157843594,False
+401,Motorcycle Lock-in,Motorcycle Lock-in,0.010224287132179292,0.002452726421221623,False
+402,Motorcycle Lock-in,Motorcycle Lock-in,0.003911612008392633,0.0009408229235004348,False
+403,Motorcycle Lock-in,Motorcycle Lock-in,0.016025460238886752,0.0040711282304075475,False
+404,Motorcycle Lock-in,Motorcycle Lock-in,0.01896581243664503,0.0035715041446684657,False
+405,Motorcycle Lock-in,Motorcycle Lock-in,0.008263195816168458,0.0014132611779786755,False
+406,Integrated Capability,Fragmented Capability,0.0567797288772661,0.010455873145137962,True
+407,Transit-Dependent,Motorcycle Lock-in,0.023335998811417118,0.004335341730209299,True
+408,Transit-Dependent,Transit-Dependent,0.02581705737451852,0.005132040526526947,False
+409,Transit-Dependent,Transit-Dependent,0.029448036859635107,0.007329841093024455,False
+410,Transit-Dependent,Transit-Dependent,0.0072506300374585225,0.002267647198172132,False
+411,Integrated Capability,Integrated Capability,0.046160601898516895,0.012006600962694666,False
+412,Integrated Capability,Integrated Capability,0.03341620987456893,0.009597056200236983,False
+413,Integrated Capability,Integrated Capability,0.04971001104844784,0.013464555410212187,False
+414,Transit-Dependent,Transit-Dependent,0.005687091234649969,0.0016233897660693942,False
+415,Integrated Capability,Integrated Capability,0.033684875400269584,0.011921113343737213,False
+416,Integrated Capability,Integrated Capability,0.03589844160689785,0.013101464441235411,False
+417,Motorcycle Lock-in,Transit-Dependent,0.009229975290983322,0.0037343057954312654,True
+418,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+419,Motorcycle Lock-in,Motorcycle Lock-in,0.0010544306331254467,0.00021315723146573322,False
+420,Motorcycle Lock-in,Motorcycle Lock-in,0.0009272459925793191,0.00016483672299608018,False
+421,Motorcycle Lock-in,Motorcycle Lock-in,0.0020983207079916678,0.000324025641221593,False
+422,Motorcycle Lock-in,Motorcycle Lock-in,0.0025974764177442823,0.0003735647392968903,False
+423,Motorcycle Lock-in,Motorcycle Lock-in,0.0032876074583015327,0.00042462073556958914,False
+424,Motorcycle Lock-in,Motorcycle Lock-in,0.002200086421156044,0.00031366583438955693,False
+425,Motorcycle Lock-in,Motorcycle Lock-in,0.0021680656061592064,0.00033034804275826064,False
+426,Transit-Dependent,Transit-Dependent,0.011900159278494155,0.003861284201102009,False
+427,Motorcycle Lock-in,Motorcycle Lock-in,0.004142749931755167,0.0013089129417617829,False
+428,Transit-Dependent,Motorcycle Lock-in,0.0058582252886604695,0.0014146783762373175,True
+429,Motorcycle Lock-in,Transit-Dependent,0.0,0.0,True
+430,Transit-Dependent,Transit-Dependent,0.006542065067611696,0.0017725565125757219,False
+431,Integrated Capability,Integrated Capability,0.04396796155072964,0.011024604024455723,False
+432,Integrated Capability,Integrated Capability,0.026821314726800157,0.007760245720649347,False
+433,Integrated Capability,Integrated Capability,0.057892265959854125,0.015792379026786832,False
+434,Integrated Capability,Integrated Capability,0.04373999456512176,0.012201707249048687,False
+435,Integrated Capability,Integrated Capability,0.04782876933853998,0.0150729909233931,False
+436,Integrated Capability,Integrated Capability,0.04199933078281846,0.01406919068513676,False
+437,Fragmented Capability,Integrated Capability,0.02576586772441494,0.009838852954013943,True
+438,Fragmented Capability,Integrated Capability,0.018610354219858214,0.007705107075983016,True
+439,Motorcycle Lock-in,Transit-Dependent,0.00910689221709798,0.003774249621211988,True
+440,Motorcycle Lock-in,Motorcycle Lock-in,0.0,0.0,False
+441,Motorcycle Lock-in,Motorcycle Lock-in,0.0010544306331254467,0.00021315723146573322,False
+442,Motorcycle Lock-in,Motorcycle Lock-in,0.0009838638025081398,0.00015521896772517714,False
+443,Motorcycle Lock-in,Motorcycle Lock-in,0.000998070228045611,0.00015670957630242673,False
+444,Motorcycle Lock-in,Motorcycle Lock-in,0.001317801219938336,0.00018860566764592683,False
+445,Motorcycle Lock-in,Motorcycle Lock-in,0.0033047018877881418,0.000438617875149429,False
+446,Motorcycle Lock-in,Motorcycle Lock-in,0.001968190580519066,0.0002948120282318268,False
+447,Motorcycle Lock-in,Motorcycle Lock-in,0.004566030227075118,0.0014662453515379415,False
+448,Motorcycle Lock-in,Motorcycle Lock-in,0.004566030227075118,0.0014662453515379415,False
+449,Motorcycle Lock-in,Transit-Dependent,0.004851386964473918,0.0016159660983373811,True
+450,Transit-Dependent,Transit-Dependent,0.005899271766401146,0.0015182493057193387,False
+451,Transit-Dependent,Transit-Dependent,0.005920210361618177,0.0017227856638246035,False
+452,Transit-Dependent,Transit-Dependent,0.007118450110491399,0.0020834718725574177,False
+453,Integrated Capability,Integrated Capability,0.024283955355947316,0.007249283391333145,False
+454,Integrated Capability,Integrated Capability,0.022487787247557033,0.006261623797355202,False
+455,Integrated Capability,Integrated Capability,0.05176344516843024,0.014014100700014827,False
+456,Integrated Capability,Integrated Capability,0.039294152141014636,0.011027969689712593,False
+457,Fragmented Capability,Integrated Capability,0.027802553849053963,0.009133657797009616,True
+458,Fragmented Capability,Integrated Capability,0.027599932977780767,0.009001013435762007,True
+459,Fragmented Capability,Integrated Capability,0.016657249443370062,0.006597435117321249,True
+460,Fragmented Capability,Integrated Capability,0.016436894276541273,0.0065626847169998085,True
+461,Motorcycle Lock-in,Transit-Dependent,0.003953271300969366,0.0016151947681075562,True

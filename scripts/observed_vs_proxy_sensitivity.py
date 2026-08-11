@@ -88,6 +88,7 @@ def write_report(strict_inputs: pd.DataFrame, metrics: dict[str, pd.DataFrame], 
     summary = pd.DataFrame(rows)
 
     output.parent.mkdir(parents=True, exist_ok=True)
+    strict_inputs.to_csv(output.parent / "pilot_accessibility_inputs_strict.csv", index=False)
     summary_csv = output.with_suffix(".csv")
     summary.to_csv(summary_csv, index=False)
 
@@ -134,7 +135,7 @@ def main() -> int:
     parser.add_argument("--speed-factor-csv", type=Path, default=Path("data/raw/motorcycle_speed_calibration.csv"))
     parser.add_argument("--gtfs", type=Path, default=Path("data/raw/hanoi_gtfs.zip"))
     parser.add_argument("--gtfs-status", default="baseline_limited")
-    parser.add_argument("--walking-threshold-m", type=float, default=1200.0)
+    parser.add_argument("--walking-threshold-m", type=float, default=800.0)
     parser.add_argument("--motorcycle-threshold-m", type=float, default=3000.0)
     parser.add_argument("--buildings", type=Path, default=Path("data/raw/building_footprints.gpkg"))
     parser.add_argument("--worldpop-csv", type=Path, default=Path("data/interim/grid_worldpop.csv"))

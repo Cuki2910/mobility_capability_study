@@ -1,0 +1,7 @@
+﻿{
+  "task": "routing-validation",
+  "branch": "agent/routing-validation",
+  "owner": "agent-name",
+  "paths": ["src/routing.py", "tests/test_routing.py"],
+  "canonical_outputs": false
+}

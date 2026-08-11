@@ -26,6 +26,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
 
 DEDUP_DISTANCE_M = 30.0
 SUMMARY_PATH = Path("outputs/validation/economic_merge_summary.md")
@@ -33,13 +34,32 @@ SUMMARY_PATH = Path("outputs/validation/economic_merge_summary.md")
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument("--base-pois", type=Path, default=Path("data/interim/merged_pois.gpkg"))
     parser.add_argument("--econ-pois", type=Path, default=Path("data/interim/landuse_poi_synthetic.gpkg"))
     parser.add_argument("--output", type=Path, default=Path("data/interim/merged_pois_economic.gpkg"))
+    parser.add_argument("--summary", type=Path, default=SUMMARY_PATH)
     parser.add_argument("--promote", action="store_true",
                         help="Also overwrite data/interim/merged_pois.gpkg with the augmented layer.")
     parser.add_argument("--dedup-distance-m", type=float, default=DEDUP_DISTANCE_M)
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "base_pois": "paths.merged_pois",
+        "econ_pois": "paths.landuse_poi_synthetic",
+        "output": "paths.merged_pois_economic",
+        "summary": "paths.economic_merge_summary",
+    })
+
+    if args.dry_run:
+        print_resolved_paths("Economic merge dry-run", {
+            "site_id": config.site_id if config else "pilot",
+            "base_pois": args.base_pois,
+            "econ_pois": args.econ_pois,
+            "output": args.output,
+            "summary": args.summary,
+            "promote": args.promote,
+        })
+        return 0
 
     import geopandas as gpd
     import pandas as pd
@@ -119,7 +139,7 @@ def main() -> int:
     domain_counts = Counter(r[0] for r in results)
 
     # Summary report
-    SUMMARY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    args.summary.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "# Economic Feature Merge Summary",
         "",
@@ -151,13 +171,13 @@ def main() -> int:
         "## Next steps",
         "",
         "- Spot-check `spot_check_priority=medium` rows (landuse/office synthetic POIs)",
-        "- Run `python scripts/build_accessibility_inputs.py --mode network --gtfs-status baseline_limited "
-        "--pois data/interim/merged_pois_economic.gpkg` to regenerate accessibility inputs",
+        f"- Run `python scripts/build_accessibility_inputs.py --mode network --gtfs-status baseline_limited "
+        f"--pois {args.output}` to regenerate accessibility inputs",
         "- Compare domain distribution and MAI_B before/after",
         "- If satisfied, rerun with `--promote` to make this the default layer",
     ]
-    SUMMARY_PATH.write_text("\n".join(lines), encoding="utf-8")
-    print(f"Wrote {SUMMARY_PATH}")
+    args.summary.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Wrote {args.summary}")
     print(f"\nDomain distribution: {dict(domain_counts)}")
     return 0
 

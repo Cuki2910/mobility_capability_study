@@ -20,6 +20,10 @@ from accessibility import (
     compute_rac,
     compute_smci,
     compute_smci_additive,
+    compute_smci_geometric,
+    compute_smci_geometric_from_normalized,
+    compute_smci_min,
+    compute_smci_product,
     metropolitan_competitiveness_score,
     norm01,
     theory_first_typology,
@@ -108,3 +112,34 @@ def test_mai_domain_weights_keys_consistent():
     expected_domains = {"economic", "higher_education", "tertiary_healthcare", "metro_commercial"}
     for scheme, weights in MAI_DOMAIN_WEIGHTS.items():
         assert set(weights.keys()) == expected_domains, f"scheme '{scheme}' has unexpected keys"
+
+
+def test_geometric_smci_is_cell_level_zero_preserving_and_bounded():
+    nai = np.array([0.0, 0.2, 0.8])
+    mai = np.array([0.4, 0.0, 0.8])
+    rac = np.array([0.4, 0.4, 0.8])
+
+    smci = compute_smci_geometric_from_normalized(nai, mai, rac)
+
+    assert np.array_equal(smci[:2], np.array([0.0, 0.0]))
+    assert np.isclose(smci[2], 0.8)
+    assert np.all((smci >= 0.0) & (smci <= 1.0))
+
+
+def test_geometric_smci_preserves_positive_product_ordering():
+    rng = np.random.default_rng(9)
+    nai, mai, rac = rng.uniform(0.05, 1.0, (3, 80))
+    product = compute_smci_product(nai, mai, rac)
+    geometric = compute_smci_geometric(nai, mai, rac)
+
+    from scipy.stats import spearmanr
+
+    rho, _ = spearmanr(product, geometric)
+    assert rho == 1.0
+
+
+def test_min_smci_is_component_bottleneck():
+    nai = np.array([0.2, 0.9])
+    mai = np.array([0.6, 0.8])
+    rac = np.array([0.5, 0.7])
+    assert np.allclose(compute_smci_min(nai, mai, rac), np.array([0.0, 1.0]))

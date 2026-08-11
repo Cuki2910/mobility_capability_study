@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "purpose": "Baseline lock for additive geospatial diagnostics",
+  "git": {
+    "commit": "4f09eb240169c2dbbe5ede1b6945ffdacd913ea9",
+    "dirty": true
+  },
+  "artifacts": {
+    "grid": {
+      "path": "D:/GREEN-X/mobility-capability-study-smci-nai-upgrade/data/interim/pilot_grid.gpkg",
+      "role": "grid",
+      "sha256": "8d6faf02042976b613401bb8e2d6b1c48237272bdcde2dd24777d34807145c02",
+      "size_bytes": 196608
+    },
+    "boundary": {
+      "path": "D:/GREEN-X/mobility-capability-study-smci-nai-upgrade/data/interim/ocean_park_1_boundary.geojson",
+      "role": "boundary",
+      "sha256": "3c25371117928b01a7bf199b6b187d68d776ed968007b03f981c48750f91a7eb",
+      "size_bytes": 8385
+    },
+    "metrics": {
+      "path": "D:/GREEN-X/mobility-capability-study-smci-nai-upgrade/data/processed/pilot_metrics.csv",
+      "role": "metrics",
+      "sha256": "0a25b03ae3abb33cda705a20c62c6619d1f2aecad6a5bb95e56e9c26889e24a9",
+      "size_bytes": 683106
+    },
+    "population": {
+      "path": "D:/GREEN-X/mobility-capability-study-smci-nai-upgrade/data/interim/grid_worldpop.csv",
+      "role": "population",
+      "sha256": "3000fb4d175059aaf87a8143c90b240796c174d0cf068ea884eb885aa717e30d",
+      "size_bytes": 19468
+    },
+    "walk_network_a": {
+      "path": "D:/GREEN-X/mobility-capability-study-smci-nai-upgrade/data/raw/pilot_walk_network.graphml",
+      "role": "walk_network_a",
+      "sha256": "98b57bcf592302e60c028f7caafa630f31d337f2a2a8b376c3856083a6d7caa6",
+      "size_bytes": 7300190
+    },
+    "motorcycle_network_d": {
+      "path": "D:/GREEN-X/mobility-capability-study-smci-nai-upgrade/data/raw/pilot_drive_network.graphml",
+      "role": "motorcycle_network_d",
+      "sha256": "515ef5dc6a16eba51a6c1682cc69702121fa9bae7aaa237585b2e777af967b5e",
+      "size_bytes": 1487750
+    },
+    "headline": {
+      "path": "D:/GREEN-X/mobility-capability-study-smci-nai-upgrade/outputs/headline_metrics.json",
+      "role": "headline",
+      "sha256": "57b97d5d2bb17f2f7c95b472c3c77e983401f63a56dddc35b5d1f9d51e739f83",
+      "size_bytes": 12208
+    }
+  },
+  "metrics": {
+    "n_cells": 462,
+    "mean_SMCI_A": 0.0070377752800667714,
+    "mean_SMCI_B": 0.013289804372247466,
+    "mean_Delta_SMCI": 0.006252029092180674,
+    "typology_B_counts": {
+      "Fragmented Capability": 60,
+      "Integrated Capability": 171,
+      "Motorcycle Lock-in": 171,
+      "Transit-Dependent": 60
+    }
+  }
+}

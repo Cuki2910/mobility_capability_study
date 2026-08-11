@@ -1,22 +1,38 @@
 # Project Self-Audit
 
+## Gate Checks
+
+- headline_complete: True
+- publication_outputs_fresh: True
+- docs_consistent: True
+- document_errors: []
+- formula_mode_matches_config: True
+- headline_schema_current: True
+- generated_artifacts_complete: True
+- missing_headline_sources: []
+- stale_headline_sources: []
+- missing_publication_outputs: []
+
 ## Snapshot
 
 - grid_cells: 462
-- mean_SMCI_A: 0.0083976979499925
-- mean_SMCI_B: 0.0159704628007397
-- share_improved: 0.6601731601731602
+- mean_SMCI_A: 0.14695020712682888
+- mean_SMCI_B: 0.17111148832800888
+- share_improved: 0.6082251082251082
 - gtfs_status: baseline_limited
 - pre_vinbus_baseline: True
 - poi_spot_checks: {'total': 20, 'completed': 20, 'breakdown': {'confirmed': 14, 'misclassified': 2, 'duplicate': 2, 'missing_in_osm': 2}}
 - motorcycle_android_checks: {'rows': 10, 'android_completed': 10, 'has_android_column': True, 'mae_minutes': 1.9, 'bias_minutes': -1.0399999999999998}
 - android_emulator: {'status_file': True, 'installed': True, 'motorcycle_mode_available': False}
 - population_resolution: {'resolution_m': 92.76666629760172, 'grid_size_m': 250.0, 'decision': 'allow_fine_grained_proxy', 'adequate_for_250m_pilot': True, 'resolution_source': 'raster_metadata', 'raster': 'data\\raw\\worldpop\\vnm_ppp_2020.tif'}
-- distribution_diagnostics: {'NAI_zero_share': 0.0714285714285714, 'SMCI_B_zero_share': 0.0735930735930736, 'improved_share': 0.6601731601731602, 'unchanged_share': 0.0714285714285714, 'declined_share': 0.2683982683982684}
+- distribution_diagnostics: {'NAI_zero_share': 0.1904761904761904, 'SMCI_B_zero_share': 0.1904761904761904, 'improved_share': 0.6082251082251082, 'unchanged_share': 0.1904761904761904, 'declined_share': 0.2012987012987013}
 - high_vif: False
 - built_population_zero_access_audit: True
 - merged_poi_sensitivity: True
 - gtfs_catalog_check: True
+- analytical_spec: {'nai_primary_threshold_m': 800, 'smci_primary_operator': 'equal_weight_geometric_mean', 'smci_legacy_operator': 'product', 'smci_robustness_operator': 'additive', 'smci_bottleneck_operator': 'minimum_component', 'default_scenario': 'B', 'default_metric': 'typology'}
+- data_requirement_statuses: {'external_validation': 'NOT_RUN_DATA_REQUIRED', 'reliability': 'NOT_RUN_DATA_REQUIRED', 'generalized_cost': 'NOT_RUN_DATA_REQUIRED', 'mixed_traffic': 'NOT_RUN_DATA_REQUIRED', 'west_taymo': 'MATCHING_GATE_FAILED'}
+- generated_artifacts: {'upgrade_completion_report': 'outputs\\upgrade\\upgrade_completion_report.md', 'uncertainty_envelope': 'outputs\\validation\\scenario_uncertainty_envelope_status.md', 'data_quality_grades': 'outputs\\validation\\data_quality_grades.md', 'interactive_map': 'outputs\\maps\\ocean_park_interactive.html', 'grid_robustness': 'outputs\\validation\\grid_sensitivity_summary.md'}
 
 ## Strengths
 
@@ -37,7 +53,11 @@
 
 ## Blockers
 
-- None
+- external validation remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.
+- reliability remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.
+- generalized cost remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.
+- mixed traffic remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.
+- West Tay Mo fails its preregistered CBD-distance matching gate; do not promote the current pair.
 
 ## Warnings
 
@@ -50,3 +70,8 @@
 - Preserve strict observed MAI audit trail and upgrade weak derived tiers with named facility sources where possible.
 - Report Network B as a 2018 pre-VinBus baseline and keep post-2021 GTFS as a sensitivity target if found.
 - Proceed to supervisor review with promoted RAC_time primary, full-RAC robustness, and explicit source-tier limitations.
+
+## Future Extensions
+
+- Re-run Network B with a verified post-2021 Hanoi GTFS feed when one becomes available.
+- Upgrade weak source-derived opportunity magnitudes with named facility records.

@@ -1,11 +1,29 @@
-﻿"""Generate a self-audit and critique report for the Ocean Park pilot."""
+"""Generate a self-audit and critique report for the Ocean Park pilot."""
 from __future__ import annotations
 
 import argparse
 import json
+import re
+import sys
 from pathlib import Path
 
 import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.headline_metrics import SCHEMA_VERSION, load_headline_metrics
+from scripts.check_document_consistency import DEFAULT_DOCUMENTS, check_documents
+
+
+STATUS_PATTERN = re.compile(r"Status:\s*`(?P<status>[A-Z_]+)`")
+
+
+def data_requirement_status(path: Path) -> str | None:
+    """Return an explicit status from a data-dependent contract artifact."""
+    if not path.exists():
+        return None
+    match = STATUS_PATTERN.search(path.read_text(encoding="utf-8"))
+    return match.group("status") if match else None
 
 
 def _read_json(path: Path) -> dict:
@@ -82,7 +100,44 @@ def build_audit() -> dict:
     emulator = android_emulator_status(Path("outputs/validation/android_emulator_status.md"))
     dist = distribution_status()
 
-    summary = pd.read_csv("outputs/pilot_summary.csv", index_col=0)["value"].to_dict() if _exists("outputs/pilot_summary.csv") else {}
+    headline_path = Path("outputs/headline_metrics.json")
+    headline = load_headline_metrics(headline_path)
+    config_path = Path("config/pipeline.json")
+    config = _read_json(config_path)
+    analytical_spec = config.get("analytical_spec", {})
+    source_paths = [Path(path) for path in headline["source_files"]]
+    missing_headline_sources = [str(path) for path in source_paths if not path.exists()]
+    headline_mtime = headline_path.stat().st_mtime
+    stale_headline_sources = [
+        str(path) for path in source_paths
+        if path.exists() and path.stat().st_mtime > headline_mtime
+    ]
+    publication_outputs = [
+        Path("paper/paper_draft.md"),
+        Path("proposal/proposal_v7.md"),
+        Path("outputs/supervisor_memo.md"),
+    ]
+    missing_publication_outputs = [str(path) for path in publication_outputs if not path.exists()]
+    headline_complete = not missing_headline_sources
+    publication_outputs_fresh = not stale_headline_sources and not missing_publication_outputs
+    document_errors = check_documents(headline_path, list(DEFAULT_DOCUMENTS), semantic_root=ROOT)
+    generated_artifacts = {
+        "upgrade_completion_report": Path("outputs/upgrade/upgrade_completion_report.md"),
+        "uncertainty_envelope": Path("outputs/validation/scenario_uncertainty_envelope_status.md"),
+        "data_quality_grades": Path("outputs/validation/data_quality_grades.md"),
+        "interactive_map": Path("outputs/maps/ocean_park_interactive.html"),
+        "grid_robustness": Path("outputs/validation/grid_sensitivity_summary.md"),
+    }
+    missing_generated_artifacts = [name for name, path in generated_artifacts.items() if not path.exists()]
+    status_artifacts = {
+        "external_validation": Path("outputs/validation/external_validation_status.md"),
+        "reliability": Path("outputs/validation/reliability_status.md"),
+        "generalized_cost": Path("outputs/validation/generalized_cost_status.md"),
+        "mixed_traffic": Path("outputs/validation/mixed_traffic_status.md"),
+        "west_taymo": Path("outputs/west_taymo/readiness_status.md"),
+    }
+    data_statuses = {name: data_requirement_status(path) for name, path in status_artifacts.items()}
+
     vif = pd.read_csv("outputs/validation/vif_flags.csv") if _exists("outputs/validation/vif_flags.csv") else pd.DataFrame()
     high_vif = bool(vif["flag_high_vif"].any()) if not vif.empty and "flag_high_vif" in vif else None
     pre_vinbus = bool(gtfs.get("pre_vinbus_baseline"))
@@ -149,6 +204,23 @@ def build_audit() -> dict:
         )
     if not building_ready:
         warnings.append("Building footprints are not yet aggregated; zero-access cells may include unbuilt lake/park/open-space cells and under-mapped built cells.")
+    if headline.get("schema_version") != SCHEMA_VERSION:
+        blockers.append(
+            f"Headline schema is {headline.get('schema_version')}; expected {SCHEMA_VERSION}."
+        )
+    if analytical_spec.get("smci_primary_operator") != headline.get("smci", {}).get("operator"):
+        blockers.append("Configured primary SMCI operator disagrees with the headline snapshot.")
+    if document_errors:
+        blockers.append("Document consistency or semantic methodology checks failed.")
+    if missing_generated_artifacts:
+        blockers.append("Missing generated upgrade artifacts: " + ", ".join(missing_generated_artifacts) + ".")
+    for name, status in data_statuses.items():
+        if status in {"NOT_RUN_DATA_REQUIRED", "CODE_COMPLETE_DATA_REQUIRED"}:
+            blockers.append(f"{name.replace('_', ' ')} remains {status}; required observational or comparison data are unavailable.")
+        elif status == "MATCHING_GATE_FAILED":
+            blockers.append("West Tay Mo fails its preregistered CBD-distance matching gate; do not promote the current pair.")
+        elif status is None:
+            blockers.append(f"{name.replace('_', ' ')} status artifact is missing or invalid.")
 
     next_actions = [
         "Preserve strict observed MAI audit trail and upgrade weak derived tiers with named facility sources where possible.",
@@ -165,11 +237,23 @@ def build_audit() -> dict:
         next_actions.insert(0, "Add Overture Places as a POI supplement and source-agreement confidence layer.")
 
     return {
+        "checks": {
+            "headline_complete": headline_complete,
+            "publication_outputs_fresh": publication_outputs_fresh,
+            "docs_consistent": not document_errors,
+            "document_errors": document_errors,
+            "formula_mode_matches_config": analytical_spec.get("smci_primary_operator") == headline.get("smci", {}).get("operator"),
+            "headline_schema_current": headline.get("schema_version") == SCHEMA_VERSION,
+            "generated_artifacts_complete": not missing_generated_artifacts,
+            "missing_headline_sources": missing_headline_sources,
+            "stale_headline_sources": stale_headline_sources,
+            "missing_publication_outputs": missing_publication_outputs,
+        },
         "snapshot": {
-            "grid_cells": int(summary.get("n_cells", manifest.get("counts", {}).get("grid_cells", 0)) or 0),
-            "mean_SMCI_A": float(summary.get("mean_SMCI_A", 0.0) or 0.0),
-            "mean_SMCI_B": float(summary.get("mean_SMCI_B", 0.0) or 0.0),
-            "share_improved": float(summary.get("share_improved", 0.0) or 0.0),
+            "grid_cells": int(headline["n_cells"]),
+            "mean_SMCI_A": float(headline["smci"]["mean_A"]),
+            "mean_SMCI_B": float(headline["smci"]["mean_B"]),
+            "share_improved": float(headline["delta_groups"]["improved"] / headline["n_cells"]),
             "gtfs_status": gtfs.get("status", "missing"),
             "pre_vinbus_baseline": pre_vinbus,
             "poi_spot_checks": {"total": poi_total, "completed": poi_done, "breakdown": poi_breakdown},
@@ -181,19 +265,29 @@ def build_audit() -> dict:
             "built_population_zero_access_audit": Path("outputs/validation/built_population_zero_access.md").exists(),
             "merged_poi_sensitivity": Path("outputs/validation/merged_poi_sensitivity.md").exists(),
             "gtfs_catalog_check": Path("outputs/validation/gtfs_catalog_check.md").exists(),
+            "analytical_spec": analytical_spec,
+            "data_requirement_statuses": data_statuses,
+            "generated_artifacts": {name: str(path) for name, path in generated_artifacts.items()},
         },
         "strengths": strengths,
         "blockers": blockers,
         "warnings": warnings,
         "next_actions": next_actions,
+        "future_extensions": [
+            "Re-run Network B with a verified post-2021 Hanoi GTFS feed when one becomes available.",
+            "Upgrade weak source-derived opportunity magnitudes with named facility records.",
+        ],
     }
 
 
 def write_markdown(audit: dict, output: Path) -> None:
-    lines = ["# Project Self-Audit", "", "## Snapshot", ""]
+    lines = ["# Project Self-Audit", "", "## Gate Checks", ""]
+    for key, value in audit["checks"].items():
+        lines.append(f"- {key}: {value}")
+    lines += ["", "## Snapshot", ""]
     for key, value in audit["snapshot"].items():
         lines.append(f"- {key}: {value}")
-    for section in ("strengths", "blockers", "warnings", "next_actions"):
+    for section in ("strengths", "blockers", "warnings", "next_actions", "future_extensions"):
         title = section.replace("_", " ").title()
         lines += ["", f"## {title}", ""]
         lines += [f"- {item}" for item in audit[section]] or ["- None"]

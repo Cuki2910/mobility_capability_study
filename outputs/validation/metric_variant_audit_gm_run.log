@@ -1,0 +1,34 @@
+Building strict baseline inputs...
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Rebuilding variant: weights_equal
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Rebuilding variant: weights_job_heavy
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Rebuilding variant: weights_econ_light
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Rebuilding variant: weights_service_health_heavy
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Rebuilding variant: decay_20_40
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Rebuilding variant: decay_45_90
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Rebuilding variant: decay_exponential_30_60
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Rebuilding variant: mai_no_top1pct
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Top-opportunity leverage sensitivity: dropped top 2 POIs (1%).
+Rebuilding variant: mai_no_top5pct
+Matched 196 POIs to building footprints.
+Pop-weighting MAI (Decision #19): 193/208 POIs matched to a cell; multiplier [0.50, 1.81], mean 0.98.
+Top-opportunity leverage sensitivity: dropped top 10 POIs (5%).
+Wrote outputs\validation\metric_variant_audit.csv, outputs\validation\metric_variant_cells.csv, outputs\validation\metric_variant_audit.md
+Recommended primary candidate: rac_time_only

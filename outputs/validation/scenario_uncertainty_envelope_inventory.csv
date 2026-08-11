@@ -1,0 +1,5 @@
+source,path,status,n_rows
+motorcycle_speed,outputs\validation\motorcycle_speed_sensitivity_cells.csv,GEOMETRIC_CELL_LEVEL,1386
+transit_impedance,outputs\validation\transit_impedance_sensitivity_cells.csv,GEOMETRIC_CELL_LEVEL,1386
+nai_threshold,outputs\validation\nai_threshold_sensitivity_cells.csv,GEOMETRIC_CELL_LEVEL,1848
+metric_variants,outputs\validation\metric_variant_cells.csv,GEOMETRIC_CELL_LEVEL,5544

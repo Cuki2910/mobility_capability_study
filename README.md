@@ -1,5 +1,7 @@
 # Fragmented Mobility Capability - Ocean Park Study
 
+> Current reporting scale: equal-weight geometric-mean SMCI (cell level). The canonical Ocean Park primary result is mean SMCI_A=0.1470, SMCI_B=0.1711, Delta_SMCI=+0.0242; legacy product values are retained only for scale-transition auditing.
+
 Research proposal and analysis pipeline examining whether Vinhomes Ocean Park
 (Hanoi) achieves a walkable local environment while remaining dependent on
 motorcycles at the metropolitan scale, using a dual-scale, mode-competitive
@@ -17,6 +19,34 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 pytest tests/ -v
 ```
+
+## Standard Pipeline
+
+```bash
+python scripts/run_research_pipeline.py --dry-run
+python scripts/run_research_pipeline.py
+```
+
+The versioned DAG lives in `config/pipeline.json`. Each real run writes an atomic
+JSON manifest under `outputs/lineage/runs/`; the disposable SQLite lineage index
+is rebuilt at `outputs/lineage/research_lineage.sqlite`. Use `--node`, `--from`,
+`--to`, or `--force` for targeted reruns.
+
+## Agent Workflow
+
+Use a separate Git worktree per agent, reserve file ownership, then run the
+policy-driven gate before independent review and human merge:
+
+```powershell
+git worktree add ..\mcs-task -b agent/task development
+Copy-Item .agent/ownership.example.json .agent/ownership.json
+python scripts/check_agent_ownership.py
+python scripts/agent_gate.py --dry-run
+python scripts/agent_gate.py
+```
+
+See `docs/agent_workflow.md` for ownership setup, gate policy, review checks,
+canonical-output locking, and integration recovery.
 
 ## Current Next Step
 

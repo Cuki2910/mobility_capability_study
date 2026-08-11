@@ -9,7 +9,9 @@ try:
     from .accessibility import (
         compute_rac_shared,
         compute_smci_additive_from_normalized,
-        compute_smci_from_normalized,
+        compute_smci_geometric_from_normalized,
+        compute_smci_min_from_normalized,
+        compute_smci_product_from_normalized,
         metropolitan_competitiveness_score_from_normalized,
         norm01,
         norm01_with_bounds,
@@ -20,7 +22,9 @@ except ImportError:  # pragma: no cover
     from accessibility import (
         compute_rac_shared,
         compute_smci_additive_from_normalized,
-        compute_smci_from_normalized,
+        compute_smci_geometric_from_normalized,
+        compute_smci_min_from_normalized,
+        compute_smci_product_from_normalized,
         metropolitan_competitiveness_score_from_normalized,
         norm01,
         norm01_with_bounds,
@@ -83,11 +87,17 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
 
     out["MCS_A"] = metropolitan_competitiveness_score_from_normalized(out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
     out["MCS_B"] = metropolitan_competitiveness_score_from_normalized(out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
-    out["SMCI_A"] = compute_smci_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
-    out["SMCI_B"] = compute_smci_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
+    # Canonical SMCI uses a per-cell geometric mean; the product remains auditable.
+    out["SMCI_A"] = compute_smci_geometric_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
+    out["SMCI_B"] = compute_smci_geometric_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
+    out["SMCI_product_A"] = compute_smci_product_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
+    out["SMCI_product_B"] = compute_smci_product_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
     out["SMCI_additive_A"] = compute_smci_additive_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
     out["SMCI_additive_B"] = compute_smci_additive_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
+    out["SMCI_min_A"] = compute_smci_min_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
+    out["SMCI_min_B"] = compute_smci_min_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
     out["Delta_SMCI"] = out["SMCI_B"] - out["SMCI_A"]
+    out["Delta_SMCI_product"] = out["SMCI_product_B"] - out["SMCI_product_A"]
     out["typology_A"] = theory_first_typology(out["NAI"].to_numpy(), out["MCS_A"].to_numpy())
     out["typology_B"] = theory_first_typology(out["NAI"].to_numpy(), out["MCS_B"].to_numpy())
 
@@ -100,11 +110,11 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
     rt_a_norm = norm01_with_bounds(rt_a_only, rac_a_lo, rac_a_hi)
     rt_b_norm = norm01_with_bounds(rt_b_only, rac_a_lo, rac_a_hi)
     mcs_b_time_only = metropolitan_competitiveness_score_from_normalized(out["MAI_B_norm"].to_numpy(), rt_b_norm)
-    out["SMCI_B_time_only"] = compute_smci_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), rt_b_norm)
+    out["SMCI_B_time_only"] = compute_smci_geometric_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), rt_b_norm)
     out["typology_B_time_only"] = theory_first_typology(out["NAI"].to_numpy(), mcs_b_time_only)
     full_lo, full_hi = shared_minmax(out["RAC_full_A"].to_numpy(), out["RAC_full_B"].to_numpy())
     full_b_norm = norm01_with_bounds(out["RAC_full_B"].to_numpy(), full_lo, full_hi)
-    out["SMCI_B_full_rac_legacy"] = compute_smci_from_normalized(
+    out["SMCI_B_full_rac_legacy"] = compute_smci_geometric_from_normalized(
         out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), full_b_norm
     )
 

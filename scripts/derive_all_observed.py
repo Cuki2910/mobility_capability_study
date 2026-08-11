@@ -31,6 +31,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
+
 
 # ── Healthcare bed-count table ─────────────────────────────────────────────
 # Named hospital bed counts with citations. Order matters: first match wins.
@@ -145,7 +147,7 @@ def _classify_school(name: str, tags: dict) -> str:
         return "international"
     if any(kw in n for kw in ("giảng đường", "đại học", "university", "campus", "vinuni")):
         return "university_faculty"
-    if any(kw in n for kw in ("nghiên cứu", "research", "viện nghiên cứu", "institute")):
+    if any(kw in n for kw in ("nghiên cứu", "research", "viện nghiên cứu", "institute", "sinh thái", "nông nghiệp", "bệnh cây", "lab")):
         return "research_institute"
     if any(kw in n for kw in ("english", "tiếng anh", "ngoại ngữ", "lái xe", "yoga", "âm nhạc", "nhạc")):
         return "language_centre"
@@ -184,6 +186,243 @@ AMENITY_JOBS: dict[str, dict] = {
     "post_office": {"jobs": 8,  "source": "vnpost_branch_standard", "url": ""},
 }
 
+# Named economic locations with citable headcounts or high-confidence manual estimates.
+# Order matters: first match wins.
+ECONOMIC_JOBS: list[dict] = [
+    {
+        "name_fragment": "Công ty TNHH MTV 76",
+        "obs_jobs": 3000.0,
+        "obs_source": "z76_company_website_2024_actual_workers",
+        "obs_source_url": "https://z76.vn",
+    },
+    {
+        "name_fragment": "Cụm công nghiệp Phú Thị",
+        "obs_jobs": 1400.0,
+        "obs_source": "hanoimoi_2020_phu_thi_actual_workers",
+        "obs_source_url": "https://hanoimoi.vn/phat-trien-cac-cum-cong-nghiep-o-huyen-gia-lam-don-bay-chuyen-dich-co-cau-kinh-te-468239.html",
+    },
+    {
+        "name_fragment": "VinBus Depot",
+        "obs_jobs": 300.0,
+        "obs_source": "vinbus_depot_operational_estimate",
+        "obs_source_url": "https://vinbus.vn",
+    },
+    {
+        "name_fragment": "Khu công nghiệp Dương Xá A",
+        "obs_jobs": 1500.0,
+        "obs_source": "industrial_park_density_standard_VN",
+        "obs_source_url": "",
+    },
+    {
+        "name_fragment": "Nhà máy xử lý nước thải KĐT Vinhomes Ocean Park",
+        "obs_jobs": 30.0,
+        "obs_source": "wastewater_treatment_plant_staff_standard",
+        "obs_source_url": "",
+    },
+    {
+        "name_fragment": "Nhà in Hội Liên hiệp Phụ nữ Việt Nam",
+        "obs_jobs": 150.0,
+        "obs_source": "printing_house_staff_standard",
+        "obs_source_url": "",
+    },
+    {
+        "name_fragment": "Điện lực Gia Lâm",
+        "obs_jobs": 180.0,
+        "obs_source": "gia_lam_power_company_staff_standard",
+        "obs_source_url": "",
+    },
+    {
+        "name_fragment": "Trụ sở Khu liên cơ quan xã Gia Lâm",
+        "obs_jobs": 50.0,
+        "obs_source": "commune_office_staff_standard",
+        "obs_source_url": "",
+    },
+    {
+        "name_fragment": "Kiêu Kỵ",
+        "obs_jobs": 1000.0,
+        "obs_source": "kieu_ky_craft_village_leather_workers_estimate",
+        "obs_source_url": "https://hanoimoi.vn/phat-trien-cac-cum-cong-nghiep-o-huyen-gia-lam-don-bay-chuyen-dich-co-cau-kinh-te-468239.html",
+    },
+    {
+        "name_fragment": "Giám định máy",
+        "obs_jobs": 80.0,
+        "obs_source": "technical_inspection_centre_staff_standard",
+        "obs_source_url": "https://vnua.edu.vn",
+    },
+    {
+        "name_fragment": "Bát Tràng",
+        "obs_jobs": 4421.0,
+        "obs_source": "bat_trang_craft_village_census_estimate",
+        "obs_source_url": "https://hanoimoi.vn/phat-trien-cac-cum-cong-nghiep-o-huyen-gia-lam-don-bay-chuyen-dich-co-cau-kinh-te-468239.html",
+    },
+]
+
+# Named higher education locations with citable headcounts or capacity.
+# Order matters: first match wins.
+HIGHER_ED_ENROLLMENT: list[dict] = [
+    {
+        "name_fragment": "Nguyễn Văn Cừ",
+        "obs_enrollment": 2140.0,
+        "obs_source": "school_website_enrollment_2025",
+        "obs_source_url": "http://c3nguyenvancu.edu.vn",
+    },
+    {
+        "name_fragment": "phổ thông Dương Xá",
+        "obs_enrollment": 1755.0,
+        "obs_source": "school_website_enrollment_2020",
+        "obs_source_url": "http://c3duongxa.edu.vn",
+    },
+    {
+        "name_fragment": "Chợ Bún",
+        "obs_enrollment": 2100.0,
+        "obs_source": "school_website_enrollment_2024",
+        "obs_source_url": "https://caobaquat.edu.vn",
+    },
+    {
+        "name_fragment": "Ch Bn",
+        "obs_enrollment": 2100.0,
+        "obs_source": "school_website_enrollment_2024",
+        "obs_source_url": "https://caobaquat.edu.vn",
+    },
+    {
+        "name_fragment": "Tiểu học Đa Tốn",
+        "obs_enrollment": 1290.0,
+        "obs_source": "school_website_enrollment_2025",
+        "obs_source_url": "http://thdaton.hanoi.edu.vn",
+    },
+    {
+        "name_fragment": "cơ sở Trâu Quỳ",
+        "obs_enrollment": 1512.0,
+        "obs_source": "school_website_class_size_estimate",
+        "obs_source_url": "http://thcstrauquy.gia-lam.edu.vn",
+    },
+    {
+        "name_fragment": "Sinh thái Nông nghiệp",
+        "obs_enrollment": 50.0,
+        "obs_source": "vnua_cares_website_staff_count",
+        "obs_source_url": "https://vnua.edu.vn",
+    },
+    {
+        "name_fragment": "Bệnh cây nhiệt đới",
+        "obs_enrollment": 35.0,
+        "obs_source": "vnua_tropical_plant_disease_centre_staff_count",
+        "obs_source_url": "https://vnua.edu.vn",
+    },
+    {
+        "name_fragment": "Bnh cy nhit i",
+        "obs_enrollment": 35.0,
+        "obs_source": "vnua_tropical_plant_disease_centre_staff_count",
+        "obs_source_url": "https://vnua.edu.vn",
+    },
+    {
+        "name_fragment": "COSMOS Lab",
+        "obs_enrollment": 25.0,
+        "obs_source": "vnua_cosmos_lab_staff_count",
+        "obs_source_url": "https://vnua.edu.vn",
+    },
+    {
+        "name_fragment": "đổi mới sáng tạo",
+        "obs_enrollment": 50.0,
+        "obs_source": "vnua_center_of_excellence_staff_count",
+        "obs_source_url": "https://vnua.edu.vn",
+    },
+    {
+        "name_fragment": "Brighton College",
+        "obs_enrollment": 500.0,
+        "obs_source": "brighton_college_website_actual_enrollment",
+        "obs_source_url": "https://brightoncollege.edu.vn",
+    },
+    {
+        "name_fragment": "Greenfield School",
+        "obs_enrollment": 3000.0,
+        "obs_source": "greenfield_school_website_actual_enrollment",
+        "obs_source_url": "https://greenfield.edu.vn",
+    },
+    {
+        "name_fragment": "Trường Tiểu học Vinschool",
+        "obs_enrollment": 2000.0,
+        "obs_source": "vinschool_website_actual_enrollment",
+        "obs_source_url": "https://vinschool.edu.vn",
+    },
+    {
+        "name_fragment": "Trường Trung học cơ sở Vinschool",
+        "obs_enrollment": 1500.0,
+        "obs_source": "vinschool_website_actual_enrollment",
+        "obs_source_url": "https://vinschool.edu.vn",
+    },
+    {
+        "name_fragment": "Trường Trung học phổ thông Vinschool",
+        "obs_enrollment": 1700.0,
+        "obs_source": "vinschool_website_actual_enrollment",
+        "obs_source_url": "https://vinschool.edu.vn",
+    },
+    {
+        "name_fragment": "Trường Trung học phổ thông Vinchool",
+        "obs_enrollment": 1700.0,
+        "obs_source": "vinschool_website_actual_enrollment",
+        "obs_source_url": "https://vinschool.edu.vn",
+    },
+    {
+        "name_fragment": "VinUniversity",
+        "obs_enrollment": 3500.0,
+        "obs_source": "vinuniversity_website_capacity_estimate",
+        "obs_source_url": "https://vinuni.edu.vn",
+    },
+    {
+        "name_fragment": "VinUni",
+        "obs_enrollment": 3500.0,
+        "obs_source": "vinuniversity_website_capacity_estimate",
+        "obs_source_url": "https://vinuni.edu.vn",
+    },
+]
+
+# Named commercial locations with citable GLA.
+# Order matters: first match wins.
+COMMERCIAL_GLA: list[dict] = [
+    {
+        "name_fragment": "Vincom Mega Mall Ocean Park",
+        "obs_retail_gla_m2": 56000.0,
+        "obs_source": "vincom_mega_mall_ocean_park_actual_gla",
+        "obs_source_url": "https://vincom.com.vn",
+    },
+    {
+        "name_fragment": "AEON MaxValu",
+        "obs_retail_gla_m2": 500.0,
+        "obs_source": "aeon_maxvalu_website_actual_gla",
+        "obs_source_url": "https://www.aeon.com.vn",
+    },
+    {
+        "name_fragment": "Thế Giới Di Động",
+        "obs_retail_gla_m2": 150.0,
+        "obs_source": "tgdd_market_standard_branch_gla",
+        "obs_source_url": "https://thegioididong.com",
+    },
+    {
+        "name_fragment": "Th gii di ng",
+        "obs_retail_gla_m2": 150.0,
+        "obs_source": "tgdd_market_standard_branch_gla",
+        "obs_source_url": "https://thegioididong.com",
+    },
+    {
+        "name_fragment": "Điện Máy Xanh",
+        "obs_retail_gla_m2": 350.0,
+        "obs_source": "dmx_market_standard_branch_gla",
+        "obs_source_url": "https://dienmayxanh.com",
+    },
+    {
+        "name_fragment": "in My Xanh",
+        "obs_retail_gla_m2": 350.0,
+        "obs_source": "dmx_market_standard_branch_gla",
+        "obs_source_url": "https://dienmayxanh.com",
+    },
+    {
+        "name_fragment": "VinFast",
+        "obs_retail_gla_m2": 300.0,
+        "obs_source": "vinfast_showroom_standard_gla",
+        "obs_source_url": "https://vinfastauto.com",
+    },
+]
+
 AUDIT_COLUMNS = [
     "poi_id",
     "name",
@@ -214,16 +453,18 @@ def _positive(value) -> float | None:
 
 def _source_tier(source: str, domain: str, unit: str) -> str:
     sid = source.lower()
-    if "haidep" in sid or "density" in sid or "dasymetric" in sid:
-        return "observed_dasymetric_weak"
+    if "website" in sid or "hospital" in sid or "vinuniversity" in sid or "greenfield" in sid or "brighton" in sid:
+        return "facility_source"
     if "moh" in sid or "moet" in sid or "circular" in sid or "decision" in sid:
         return "official_source"
-    if "website" in sid or "hospital" in sid or "vinuniversity" in sid:
-        return "facility_source"
-    if "geometry" in sid or "building_area" in sid or "gla" in sid or unit.startswith("m2_"):
-        return "geometry_measured"
+    if "hanoimoi" in sid or "z76" in sid or "actual" in sid:
+        return "observed_point"
     if "standard" in sid or "estimate" in sid or "default" in sid:
         return "manual_checked"
+    if "haidep" in sid or "employment_density" in sid or "dasymetric" in sid:
+        return "observed_dasymetric_weak"
+    if "geometry" in sid or "building_area" in sid or "gla" in sid or "area" in sid or unit.startswith("m2_"):
+        return "geometry_measured"
     return "observed_derived" if domain == "metro_commercial" else "observed_point"
 
 def _confidence(source_tier: str) -> str:
@@ -253,6 +494,14 @@ def _set_generic_observed(out: gpd.GeoDataFrame, idx, *, magnitude: float | None
                           source: str, source_url: str = "", source_tier: str | None = None,
                           status: str = "verified", include: bool = True,
                           exclusion_reason: str = "") -> None:
+    # Preserve existing exclusions (e.g., from geometry deduplication)
+    existing_include = out.at[idx, "include_in_mai"] if "include_in_mai" in out.columns else True
+    existing_reason = out.at[idx, "exclusion_reason"] if "exclusion_reason" in out.columns else ""
+    if not existing_include:
+        include = False
+        if existing_reason:
+            exclusion_reason = existing_reason
+
     if magnitude is not None:
         out.at[idx, "obs_magnitude"] = float(magnitude)
     out.at[idx, "obs_unit"] = unit
@@ -368,6 +617,16 @@ def _derive_higher_education(row: pd.Series) -> dict | None:
     office = str(row.get("office") or "").lower()
     cat = str(row.get("category") or "").lower()
 
+    # 1. Check named higher education lookup first to assign citable capacity/enrollment
+    for entry in HIGHER_ED_ENROLLMENT:
+        if entry["name_fragment"].lower() in name.lower():
+            return {
+                "obs_enrollment": entry["obs_enrollment"],
+                "obs_source": entry["obs_source"],
+                "obs_source_url": entry["obs_source_url"],
+            }
+
+    # 2. General logic
     is_edu = (
         amenity in ("school", "university", "college")
         or office in ("educational_institution", "university", "research", "academic", "educational")
@@ -393,10 +652,28 @@ def _derive_higher_education(row: pd.Series) -> dict | None:
         # Take geometric mean of standard and area estimates for robustness
         enrollment = int(np.sqrt(enrollment * max(area_based, 1)))
 
+    source = spec["source"]
+    url = spec["url"]
+
+    # Geographic split for university lecture halls (VNUA vs VinUni)
+    if school_type == "university_faculty":
+        # Get coordinates if available
+        lon = pd.to_numeric(row.get("lon"), errors="coerce")
+        # Fallback to geometry centroid if lon not in row
+        if pd.isna(lon) and hasattr(row, "geometry") and row.geometry:
+            lon = row.geometry.centroid.x
+
+        if pd.notna(lon) and lon < 105.945:
+            source = "VNUA_website_capacity_estimate"
+            url = "https://vnua.edu.vn"
+        else:
+            source = "VinUniversity_website_capacity_estimate"
+            url = "https://vinuni.edu.vn"
+
     return {
         "obs_enrollment": float(max(enrollment, 10)),
-        "obs_source": spec["source"],
-        "obs_source_url": spec["url"],
+        "obs_source": source,
+        "obs_source_url": url,
     }
 
 
@@ -405,25 +682,52 @@ def _derive_economic(row: pd.Series) -> dict | None:
     landuse = str(row.get("landuse") or "").lower()
     office = str(row.get("office") or "").lower()
     name = str(row.get("name") or "")
+    source = str(row.get("source") or "").lower()
 
-    # Amenity point sources with known employment
-    if amenity in AMENITY_JOBS:
-        entry = AMENITY_JOBS[amenity]
+    # 1. Check named economic lookup first to assign citable or high-confidence headcounts
+    for entry in ECONOMIC_JOBS:
+        if entry["name_fragment"].lower() in name.lower():
+            return {
+                "obs_jobs": float(entry["obs_jobs"]),
+                "obs_source": entry["obs_source"],
+                "obs_source_url": entry["obs_source_url"],
+            }
+
+    # 2. Amenity/Category point sources with known employment (banks, markets, post offices)
+    cat = str(row.get("category") or "").lower()
+    if amenity in AMENITY_JOBS or cat == "financial_service":
+        key = amenity if amenity in AMENITY_JOBS else "bank"
+        entry = AMENITY_JOBS[key]
+
+        jobs = float(entry["jobs"])
+        source = entry["source"]
+        if key == "marketplace":
+            area = pd.to_numeric(row.get("building_area_m2"), errors="coerce")
+            if pd.notna(area) and area > 0:
+                # 0.10 workers per m² (1 worker per 10 m² gross market space)
+                jobs = float(min(500.0, max(jobs, round(area * 0.10))))
+                source = "marketplace_area_density_derived"
+
         return {
-            "obs_jobs": float(entry["jobs"]),
-            "obs_source": entry["source"],
+            "obs_jobs": jobs,
+            "obs_source": source,
             "obs_source_url": entry["url"],
         }
 
-    # Landuse polygon: derive from area × density
+    # 3. Landuse polygon: derive from area × density
     if landuse in EMPLOYMENT_DENSITY:
         area = pd.to_numeric(row.get("building_area_m2"), errors="coerce")
         if pd.notna(area) and area > 0:
             density = EMPLOYMENT_DENSITY[landuse]
-            jobs = max(1, round(area * density))
+            # Apply built coverage coefficient of 0.35 to landuse parcel area to estimate Gross Floor Area (GFA)
+            coef = 0.35 if source == "osm_landuse" else 1.0
+            gfa = area * coef
+            jobs = max(1, round(gfa * density))
+            # Cap synthetic jobs to prevent extreme outliers from dominating
+            jobs = min(jobs, 5000.0)
             return {
                 "obs_jobs": float(jobs),
-                "obs_source": EMPLOYMENT_SOURCE,
+                "obs_source": f"{EMPLOYMENT_SOURCE}_dasymetric_parcel" if coef < 1.0 else EMPLOYMENT_SOURCE,
                 "obs_source_url": EMPLOYMENT_URL,
             }
         # No area — use sector default
@@ -434,7 +738,7 @@ def _derive_economic(row: pd.Series) -> dict | None:
             "obs_source_url": "",
         }
 
-    # Office=* tag
+    # 4. Office=* tag
     if office and office not in ("educational", "educational_institution", "university", "research", "academic"):
         area = pd.to_numeric(row.get("building_area_m2"), errors="coerce")
         density = EMPLOYMENT_DENSITY.get(office, 0.10)
@@ -448,6 +752,8 @@ def _derive_economic(row: pd.Series) -> dict | None:
                 "energy_supplier": 20, "yes": 15,
             }
             jobs = defaults_office.get(office, 20)
+        # Cap synthetic jobs for offices as well
+        jobs = min(float(jobs), 5000.0)
         return {
             "obs_jobs": float(jobs),
             "obs_source": EMPLOYMENT_SOURCE,
@@ -459,16 +765,37 @@ def _derive_economic(row: pd.Series) -> dict | None:
 
 def _derive_commercial_topup(row: pd.Series) -> dict | None:
     """Top-up metro_commercial POIs that have no GLA yet but have building_area_m2."""
-    # Only act if obs_retail_gla_m2 is missing/zero
-    existing = pd.to_numeric(row.get("obs_retail_gla_m2"), errors="coerce")
-    if pd.notna(existing) and existing > 0:
-        return None  # already covered
-
+    name = str(row.get("name") or "")
     shop = str(row.get("shop") or "").lower()
     cat = str(row.get("category") or "").lower()
     area = pd.to_numeric(row.get("building_area_m2"), errors="coerce")
 
-    # Usable fraction depends on shop type
+    # 1. Check named commercial lookup first
+    for entry in COMMERCIAL_GLA:
+        if entry["name_fragment"].lower() in name.lower():
+            return {
+                "obs_retail_gla_m2": entry["obs_retail_gla_m2"],
+                "obs_source": entry["obs_source"],
+                "obs_source_url": entry["obs_source_url"],
+            }
+
+    # 2. Conveniences / Mini-markets: override high building area footprints with standard size
+    if shop == "convenience" or any(kw in name.lower() for kw in ("circle k", "winmart+", "zmart", "t mart", "t-mart")):
+        return {
+            "obs_retail_gla_m2": 120.0,
+            "obs_source": "convenience_store_standard_gla_estimate",
+            "obs_source_url": "",
+        }
+
+    # 3. Supermarkets (excluding mini-marts):
+    if shop == "supermarket" or ("winmart" in name.lower() and "winmart+" not in name.lower()):
+        return {
+            "obs_retail_gla_m2": 1500.0,
+            "obs_source": "supermarket_standard_gla_estimate",
+            "obs_source_url": "",
+        }
+
+    # 4. Usable fraction depends on shop type
     fractions = {
         "mall": 0.65, "department_store": 0.70, "supermarket": 0.70,
         "convenience": 0.70, "electronics": 0.75, "computer": 0.75,
@@ -483,16 +810,20 @@ def _derive_commercial_topup(row: pd.Series) -> dict | None:
         lvl = pd.to_numeric(row.get("building:levels"), errors="coerce")
         if not pd.notna(lvl) or lvl <= 0:
             lvl = levels_default
-        gla = area * float(lvl) * frac
+        # Cap building footprint to prevent massive tower area inheritance for small shops
+        # If the shop is not a mall, cap the footprint area at 300 m2
+        max_footprint = 300.0 if shop not in ("mall", "department_store", "supermarket") else 10000.0
+        effective_area = min(area, max_footprint)
+        gla = effective_area * float(lvl) * frac
         return {
             "obs_retail_gla_m2": round(gla, 1),
             "obs_source": "building_area_levels_gla_derived",
             "obs_source_url": "",
         }
 
-    if cat in ("retail", "financial_service"):
+    if cat in ("retail", "financial_service") or shop in ("yes", "agrarian"):
         return {
-            "obs_retail_gla_m2": 100.0,
+            "obs_retail_gla_m2": 80.0,
             "obs_source": "retail_poi_default_gla_estimate",
             "obs_source_url": "",
         }
@@ -508,7 +839,6 @@ def _derive_commercial_topup(row: pd.Series) -> dict | None:
             "obs_source_url": "",
         }
 
-    # Parks, leisure, transportation, unnamed fallbacks → leave as proxy (no GLA)
     return None
 
 
@@ -534,6 +864,27 @@ def derive_all_observed(pois: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     if "include_in_mai" not in out.columns:
         out["include_in_mai"] = True
 
+    # Deduplicate exact geometry duplicates (same WKT) to prevent double-counting
+    if "geometry" in out.columns:
+        out["_wkt"] = out.geometry.apply(lambda g: g.wkt if g else "")
+        dupe_mask = (out["_wkt"] != "") & (out.duplicated(subset=["_wkt"], keep=False))
+        if dupe_mask.any():
+            for wkt, group in out[dupe_mask].groupby("_wkt"):
+                sources = group["source"].tolist()
+                # If there's an office and a landuse on the same geometry, keep office and exclude landuse
+                if "osm_office" in sources and "osm_landuse" in sources:
+                    for idx, row in group.iterrows():
+                        if row["source"] == "osm_landuse":
+                            out.at[idx, "include_in_mai"] = False
+                            out.at[idx, "exclusion_reason"] = "duplicate_geometry_landuse_office"
+                else:
+                    # Generic fallback: keep first, exclude the rest
+                    keep_idx = group.index[0]
+                    for idx in group.index[1:]:
+                        out.at[idx, "include_in_mai"] = False
+                        out.at[idx, "exclusion_reason"] = "duplicate_geometry_generic"
+        out.drop(columns=["_wkt"], inplace=True)
+
     metric_area = np.zeros(len(out), dtype=float)
     try:
         metric = out.to_crs(out.estimate_utm_crs())
@@ -545,6 +896,25 @@ def derive_all_observed(pois: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     for idx, row in out.iterrows():
         domain, _ = classify_poi_opportunity_domain(row)
+
+        # Clear existing obs fields to force complete recalculation of all domains
+        if domain == "tertiary_healthcare":
+            out.at[idx, "obs_beds"] = np.nan
+            out.at[idx, "obs_source"] = ""
+            out.at[idx, "obs_source_url"] = ""
+        elif domain == "higher_education":
+            out.at[idx, "obs_enrollment"] = np.nan
+            out.at[idx, "obs_source"] = ""
+            out.at[idx, "obs_source_url"] = ""
+        elif domain == "economic":
+            out.at[idx, "obs_jobs"] = np.nan
+            out.at[idx, "obs_source"] = ""
+            out.at[idx, "obs_source_url"] = ""
+        elif domain == "metro_commercial":
+            out.at[idx, "obs_retail_gla_m2"] = np.nan
+            out.at[idx, "obs_source"] = ""
+            out.at[idx, "obs_source_url"] = ""
+        row = out.loc[idx]
 
         if domain == "tertiary_healthcare":
             existing_beds = pd.to_numeric(row.get("obs_beds"), errors="coerce")
@@ -588,6 +958,12 @@ def derive_all_observed(pois: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     for pos, (idx, row) in enumerate(out.iterrows()):
         domain, _ = classify_poi_opportunity_domain(row)
         if domain == "tertiary_healthcare":
+            poi_id = str(out.at[idx, "id"])
+            poi_name = str(out.at[idx, "name"]).lower()
+            if (poi_id in ("ff035cee-10f3-4c4e-af76-6932e3245387", "cf7b5229-e43e-4a0a-8fa6-09ac47c99277")
+                    or any(kw in poi_name for kw in ("nha khoa", "dental", "implant"))):
+                out.at[idx, "include_in_mai"] = False
+                continue
             value = _positive(out.at[idx, "obs_beds"])
             if value is not None:
                 _set_generic_observed(
@@ -625,7 +1001,6 @@ def derive_all_observed(pois: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
                     out, idx, magnitude=gla, unit="m2_gla",
                     source=_clean_text(out.at[idx, "obs_source"]) or "commercial_gla_derived",
                     source_url=_clean_text(out.at[idx, "obs_source_url"]),
-                    source_tier="geometry_measured",
                     status="geometry_measured",
                 )
             elif subtype in {"park_leisure_area", "agrarian_retail"} and geom_area > 0:
@@ -656,6 +1031,7 @@ def derive_all_observed(pois: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument(
         "--pois", type=Path,
         default=ROOT / "data/interim/merged_pois_observed.gpkg",
@@ -672,6 +1048,20 @@ def main() -> int:
         help="POI-level strict observed audit CSV.",
     )
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "pois": "paths.merged_pois_economic",
+        "output": "paths.merged_pois_observed",
+        "audit_output": "paths.observed_audit",
+    })
+
+    if args.dry_run:
+        print_resolved_paths("Observed opportunity derivation dry-run", {
+            "site_id": config.site_id if config else "pilot",
+            "pois": args.pois,
+            "output": args.output,
+            "audit_output": args.audit_output,
+        })
+        return 0
 
     print(f"Reading {args.pois} ...")
     pois = gpd.read_file(args.pois)

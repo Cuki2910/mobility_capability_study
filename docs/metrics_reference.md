@@ -7,8 +7,9 @@ framework that justifies it.
 This is a **reference document**, not a tutorial. The authoritative implementation is
 `src/accessibility.py` (index formulas) and `src/accessibility_inputs.py` /
 `src/routing.py` (input construction). If a formula here disagrees with the code, the
-code wins — fix this file. Last synced: 2026-06-30 (strict observed MAI + RAC_time
-promoted to primary per Decision #22; full-RAC retained as robustness; 77 tests).
+code wins — fix this file. Last synced: 2026-07-01 (strict observed MAI + RAC_time
+promoted to primary per Decision #22; NAI threshold under localized audit per Decision #26;
+full-RAC retained as robustness; 77 tests).
 For a plain-language Vietnamese explanation, see `docs/metrics_explained_vi.md`.
 
 Convention: cell index `i`, opportunity/POI index `j`, domain index `k`,
@@ -27,12 +28,31 @@ metrics build on established constructs rather than ad-hoc usage.
 | **POI category / urban function** | The type label organizing POIs hierarchically (e.g. health → hospital); the basis for assigning each POI to one of the four MAI opportunity domains. | Psyllidis et al. (2022) |
 | **Accessibility** | The extent to which the land-use–transport system enables individuals to reach activities/opportunities; a place-based measure of *reachable opportunity*, not realized travel. | Geurs & van Wee (2004) |
 | **Cumulative-opportunity accessibility** | Count (or weighted sum) of opportunities reachable within a fixed travel-time/distance budget. NAI is the count-based, walk-only special case; MAI the magnitude-weighted, multimodal case. | Handy & Niemeier (1997) |
-| **Walkability / 15-minute access** | Local proximity to daily destinations reachable on foot within ~15 min; operationalized as a 1200 m network catchment at 80 m/min. | Moreno et al. (2021); Yang et al. (2023) |
-| **Network distance / travel time** | Shortest-path distance or time along the actual routable network (OSM graph via Dijkstra), not straight-line ("as-the-crow-flies") distance. `t_ij` is the network travel time from cell `i` to POI `j`. | (routing convention; `routing.py`) |
+| **Walkability / 15-minute access** | Local proximity to daily destinations reachable on foot; current pilot primary is an 800 m / 10-minute pedestrian shed (Decision #27), with 1200 m / 15 min reported as an optimistic upper-bound sensitivity from the 600/800/1000/1200 m threshold audit. | Moreno et al. (2021); Bruno et al. (2024); Tran et al. (2015) |
+| **TOD / transit-oriented development** | Planning logic that concentrates mixed-use development around high-quality transit access. In this study TOD is treated as a planning claim to be audited through realized accessibility, not as an automatic sustainability outcome. | Calthorpe (1993); Cervero & Kockelman (1997) |
+| **Green megaproject / mega green city** | Large master-planned development marketed through environmental design, amenities, and infrastructure provision. In this study the "green" claim is tested through local access, metropolitan access, and motorcycle-relative competitiveness. | Shatkin (2008); Joss et al. (2011); Caprotti (2014, 2015); Cugurullo (2016) |
+| **Network distance / travel time** | Shortest-path distance or model-estimated time along the actual routable network (OSM graph via Dijkstra), not straight-line ("as-the-crow-flies") distance and not observed GPS duration for every OD pair. `t_ij` is the estimated network travel time from cell `i` to POI `j`. | (routing convention; `routing.py`, `accessibility_inputs.py`) |
 | **Catchment** | The set of POIs `j` whose network travel time from cell `i` falls within the relevant threshold `{ j : t_ij <= T }`. | (operational, this study) |
 | **Mode-competitive accessibility** | Accessibility of one mode expressed *relative to* a competing mode (here walk+transit vs motorcycle) rather than in absolute terms. | Liao et al. (2020) |
 
 POI provenance and source tiers specific to this study's opportunity magnitudes are in §2.3.
+
+---
+
+## Framing — TOD and green-megaproject audit
+
+The project is not only asking whether Ocean Park has parks, shops, bus stops, or green branding.
+It asks whether those features combine into *sustainable mobility capability* under Hanoi's
+motorcycle-dominant conditions.
+
+- **TOD logic.** TOD theory links compact mixed use and transit access, but the metric test here is
+  stricter: a TOD-like environment must also make walking and transit competitive with motorcycles.
+- **Green megaproject logic.** Eco-city / green-megaproject literature warns that sustainability can
+  remain a branding or planning claim unless social and mobility outcomes are measured. SMCI turns
+  that critique into an accessibility audit.
+- **Operational implication.** `Integrated Capability` is not assigned because an area is branded
+  green or transit-served. It is assigned only when NAI and MCS are both high relative to the study
+  area, where MCS combines metropolitan access and motorcycle-relative competitiveness.
 
 ---
 
@@ -67,7 +87,7 @@ neighborhood time threshold. Count-based, not magnitude-weighted (Decision #7).
 **Thresholds / parameters.**
 | Parameter | Value | Source |
 |---|---|---|
-| `T_walk` (neighborhood cutoff) | 1200 m network distance (≈15 min at 80 m/min) | Yang et al. (2023); `build_accessibility_inputs.py --walking-threshold-m 1200` |
+| `T_walk` (neighborhood cutoff) | primary 800 m / 10 min (Decision #27); 1200 m / 15 min reported as optimistic upper-bound sensitivity | Decisions #26/#27; `build_accessibility_inputs.py --walking-threshold-m` (default 800) |
 | Walking speed | 1.333 m/s (80 m/min) | Yang et al. (2023); `routing.py` access cutoff |
 | Routing | Dijkstra shortest path on OSM walk graph | `routing.reachable_counts_and_mean_time` |
 
@@ -83,8 +103,9 @@ gravity/decay weighting here would smuggle metropolitan-scale logic into a local
 - **Inclusive 15-minute accessibility** — recent large-scale work treats 15-minute access to
   essential services as an inclusion/equity question, not only an urban-design slogan
   (Bruno et al., 2024).
-- **1200 m operationalization** — 15-minute community-life-circle studies commonly implement
-  15 minutes as 1200 m at 80 m/min walking speed (Yang et al., 2023).
+- **Threshold localization** — 15-minute community-life-circle studies often implement
+  15 minutes as 1200 m at 80 m/min walking speed, but Decision #26 requires this project to
+  localize the cutoff for Hanoi rather than import that distance mechanically.
 - **Cumulative-opportunity accessibility** — counting opportunities within a travel-time
   budget (Handy & Niemeier, 1997). NAI is the count-based, walk-only special case.
 
@@ -111,17 +132,21 @@ MAI_i = 0.40 * A_i,economic
 ```
 
 **Domain-weight provenance (0.40/0.20/0.20/0.20).** These are a **theory-informed prior**
-(employment-centrality tradition: economic access weighted highest), **not yet survey-derived**.
-`scripts/derive_mai_weights_utm.py` can ground them in the open UTM-Hanoi transport-policy
-perception dataset (Kieu et al., 2024; OSF DOI 10.17605/OSF.IO/497US) by mapping observed trip-purpose
-shares to domains (work→economic, education→higher_education, shopping→metro_commercial,
-caring→tertiary_healthcare; leisure/visit excluded; renormalized to sum 1). The script ships with
-a blank count template (`data/raw/utm_hanoi_trip_purpose.csv`) — counts must be transcribed from
-the source figure / OSF tables before `utm_derived` can be promoted to `default`; current
-`default` remains the prior above. HAIDEP 2010
-trip-purpose shares were **not** usable (raw distribution behind JICA licensing). The healthcare
-weight stays survey-*informed*, not survey-*derived*: the survey has no health-trip purpose, so
-`caring` is an imperfect proxy and the 0.20 floor reflects essential-but-low-frequency access.
+(employment-centrality tradition: economic access weighted highest), not raw revealed-demand weights.
+`scripts/derive_mai_weights_utm.py` derives a sensitivity scheme from the open UTM-Hanoi
+transport-policy perception dataset (Kieu et al., 2024; OSF DOI 10.17605/OSF.IO/497US).
+The filled input is `data/raw/utm_hanoi_trip_purpose.csv`: work 15,145, education 4,494,
+shopping 1,922, leisure 934, visit 3,176, and caring 435 (`N=26,106`). The MAI-domain
+mapping is work→economic, education→higher_education, shopping→metro_commercial, and
+caring→tertiary_healthcare; leisure/visit are excluded before renormalization because they
+do not map cleanly to the four MAI opportunity domains. The resulting `utm_derived` weights
+are economic 0.6885, higher education 0.2043, tertiary healthcare 0.0198, and metro commercial
+0.0874, written to `data/interim/mai_weights_utm_derived.csv` and available in
+`MAI_DOMAIN_WEIGHTS["utm_derived"]`. Current `default` remains the smoothed prior above.
+HAIDEP 2010 trip-purpose shares were **not** usable (raw distribution behind JICA licensing).
+The healthcare weight stays survey-*informed*, not survey-*derived*: the survey has no health-trip
+purpose, so `caring` is an imperfect proxy and the 0.20 default floor reflects
+essential-but-low-frequency access.
 **Robustness:** typology is stable across weight schemes (metric audit — equal/job_heavy/econ_light
 all κ≥0.92), so the headline does not hinge on the exact prior.
 
@@ -245,6 +270,22 @@ weighted destination receive the cutoff.
 
 Audit columns: `moto_mean_opp_time_min`, `wt_A_mean_opp_time_min`, `wt_B_mean_opp_time_min`.
 
+Operationally, `RAC_time` uses network-based estimated travel times, not observed trip
+durations for every OD pair:
+- walking time = OSM walk-graph shortest path with walking speed assumptions;
+- motorcycle time = OSM drive-graph shortest path with explicit scenario-assumed speeds informed by broad Hanoi GPS ranges (Son et al., 2012);
+- Scenario A walk-transit time = 2018 Hanoi GTFS pre-VinBus stop-proxy timing;
+- Scenario B walk-transit time = VinBus pseudo-GTFS stop routing with access, wait, line-haul,
+  and egress components.
+
+Motorcycle time is spot-checked against 10 Android Google Maps two-wheeler OD
+pairs: MAE = 1.90 min, MAPE = 22.19%, MBE = -1.04 min, RMSE = 2.20 min
+(`outputs/validation/travel_time_validation_report.md`). Model times are regenerated from the
+production drive graph and calibration CSV, whose SHA-256 is recorded in the report. This is a
+small-sample plausibility check, not a full GPS/real-time validation dataset. Global −20% and +20%
+speed sensitivity reproduces the primary baseline and leaves all typology labels unchanged
+(kappa = 1.000; 0/462 relabelled in both scenarios).
+
 ### 3.2 RAC_opp — opportunity competitiveness
 
 ```text
@@ -326,14 +367,14 @@ not score as "metropolitanly strong."
 **What it measures.** The headline metric. Joint presence of (1) local walking access,
 (2) metropolitan opportunity access, and (3) mode competitiveness — a **weakest-link** index.
 
-**Primary (multiplicative).**
+**Primary (equal-weight geometric mean).**
 ```text
-SMCI_i = NAI_norm_i * MAI_norm_i * RAC_norm_i
+SMCI_i = (NAI_norm_i * MAI_norm_i * RAC_norm_i)^(1/3)
 ```
 All three components min-max normalized; `RAC_norm` is the primary RAC (= RAC_time, Decision #22).
 Any component near zero collapses the index — that is the intended "capability requires all three
-at once" semantics. Current pilot: SMCI_A=0.0084, SMCI_B=0.0160, mean Delta=0.0076, 305/462 improved
-(66.0%), 33 unchanged, 124 declined; typology_B 172/172/59/59.
+at once" semantics. Current pilot (800 m NAI primary): SMCI_A=0.1470, SMCI_B=0.1711,
+mean Delta=0.0242, 281/462 improved (60.8%), 88 unchanged, 93 declined; typology_B 171/171/60/60.
 
 **Scenario delta (shared scale, Decision #11).**
 ```text
@@ -348,7 +389,7 @@ SMCI_additive_i = (NAI_norm_i + MAI_norm_i + RAC_norm_i) / 3
 ```
 | Parameter | Value | Code |
 |---|---|---|
-| Primary combination | product (multiplicative) | `accessibility.compute_smci` |
+| Primary combination | equal-weight geometric mean | `accessibility.compute_smci_geometric` |
 | Robustness combination | mean (additive) | `accessibility.compute_smci_additive` |
 | Normalization | min-max, shared A+B for Δ | `accessibility.norm01[_with_bounds]` |
 
@@ -432,15 +473,21 @@ competitiveness (MCS = MAI × RAC), so "locally complete but metropolitanly isol
 | **Additive SMCI** | `(NAI+MAI+RAC)/3` | `accessibility.compute_smci_additive` | Compensatory robustness contrast |
 | **Built-cell / zero-access audit** | Footprint presence in zero-NAI cells | `built_population_zero_access_audit.py` | Is zero-access an open-space artifact? |
 | **Population-weighted SMCI** | residents × SMCI (demand-side) | `compute_population_weighted_smci.py` | Equity cross-check (sensitivity only) |
+| **Travel-time validation** | 10 manual Google Maps Android two-wheeler OD pairs; MAE < 3 min | `travel_time_validation_report.md` | Plausibility check for Network D motorcycle time |
 | **Motorcycle speed sensitivity** | slow/fast lane-splitting scenarios | `motorcycle_speed_sensitivity.py` | Network D robustness |
 | **Transit impedance sensitivity** | conservative/pessimistic wait+access penalties | `transit_impedance_sensitivity.py` | Network B/C robustness |
 
 **Thresholds in use.** VIF > 5 = a conservative collinearity flag (O'Brien, 2007);
 κ ≥ 0.8 = strong agreement (Landis & Koch, 1977); ρ ≥ 0.95 = ranking preserved.
-Current strict-mode values: **primary RAC_time** VIF(MAI)=3.78,
-VIF(RAC)=2.00 (both below threshold); legacy full-RAC VIF(MAI)=10.04, VIF(RAC)=9.89 (high,
+Current strict-mode values: **primary RAC_time** VIF(MAI)=3.82,
+VIF(RAC)=1.92 (both below threshold); legacy full-RAC VIF(MAI)=10.04, VIF(RAC)=9.89 (high,
 structural). Promoted RAC_time vs legacy full-RAC: κ=0.9116, ρ=0.9824, 28/462 relabelled
 (Decision #22 metric audit, `outputs/validation/metric_variant_audit.md`).
+
+Travel-time validation is deliberately framed as a plausibility check, not as proof of exact
+trip-time prediction. Current motorcycle spot-check performance is MAE=1.90 min against 10
+manual Android Google Maps two-wheeler OD pairs, below the 3.0 min research threshold used in
+`outputs/validation/travel_time_validation_report.md`.
 
 **Theory support.**
 - VIF / collinearity diagnostics — standard regression-diagnostic practice; here motivated by
@@ -457,7 +504,7 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9116, ρ=0.9824, 28/462 
 
 | Parameter | Symbol | Value | Where |
 |---|---|---|---|
-| Neighborhood walk cutoff | `T_walk` | 1200 m network distance (~15 min at 80 m/min) | NAI |
+| Neighborhood walk cutoff | `T_walk` | primary 800 m / 10 min (Decision #27); 1200 m / 15 min as optimistic upper-bound sensitivity | NAI |
 | Walk speed | — | 80 m/min (1.333 m/s) | NAI, transit access |
 | Decay full-weight cutoff | `t_full` | 30 min | MAI decay |
 | Decay zero cutoff | `t_zero` | 60 min | MAI decay |
@@ -479,6 +526,19 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9116, ρ=0.9824, 28/462 
 
 - Bruno, M., Melo, H. P. M., Campanelli, B., & Loreto, V. (2024). A universal framework
   for inclusive 15-minute cities. *Nature Cities*. https://doi.org/10.1038/s44284-024-00119-4
+- Calthorpe, P. (1993). *The next American metropolis: Ecology, community, and the American dream*.
+  Princeton Architectural Press.
+- Caprotti, F. (2014). Eco-urbanism and the eco-city, or, denying the right to the city?
+  *Antipode, 46*(5), 1285-1303. https://doi.org/10.1111/anti.12087
+- Caprotti, F. (2015). Eco for whom? Envisioning eco-urbanism in the Sino-Singapore
+  Tianjin Eco-city, China. *International Journal of Urban and Regional Research, 39*(3),
+  495-517. https://doi.org/10.1111/1468-2427.12233
+- Cervero, R., & Kockelman, K. (1997). Travel demand and the 3Ds: Density, diversity, and design.
+  *Transportation Research Part D: Transport and Environment, 2*(3), 199-219.
+  https://doi.org/10.1016/S1361-9209(97)00009-6
+- Cugurullo, F. (2016). Urban eco-modernisation and the policy context of new eco-city projects:
+  Where Masdar City fails and why. *Urban Studies, 53*(11), 2417-2433.
+  https://doi.org/10.1177/0042098015588727
 - Geurs, K. T., & van Wee, B. (2004). Accessibility evaluation of land-use and transport
   strategies: Review and research directions. *Journal of Transport Geography, 12*(2), 127–140.
   https://doi.org/10.1016/j.jtrangeo.2003.10.005
@@ -488,6 +548,10 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9116, ρ=0.9824, 28/462 
   of Planners, 25*(2), 73–76. https://doi.org/10.1080/01944365908978307
 - Japan International Cooperation Agency (JICA). (2010). *The comprehensive urban development
   programme in Hanoi capital city (HAIDEP)*. JICA / Hanoi People's Committee.
+- Joss, S., Tomozeiu, D., & Cowley, R. (2011). Eco-cities: The mainstreaming of urban
+  sustainability - key characteristics and driving factors. *International Journal of
+  Sustainable Development and Planning, 6*(3), 268-285.
+  https://doi.org/10.2495/SDP-V6-N3-268-285
 - Kaszczyszyn, P., & Sypion-Dutkowska, N. (2019). Walking access to public transport stops for
   city residents: A comparison of methods. *Sustainability, 11*(14), 3758.
   https://doi.org/10.3390/su11143758
@@ -504,8 +568,10 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9116, ρ=0.9824, 28/462 
 - Moreno, C., Allam, Z., Chabaud, D., Gall, C., & Pratlong, F. (2021). Introducing the
   "15-Minute City": Sustainability, resilience and place identity in future post-pandemic
   cities. *Smart Cities, 4*(1), 93–111. https://doi.org/10.3390/smartcities4010006
-- Nguyen, X. L., & Nguyen, H. T. (2018). Operating speed of motorcycles on urban streets in
-  Hanoi. *Journal of the Eastern Asia Society for Transportation Studies, 12*, 1421–1435.
+- Son, H. T., Zhang, J., & Fujiwara, A. (2012). Developing a toolbox for calculating motorcycle
+  emission and the difference of CO2 from motorcycle for each type of road in Hanoi.
+  *International Journal of Environmental Science and Development, 3*(5), 412–416.
+  https://doi.org/10.7763/IJESD.2012.V3.257
 - O'Brien, R. M. (2007). A caution regarding rules of thumb for variance inflation factors.
   *Quality & Quantity, 41*, 673–690. https://doi.org/10.1007/s11135-006-9018-6
 - Psyllidis, A., Gao, S., Hu, Y., Kim, E-K., McKenzie, G., Purves, R., Yuan, M., & Andris, C.
@@ -516,11 +582,12 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9116, ρ=0.9824, 28/462 
   in transportation. *Transport Reviews, 37*(2), 170–191.
   https://doi.org/10.1080/01441647.2016.1257660
 - Sen, A. (1999). *Development as freedom*. Oxford University Press.
+- Shatkin, G. (2008). The city and the bottom line: Urban megaprojects and the privatization
+  of planning in Southeast Asia. *Environment and Planning A, 40*(2), 383-401.
+  https://doi.org/10.1068/a38439
 - Vu Anh Tuan. (2015). Mode choice behavior and modal shift to public transport in developing
   countries: The case of Hanoi city. *Journal of the Eastern Asia Society for Transportation
-  Studies, 11*, 473–487.
-- Vu Anh Tuan, Nguyen, H., & Pham, T. (2016). Motorcycle traffic characteristics in Hanoi.
-  *Transportation Research Procedia, 15*, 651–662.
+  Studies, 11*, 473–487. https://doi.org/10.11175/easts.11.473
 - Yang, Y., Qian, Y., Zeng, J., Wei, X., & Yang, M. (2023). Walkability measurement of
   15-minute community life circle in Shanghai. *Land, 12*(1), 153.
   https://doi.org/10.3390/land12010153
@@ -529,5 +596,5 @@ structural). Promoted RAC_time vs legacy full-RAC: κ=0.9116, ρ=0.9824, 28/462 
 construction `src/accessibility_inputs.py`, `src/routing.py`; decision rationale
 `docs/decisions.md` (#2 typology, #3 VIF, #4 additive, #7 NAI count, #11 shared-scale,
 #12/#15 MAI, #18 domain caps, #19 population, #20 RAC_time, #21 observed hierarchy,
-#22 RAC_time primary promotion, #23 1200 m NAI threshold);
+#22 RAC_time primary promotion, #26 localized NAI threshold audit);
 methodology prose `proposal/proposal_v7.md` §8–10 and `paper/paper_draft.md` §2, §5–6.

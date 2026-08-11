@@ -12,9 +12,9 @@ these formulas inline elsewhere.
 import numpy as np
 
 # MAI v8 domain weights (Decision #12). Keys match classify_poi_opportunity_domain() output.
-# "default" is a theory-informed prior (employment-centrality), NOT yet survey-derived.
-# scripts/derive_mai_weights_utm.py grounds these in the UTM-Hanoi trip-purpose
-# distribution once real counts are filled; promote "utm_derived" to "default" then.
+# "default" is a theory-informed prior (employment-centrality), not raw revealed-demand.
+# "utm_derived" is survey-informed from UTM-Hanoi trip-purpose counts and retained
+# as sensitivity unless the paper explicitly decides to promote it.
 # Robustness across schemes is strong (metric audit: equal/job_heavy/econ_light all κ≥0.92).
 MAI_DOMAIN_WEIGHTS = {
     "default":   {"economic": 0.40, "higher_education": 0.20, "tertiary_healthcare": 0.20, "metro_commercial": 0.20},
@@ -22,6 +22,7 @@ MAI_DOMAIN_WEIGHTS = {
     "job_heavy": {"economic": 0.50, "higher_education": 0.15, "tertiary_healthcare": 0.15, "metro_commercial": 0.20},
     "econ_light": {"economic": 0.20, "higher_education": 0.30, "tertiary_healthcare": 0.30, "metro_commercial": 0.20},
     "service_health_heavy": {"economic": 0.25, "higher_education": 0.25, "tertiary_healthcare": 0.30, "metro_commercial": 0.20},
+    "utm_derived": {"economic": 0.6885, "higher_education": 0.2043, "tertiary_healthcare": 0.0198, "metro_commercial": 0.0874},
 }
 
 
@@ -117,10 +118,15 @@ def compute_rac_shared(
     }
 
 
-def compute_smci(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
+def compute_smci_product(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
     """
-    Sustainable Mobility Capability Index (Section 3.8), PRIMARY specification.
-    SMCI = NAI_norm * MAI_norm * RAC_norm  (multiplicative — a "weakest link" index).
+    Legacy product-form Sustainable Mobility Capability Index.
+    SMCI = NAI_norm * MAI_norm * RAC_norm
+    (multiplicative, weak-link-sensitive, with zero annihilation).
+
+    A zero normalized component sets the product to zero; among positive
+    values, partial compensation remains possible. This is not a strict
+    minimum or fully non-compensatory operator.
 
     NOTE — lesson learned 2026-06-21 (see docs/decisions.md #4):
     Do NOT validate this against a geometric-mean alternative
@@ -128,11 +134,38 @@ def compute_smci(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarra
     itself and will ALWAYS give Spearman rho = 1.0. It tests nothing.
     Use `compute_smci_additive` below for the real robustness comparison.
     """
-    return norm01(nai) * norm01(mai) * norm01(rac)
+    return compute_smci_product_from_normalized(norm01(nai), norm01(mai), norm01(rac))
 
-def compute_smci_from_normalized(nai_norm: np.ndarray, mai_norm: np.ndarray, rac_norm: np.ndarray) -> np.ndarray:
-    """SMCI from already-normalized components, used when scenarios share normalization bounds."""
+def compute_smci_product_from_normalized(nai_norm: np.ndarray, mai_norm: np.ndarray, rac_norm: np.ndarray) -> np.ndarray:
+    """Legacy product SMCI from normalized components."""
     return np.asarray(nai_norm, dtype=float) * np.asarray(mai_norm, dtype=float) * np.asarray(rac_norm, dtype=float)
+
+
+def compute_smci_geometric(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
+    """Equal-weight geometric-mean SMCI from raw components."""
+    return compute_smci_geometric_from_normalized(norm01(nai), norm01(mai), norm01(rac))
+
+
+def compute_smci_geometric_from_normalized(
+    nai_norm: np.ndarray, mai_norm: np.ndarray, rac_norm: np.ndarray
+) -> np.ndarray:
+    """Primary zero-preserving SMCI scale from normalized components."""
+    return np.cbrt(compute_smci_product_from_normalized(nai_norm, mai_norm, rac_norm))
+
+
+def compute_smci_min(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:
+    """Extreme bottleneck diagnostic from raw components."""
+    return compute_smci_min_from_normalized(norm01(nai), norm01(mai), norm01(rac))
+
+
+def compute_smci_min_from_normalized(nai_norm: np.ndarray, mai_norm: np.ndarray, rac_norm: np.ndarray) -> np.ndarray:
+    """Extreme bottleneck diagnostic from normalized components."""
+    return np.minimum.reduce((np.asarray(nai_norm, dtype=float), np.asarray(mai_norm, dtype=float), np.asarray(rac_norm, dtype=float)))
+
+
+# Backwards-compatible aliases for callers that still request the legacy product scale.
+compute_smci = compute_smci_product
+compute_smci_from_normalized = compute_smci_product_from_normalized
 
 
 def compute_smci_additive(nai: np.ndarray, mai: np.ndarray, rac: np.ndarray) -> np.ndarray:

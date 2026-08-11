@@ -118,17 +118,21 @@ def main() -> int:
     inputs = pd.read_csv(args.input)
     baseline_metrics = compute_pilot_metrics(apply_transit_impedance(inputs, "baseline"))
     rows = []
+    cell_frames = []
     for scenario in SCENARIOS:
         metrics = compute_pilot_metrics(apply_transit_impedance(inputs, scenario))
         rows.append(scenario_summary(metrics, baseline_metrics, scenario))
+        cell_frames.append(metrics[["cell_id", "SMCI_A", "SMCI_B", "Delta_SMCI"]].assign(scenario=scenario))
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     summary = pd.DataFrame(rows)
     csv_path = args.output_dir / "transit_impedance_sensitivity.csv"
+    cells_path = args.output_dir / "transit_impedance_sensitivity_cells.csv"
     md_path = args.output_dir / "transit_impedance_sensitivity.md"
     summary.to_csv(csv_path, index=False)
+    pd.concat(cell_frames, ignore_index=True).to_csv(cells_path, index=False)
     write_markdown(summary, md_path)
-    print(f"Wrote {csv_path} and {md_path}")
+    print(f"Wrote {csv_path}, {cells_path}, and {md_path}")
     return 0
 
 

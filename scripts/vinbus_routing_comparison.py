@@ -100,7 +100,7 @@ def main() -> int:
         vinbus_geometry_json=args.vinbus if args.vinbus.exists() else None,
         gtfs_zip=args.gtfs if args.gtfs.exists() else None,
         gtfs_status="baseline_limited",
-        walk_cutoff_min=1200.0 / 80.0,
+        walk_cutoff_min=800.0 / 80.0,
         motorcycle_cutoff_min=3000.0 / 250.0,
         speed_factor_csv=args.speed_factor_csv if args.speed_factor_csv.exists() else None,
         headway_min=args.headway_min,

@@ -1,0 +1,63 @@
+site_id: west_taymo
+name: Tay Mo / Vinhomes Smart City west extension
+role: west_v1
+
+center:
+  lat: 21.0027
+  lon: 105.7472
+  half_box_km: 2.5
+  cell_size_m: 250
+
+cbd:
+  name: Hoan Kiem
+  lat: 21.0287
+  lon: 105.8524
+
+thresholds:
+  walking_threshold_m: 800
+  motorcycle_threshold_m: 3000
+
+pipeline:
+  default_mode: network
+  default_opportunity_basis: observed_strict
+  gtfs_status: baseline_limited
+  vinbus_mode: stops
+  bus_speed_kph: 20
+  headway_min: 15
+
+paths:
+  walk_graph: data/raw/west_taymo_walk_network.graphml
+  drive_graph: data/raw/west_taymo_drive_network.graphml
+  osm_pois: data/interim/west_taymo_osm_pois.gpkg
+  grid: data/interim/west_taymo_grid.gpkg
+  data_manifest: data/interim/west_taymo_data_manifest.json
+  overture_pois: data/raw/west_taymo_overture_pois.gpkg
+  building_footprints: data/raw/west_taymo_building_footprints.gpkg
+  raw_landuse_polygons: data/raw/west_taymo_osm_landuse_polygons.gpkg
+  landuse_poi_synthetic: data/interim/west_taymo_landuse_poi_synthetic.gpkg
+  merged_pois: data/interim/west_taymo_merged_pois.gpkg
+  merged_pois_economic: data/interim/west_taymo_merged_pois_economic.gpkg
+  merged_pois_observed: data/interim/west_taymo_merged_pois_observed.gpkg
+  accessibility_pois: data/interim/west_taymo_merged_pois_observed.gpkg
+  accessibility_inputs: data/interim/west_taymo_accessibility_inputs.csv
+  metrics: data/processed/west_taymo_metrics.csv
+  summary: outputs/west_taymo/west_pair_summary.csv
+  poi_merge_summary: outputs/west_taymo/poi_gate.md
+  economic_merge_summary: outputs/west_taymo/economic_merge_summary.md
+  observed_audit: outputs/west_taymo/observed_opportunity_gap_audit.csv
+  worldpop_csv: data/interim/west_taymo_grid_worldpop.csv
+  worldpop_raster: data/raw/worldpop/vnm_ppp_2020.tif
+  smart_city_core_boundary: data/raw/west_taymo_smart_city_core_boundary.gpkg
+  tay_mo_core_boundary: data/raw/west_taymo_tay_mo_core_boundary.gpkg
+  labeled_grid: data/interim/west_taymo_labeled_grid.gpkg
+  data_setup_report: outputs/west_taymo/data_setup_report.md
+  matching_preflight: outputs/west_taymo/matching_preflight.md
+  cbd_matching: outputs/west_taymo/cbd_network_distance_preflight.csv
+  transit_supply_check: outputs/west_taymo/transit_supply_check.md
+
+seeds:
+  tay_mo_area_km2_a: 5.56
+  tay_mo_population_a: 46894
+  tay_mo_area_km2_b: 5.95
+  tay_mo_population_b: 46469
+  smart_city_area_ha: 280

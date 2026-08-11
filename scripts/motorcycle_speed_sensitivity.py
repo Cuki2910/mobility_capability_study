@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 import sys
 import tempfile
@@ -13,31 +14,40 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.accessibility_inputs import build_network_accessibility_inputs
 from src.pilot import compute_pilot_metrics, typology_kappa
 
-SCENARIOS = ("baseline", "slow_congestion", "fast_lane_splitting")
+SCENARIO_FACTORS = {
+    "baseline": 1.0,
+    "global_minus_20pct": 0.80,
+    "global_plus_20pct": 1.20,
+}
+SCENARIOS = tuple(SCENARIO_FACTORS)
 
 
 def adjust_motorcycle_calibration(calibration: pd.DataFrame, scenario: str) -> pd.DataFrame:
-    """Return calibration table adjusted for a named motorcycle speed scenario."""
-    if scenario not in SCENARIOS:
+    """Apply a documented global speed factor to every calibration row."""
+    if scenario not in SCENARIO_FACTORS:
         raise ValueError(f"Unknown scenario: {scenario}")
     out = calibration.copy()
-    highway = out["highway"].astype(str)
-    if scenario == "slow_congestion":
-        mask = highway.isin(["primary", "secondary", "tertiary", "residential"])
-        out.loc[mask, "multiplier"] = out.loc[mask, "multiplier"].astype(float) * 0.80
-    elif scenario == "fast_lane_splitting":
-        mask = highway.isin(["secondary", "tertiary", "residential"])
-        out.loc[mask, "multiplier"] = (
-            out.loc[mask, "multiplier"].astype(float) * 1.15
-        ).clip(upper=1.35)
+    factor = SCENARIO_FACTORS[scenario]
+    out["multiplier"] = out["multiplier"].astype(float) * factor
     out["motorcycle_speed_kph"] = out["base_speed_kph"].astype(float) * out["multiplier"].astype(float)
     return out
 
 
-def scenario_summary(metrics: pd.DataFrame, baseline_labels: pd.Series, scenario: str) -> dict:
+def scenario_summary(
+    metrics: pd.DataFrame,
+    baseline_labels: pd.Series,
+    scenario: str,
+    calibration_sha256: str,
+    pois: Path,
+) -> dict:
     labels = metrics["typology_B"]
     return {
         "scenario": scenario,
+        "global_speed_factor": SCENARIO_FACTORS[scenario],
+        "calibration_sha256": calibration_sha256,
+        "poi_path": str(pois),
+        "opportunity_basis": "observed_strict",
+        "walking_threshold_m": 800.0,
         "mean_SMCI_B": float(metrics["SMCI_B"].mean()),
         "share_improved": float((metrics["Delta_SMCI"] > 0).mean()),
         "typology_kappa_vs_baseline": float(typology_kappa(baseline_labels.to_numpy(), labels.to_numpy())),
@@ -54,7 +64,7 @@ def write_markdown(summary: pd.DataFrame, path: Path) -> None:
     lines = [
         "# Motorcycle Speed Sensitivity",
         "",
-        "Scenarios vary only Network D motorcycle speed calibration; transit/POI inputs stay fixed.",
+        "Scenarios apply global factors to every Network D calibration row; transit and strict-observed POI inputs stay fixed.",
         "",
         "```csv",
         table,
@@ -68,14 +78,14 @@ def write_markdown(summary: pd.DataFrame, path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--grid", type=Path, default=Path("data/interim/pilot_grid.gpkg"))
-    parser.add_argument("--pois", type=Path, default=Path("data/interim/merged_pois.gpkg"))
+    parser.add_argument("--pois", type=Path, default=Path("data/interim/merged_pois_observed.gpkg"))
     parser.add_argument("--walk-graph", type=Path, default=Path("data/raw/pilot_walk_network.graphml"))
     parser.add_argument("--drive-graph", type=Path, default=Path("data/raw/pilot_drive_network.graphml"))
     parser.add_argument("--vinbus-geometry", type=Path, default=Path("data/raw/vinbus_overpass_relations_geom.json"))
     parser.add_argument("--vinbus-gtfs-dir", type=Path, default=Path("data/raw/vinbus_pseudo_gtfs_fixed"))
     parser.add_argument("--gtfs", type=Path, default=Path("data/raw/hanoi_gtfs.zip"))
     parser.add_argument("--calibration", type=Path, default=Path("data/raw/motorcycle_speed_calibration.csv"))
-    parser.add_argument("--walking-threshold-m", type=float, default=1200.0)
+    parser.add_argument("--walking-threshold-m", type=float, default=800.0)
     parser.add_argument("--motorcycle-threshold-m", type=float, default=3000.0)
     parser.add_argument("--buildings", type=Path, default=Path("data/raw/building_footprints.gpkg"))
     parser.add_argument("--worldpop-csv", type=Path, default=Path("data/interim/grid_worldpop.csv"))
@@ -84,7 +94,9 @@ def main() -> int:
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     calibration = pd.read_csv(args.calibration)
+    calibration_sha256 = hashlib.sha256(args.calibration.read_bytes()).hexdigest()
     rows = []
+    cell_frames = []
     baseline_labels = None
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
@@ -105,18 +117,29 @@ def main() -> int:
                 vinbus_gtfs_dir=args.vinbus_gtfs_dir if (args.vinbus_gtfs_dir / "stops.txt").exists() else None,
                 buildings_path=args.buildings if args.buildings.exists() else None,
                 worldpop_csv=args.worldpop_csv if args.worldpop_csv.exists() else None,
+                opportunity_basis="observed_strict",
             )
             metrics = compute_pilot_metrics(inputs)
             if baseline_labels is None:
                 baseline_labels = metrics["typology_B"].copy()
-            rows.append(scenario_summary(metrics, baseline_labels, scenario))
+            rows.append(scenario_summary(metrics, baseline_labels, scenario, calibration_sha256, args.pois))
+            cell_frames.append(metrics[["cell_id", "SMCI_A", "SMCI_B", "Delta_SMCI"]].assign(scenario=scenario))
 
     summary = pd.DataFrame(rows)
+    baseline = summary.loc[summary["scenario"] == "baseline"].iloc[0]
+    if abs(float(baseline["mean_SMCI_B"]) - 0.17111148832800888) > 5e-5:
+        raise RuntimeError(f"Sensitivity baseline SMCI_B {baseline['mean_SMCI_B']:.6f} does not reproduce canonical geometric mean")
+    if abs(float(baseline["share_improved"]) - (281 / 462)) > 1e-12:
+        raise RuntimeError(
+            f"Sensitivity baseline improved share {baseline['share_improved']:.6f} does not reproduce 281/462"
+        )
     csv_path = args.output_dir / "motorcycle_speed_sensitivity.csv"
+    cells_path = args.output_dir / "motorcycle_speed_sensitivity_cells.csv"
     md_path = args.output_dir / "motorcycle_speed_sensitivity.md"
     summary.to_csv(csv_path, index=False)
+    pd.concat(cell_frames, ignore_index=True).to_csv(cells_path, index=False)
     write_markdown(summary, md_path)
-    print(f"Wrote {csv_path} and {md_path}")
+    print(f"Wrote {csv_path}, {cells_path}, and {md_path}")
     return 0
 
 

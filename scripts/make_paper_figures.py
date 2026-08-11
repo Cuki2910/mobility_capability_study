@@ -132,7 +132,69 @@ def figure4_distribution(metrics_path: Path, population_path: Path, output: Path
     output.write_text("\n".join(parts), encoding="utf-8")
 
 
-def write_captions(output: Path) -> None:
+def figure5_boundary(
+    grid_path: Path,
+    boundary_path: Path,
+    cells_path: Path,
+    table_path: Path,
+    output: Path,
+) -> None:
+    width, height = 1400, 760
+    grid = gpd.read_file(grid_path).to_crs(epsg=3857)
+    boundary = gpd.read_file(boundary_path).to_crs(grid.crs)
+    cells = pd.read_csv(cells_path)
+    if cells["cell_id"].duplicated().any():
+        raise ValueError("boundary cell metrics contain duplicate cell_id")
+    mapped = grid.merge(cells[["cell_id", "signed_distance_m", "distance_band"]], on="cell_id", validate="one_to_one")
+    near = mapped[mapped["distance_band"] != "beyond_1000m"].copy()
+    bounds = tuple(near.total_bounds)
+    colors = {
+        "outside_500_1000m": "#2166ac", "outside_250_500m": "#67a9cf", "outside_0_250m": "#d1e5f0",
+        "inside_0_250m": "#fddbc7", "inside_250_500m": "#ef8a62", "inside_500_1000m": "#b2182b",
+    }
+    parts = _svg_header(width, height)
+    parts.append('<text x="42" y="48" font-family="Arial" font-size="30" font-weight="700">Figure 5. Descriptive boundary profile</text>')
+    parts.append('<text x="42" y="76" font-family="Arial" font-size="17">Ocean Park boundary; 250 m grid; Scenario B; distances in metres</text>')
+    for _, row in near.iterrows():
+        for d in _geom_paths(row.geometry, bounds, 620, 600, 24):
+            parts.append(f'<path d="{d}" transform="translate(30,105)" fill="{colors[row.distance_band]}" stroke="#ffffff" stroke-width="0.7"/>')
+    for geom in boundary.geometry:
+        lines = list(geom.boundary.geoms) if geom.boundary.geom_type == "MultiLineString" else [geom.boundary]
+        for line in lines:
+            parts.append(f'<path d="{_line_path(line, bounds, 620, 600, 24)}" transform="translate(30,105)" fill="none" stroke="#111111" stroke-width="3"/>')
+
+    table = pd.read_csv(table_path).set_index("distance_band")
+    order = ["outside_500_1000m", "outside_250_500m", "outside_0_250m", "inside_0_250m", "inside_250_500m", "inside_500_1000m"]
+    x_values = [-750, -375, -125, 125, 375, 750]
+    medians = [float(table.loc[label, "SMCI_B_median"]) for label in order]
+    px = lambda distance: 750 + (distance + 1000) / 2000 * 580
+    max_y = max(medians) * 1.15
+    py = lambda value: 650 - value / max_y * 500
+    parts.extend([
+        '<text x="750" y="120" font-family="Arial" font-size="24" font-weight="700">Median SMCI_B by signed-distance band</text>',
+        '<line x1="750" y1="650" x2="1330" y2="650" stroke="#333"/>',
+        '<line x1="750" y1="150" x2="750" y2="650" stroke="#333"/>',
+        f'<line x1="{px(0):.1f}" y1="150" x2="{px(0):.1f}" y2="650" stroke="#111" stroke-dasharray="6,5"/>',
+        '<text x="770" y="680" font-family="Arial" font-size="16">Outside</text>',
+        '<text x="1190" y="680" font-family="Arial" font-size="16">Inside</text>',
+    ])
+    points = " ".join(f"{px(x):.1f},{py(y):.1f}" for x, y in zip(x_values, medians))
+    parts.append(f'<polyline points="{points}" fill="none" stroke="#6a3d9a" stroke-width="4"/>')
+    for distance, value, label in zip(x_values, medians, order):
+        parts.append(f'<circle cx="{px(distance):.1f}" cy="{py(value):.1f}" r="6" fill="{colors[label]}" stroke="#222"/>')
+        parts.append(f'<text x="{px(distance)-20:.1f}" y="{py(value)-12:.1f}" font-family="Arial" font-size="14">{value:.3f}</text>')
+    parts.append('<text x="1025" y="720" font-family="Arial" font-size="16">Signed distance (m)</text>')
+    parts.append('<text x="690" y="420" font-family="Arial" font-size="16" transform="rotate(-90 690,420)">Median SMCI_B</text>')
+    parts.append("</svg>")
+    output.write_text("\n".join(parts), encoding="utf-8")
+
+
+def write_captions(boundary_table: Path, boundary_bootstrap: Path, output: Path) -> None:
+    bands = pd.read_csv(boundary_table).set_index("distance_band")
+    bootstrap = pd.read_csv(boundary_bootstrap)
+    smci = bootstrap.loc[bootstrap["metric"] == "SMCI_B"].iloc[0]
+    inside = float(bands.loc["inside_0_250m", "SMCI_B_median"])
+    outside = float(bands.loc["outside_0_250m", "SMCI_B_median"])
     captions = [
         "# Paper Figure Captions",
         "",
@@ -144,6 +206,12 @@ def write_captions(output: Path) -> None:
         "",
         "**Figure 4. Distribution and population exposure.** The figure reports SMCI_B distribution, cell share by typology, and population share by typology using WorldPop aggregation.",
         "",
+        "**Figure 5. Descriptive boundary profile.** Signed-distance bands compare cells within 1,000 m inside and outside the Ocean Park planning boundary. "
+        f"The 0–250 m inside-minus-outside median SMCI_B difference is {inside - outside:.4f} "
+        f"(bootstrap 95% CI: {float(smci['bootstrap_ci_low']):.4f}–{float(smci['bootstrap_ci_high']):.4f}; "
+        f"inside n={int(smci['inside_n'])}, outside n={int(smci['outside_n'])}; {int(smci['bootstrap_iterations']):,} iterations, seed {int(smci['seed'])}). "
+        "This spatial comparison is descriptive, not a causal regression-discontinuity estimate.",
+        "",
     ]
     output.write_text("\n".join(captions), encoding="utf-8")
 
@@ -154,6 +222,10 @@ def main() -> int:
     parser.add_argument("--metrics", type=Path, default=Path("data/processed/pilot_metrics.csv"))
     parser.add_argument("--vinbus", type=Path, default=Path("data/raw/vinbus_overpass_relations_geom.json"))
     parser.add_argument("--population", type=Path, default=Path("data/interim/grid_worldpop.csv"))
+    parser.add_argument("--boundary", type=Path, default=Path("data/interim/ocean_park_1_boundary.geojson"))
+    parser.add_argument("--boundary-cells", type=Path, default=Path("outputs/results/boundary_cell_metrics.csv"))
+    parser.add_argument("--boundary-table", type=Path, default=Path("outputs/tables/boundary_discontinuity.csv"))
+    parser.add_argument("--boundary-bootstrap", type=Path, default=Path("outputs/tables/boundary_bootstrap.csv"))
     parser.add_argument("--output-dir", type=Path, default=Path("outputs/figures"))
     args = parser.parse_args()
 
@@ -163,7 +235,8 @@ def main() -> int:
     figure2_components(maps, args.output_dir / "figure2_accessibility_components.svg")
     figure3_typology_delta(maps, args.output_dir / "figure3_typology_delta.svg")
     figure4_distribution(args.metrics, args.population, args.output_dir / "figure4_distribution_population.svg")
-    write_captions(args.output_dir / "figure_captions.md")
+    figure5_boundary(args.grid, args.boundary, args.boundary_cells, args.boundary_table, args.output_dir / "figure5_boundary_profile.svg")
+    write_captions(args.boundary_table, args.boundary_bootstrap, args.output_dir / "figure_captions.md")
     print(f"Wrote paper figures to {args.output_dir}")
     return 0
 

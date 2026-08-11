@@ -3,11 +3,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
 
 RAW_DIR = Path("data/raw")
 INTERIM_DIR = Path("data/interim")
@@ -35,6 +39,10 @@ def build_manifest(
     drive_edges: int,
     poi_count: int,
     grid_count: int,
+    walk_graphml: Path = RAW_DIR / "pilot_walk_network.graphml",
+    drive_graphml: Path = RAW_DIR / "pilot_drive_network.graphml",
+    pois_gpkg: Path = INTERIM_DIR / "pilot_pois.gpkg",
+    grid_gpkg: Path = INTERIM_DIR / "pilot_grid.gpkg",
 ) -> dict:
     return {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -52,22 +60,51 @@ def build_manifest(
             "grid_cells": grid_count,
         },
         "outputs": {
-            "walk_graphml": "data/raw/pilot_walk_network.graphml",
-            "drive_graphml": "data/raw/pilot_drive_network.graphml",
-            "pois_gpkg": "data/interim/pilot_pois.gpkg",
-            "grid_gpkg": "data/interim/pilot_grid.gpkg",
+            "walk_graphml": str(walk_graphml),
+            "drive_graphml": str(drive_graphml),
+            "pois_gpkg": str(pois_gpkg),
+            "grid_gpkg": str(grid_gpkg),
         },
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_site_config_argument(parser)
     parser.add_argument("--center-lat", type=float, default=20.9930)
     parser.add_argument("--center-lon", type=float, default=105.9450)
     parser.add_argument("--half-box-km", type=float, default=2.5)
     parser.add_argument("--cell-size-m", type=int, default=250)
     parser.add_argument("--request-timeout", type=int, default=180)
+    parser.add_argument("--walk-output", type=Path, default=RAW_DIR / "pilot_walk_network.graphml")
+    parser.add_argument("--drive-output", type=Path, default=RAW_DIR / "pilot_drive_network.graphml")
+    parser.add_argument("--pois-output", type=Path, default=INTERIM_DIR / "pilot_pois.gpkg")
+    parser.add_argument("--grid-output", type=Path, default=INTERIM_DIR / "pilot_grid.gpkg")
+    parser.add_argument("--manifest-output", type=Path, default=INTERIM_DIR / "pilot_data_manifest.json")
     args = parser.parse_args()
+    config = apply_site_config(args, parser, {
+        "center_lat": "center.lat",
+        "center_lon": "center.lon",
+        "half_box_km": "center.half_box_km",
+        "cell_size_m": "center.cell_size_m",
+        "walk_output": "paths.walk_graph",
+        "drive_output": "paths.drive_graph",
+        "pois_output": "paths.osm_pois",
+        "grid_output": "paths.grid",
+        "manifest_output": "paths.data_manifest",
+    })
+    bbox = pilot_bbox(args.center_lat, args.center_lon, args.half_box_km)
+    if args.dry_run:
+        print_resolved_paths("OSM fetch dry-run", {
+            "site_id": config.site_id if config else "pilot",
+            "bbox_west_south_east_north": bbox,
+            "walk_output": args.walk_output,
+            "drive_output": args.drive_output,
+            "pois_output": args.pois_output,
+            "grid_output": args.grid_output,
+            "manifest_output": args.manifest_output,
+        })
+        return 0
 
     import geopandas as gpd
     import osmnx as ox
@@ -76,9 +113,11 @@ def main() -> int:
     ox.settings.requests_timeout = args.request_timeout
     ox.settings.use_cache = True
 
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
-    INTERIM_DIR.mkdir(parents=True, exist_ok=True)
-    bbox = pilot_bbox(args.center_lat, args.center_lon, args.half_box_km)
+    args.walk_output.parent.mkdir(parents=True, exist_ok=True)
+    args.drive_output.parent.mkdir(parents=True, exist_ok=True)
+    args.pois_output.parent.mkdir(parents=True, exist_ok=True)
+    args.grid_output.parent.mkdir(parents=True, exist_ok=True)
+    args.manifest_output.parent.mkdir(parents=True, exist_ok=True)
     west, south, east, north = bbox
 
     print("Step 1: downloading walking network...", flush=True)
@@ -118,16 +157,17 @@ def main() -> int:
     print(f"  grid cells created: {len(grid)}", flush=True)
 
     print("Step 5: saving outputs...", flush=True)
-    ox.save_graphml(G_walk, RAW_DIR / "pilot_walk_network.graphml")
-    ox.save_graphml(G_drive, RAW_DIR / "pilot_drive_network.graphml")
-    pois.to_file(INTERIM_DIR / "pilot_pois.gpkg", driver="GPKG")
-    grid.to_file(INTERIM_DIR / "pilot_grid.gpkg", driver="GPKG")
+    ox.save_graphml(G_walk, args.walk_output)
+    ox.save_graphml(G_drive, args.drive_output)
+    pois.to_file(args.pois_output, driver="GPKG")
+    grid.to_file(args.grid_output, driver="GPKG")
     manifest = build_manifest(
         bbox, args.center_lat, args.center_lon, args.half_box_km, args.cell_size_m,
         len(G_walk.nodes), len(G_walk.edges), len(G_drive.nodes), len(G_drive.edges), len(pois), len(grid),
+        args.walk_output, args.drive_output, args.pois_output, args.grid_output,
     )
-    (INTERIM_DIR / "pilot_data_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print("Done. Wrote data/raw/*, data/interim/*, and data/interim/pilot_data_manifest.json", flush=True)
+    args.manifest_output.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    print(f"Done. Wrote {args.walk_output}, {args.drive_output}, {args.pois_output}, {args.grid_output}, and {args.manifest_output}", flush=True)
     return 0
 
 

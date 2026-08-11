@@ -1,9 +1,21 @@
 {
+  "checks": {
+    "headline_complete": true,
+    "publication_outputs_fresh": true,
+    "docs_consistent": true,
+    "document_errors": [],
+    "formula_mode_matches_config": true,
+    "headline_schema_current": true,
+    "generated_artifacts_complete": true,
+    "missing_headline_sources": [],
+    "stale_headline_sources": [],
+    "missing_publication_outputs": []
+  },
   "snapshot": {
     "grid_cells": 462,
-    "mean_SMCI_A": 0.0083976979499925,
-    "mean_SMCI_B": 0.0159704628007397,
-    "share_improved": 0.6601731601731602,
+    "mean_SMCI_A": 0.14695020712682888,
+    "mean_SMCI_B": 0.17111148832800888,
+    "share_improved": 0.6082251082251082,
     "gtfs_status": "baseline_limited",
     "pre_vinbus_baseline": true,
     "poi_spot_checks": {
@@ -37,16 +49,39 @@
       "raster": "data\\raw\\worldpop\\vnm_ppp_2020.tif"
     },
     "distribution_diagnostics": {
-      "NAI_zero_share": 0.0714285714285714,
-      "SMCI_B_zero_share": 0.0735930735930736,
-      "improved_share": 0.6601731601731602,
-      "unchanged_share": 0.0714285714285714,
-      "declined_share": 0.2683982683982684
+      "NAI_zero_share": 0.1904761904761904,
+      "SMCI_B_zero_share": 0.1904761904761904,
+      "improved_share": 0.6082251082251082,
+      "unchanged_share": 0.1904761904761904,
+      "declined_share": 0.2012987012987013
     },
     "high_vif": false,
     "built_population_zero_access_audit": true,
     "merged_poi_sensitivity": true,
-    "gtfs_catalog_check": true
+    "gtfs_catalog_check": true,
+    "analytical_spec": {
+      "nai_primary_threshold_m": 800,
+      "smci_primary_operator": "equal_weight_geometric_mean",
+      "smci_legacy_operator": "product",
+      "smci_robustness_operator": "additive",
+      "smci_bottleneck_operator": "minimum_component",
+      "default_scenario": "B",
+      "default_metric": "typology"
+    },
+    "data_requirement_statuses": {
+      "external_validation": "NOT_RUN_DATA_REQUIRED",
+      "reliability": "NOT_RUN_DATA_REQUIRED",
+      "generalized_cost": "NOT_RUN_DATA_REQUIRED",
+      "mixed_traffic": "NOT_RUN_DATA_REQUIRED",
+      "west_taymo": "MATCHING_GATE_FAILED"
+    },
+    "generated_artifacts": {
+      "upgrade_completion_report": "outputs\\upgrade\\upgrade_completion_report.md",
+      "uncertainty_envelope": "outputs\\validation\\scenario_uncertainty_envelope_status.md",
+      "data_quality_grades": "outputs\\validation\\data_quality_grades.md",
+      "interactive_map": "outputs\\maps\\ocean_park_interactive.html",
+      "grid_robustness": "outputs\\validation\\grid_sensitivity_summary.md"
+    }
   },
   "strengths": [
     "End-to-end pilot pipeline has real OSM graph/POI/grid inputs and processed metrics.",
@@ -64,7 +99,13 @@
     "Supervisor review package index is available.",
     "Population raster is verified and supply-side WorldPop weighting is integrated into MAI."
   ],
-  "blockers": [],
+  "blockers": [
+    "external validation remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.",
+    "reliability remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.",
+    "generalized cost remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.",
+    "mixed traffic remains NOT_RUN_DATA_REQUIRED; required observational or comparison data are unavailable.",
+    "West Tay Mo fails its preregistered CBD-distance matching gate; do not promote the current pair."
+  ],
   "warnings": [
     "Network B uses a 2018 pre-VinBus GTFS vintage; report as baseline and sensitivity limitation, not current service.",
     "Android emulator lacks motorcycle mode; physical Android measurements are used instead."
@@ -74,5 +115,9 @@
     "Preserve strict observed MAI audit trail and upgrade weak derived tiers with named facility sources where possible.",
     "Report Network B as a 2018 pre-VinBus baseline and keep post-2021 GTFS as a sensitivity target if found.",
     "Proceed to supervisor review with promoted RAC_time primary, full-RAC robustness, and explicit source-tier limitations."
+  ],
+  "future_extensions": [
+    "Re-run Network B with a verified post-2021 Hanoi GTFS feed when one becomes available.",
+    "Upgrade weak source-derived opportunity magnitudes with named facility records."
   ]
 }

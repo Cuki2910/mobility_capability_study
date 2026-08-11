@@ -1,5 +1,5 @@
 """
-Derive MAI domain weights from the UTM-Hanoi travel survey trip-purpose
+Derive MAI domain weights from UTM-Hanoi trip-purpose fields
 distribution (replaces the hand-set 0.40/0.20/0.20/0.20 prior).
 
 Why this exists
@@ -11,10 +11,10 @@ weights are survey-informed and reproducible, with a written provenance trail.
 
 Source
 ------
-UTM-Hanoi household travel survey (N=26,106), Vu Anh Tuan et al.
-  - Paper: Nature Scientific Data (2024) https://doi.org/10.1038/s41597-024-02950-9
+UTM-Hanoi open transport-policy perception dataset, Kieu et al. (2024).
+  - Paper: Scientific Data (2024) https://doi.org/10.1038/s41597-024-02950-9
   - Open data (CC): OSF repository DOI 10.17605/OSF.IO/497US
-Survey trip-purpose categories: work, education, shopping, leisure, visit, caring.
+Trip-purpose fields/categories used here: work, education, shopping, leisure, visit, caring.
 
 HAIDEP 2010 person-trip purpose shares are NOT used: the raw distribution is behind
 JICA licensing and could not be obtained without fabricating numbers. UTM-Hanoi is
