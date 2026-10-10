@@ -1,51 +1,34 @@
-# Methodology Cheatsheet
+# Methodology guidance
 
-## Core Hypothesis
+Read implementation rather than maintaining a second formula glossary:
 
-High neighborhood accessibility alone is insufficient for integrated sustainable mobility capability when walking-and-transit accessibility remains weak relative to motorcycle accessibility.
+| Question | Source |
+| --- | --- |
+| Index operators and typology | `src/accessibility.py` |
+| Primary RAC and shared Scenario A/B bounds | `src/pilot.py` |
+| Primary NAI threshold and SMCI reporting operator | `config/pipeline.json` analytical specification |
+| Calibration assumptions and provenance | `src/calibration.py`, production calibration CSV, DEC-030/031 |
+| Method changes and rationale | `docs/decisions.md` |
+| Proposal methods and limitations | `proposal/proposal_v7.md`, Sections 7-10 and 13 |
 
-## Indices
+## Current baseline and interpretation
 
-- `NAI`: Neighborhood Accessibility Index, count-based, walking threshold.
-- `MAI`: Metropolitan Accessibility Index, magnitude-weighted, walk+transit threshold.
-- `RAC`: Relative Accessibility Competitiveness, geometric mean of normalized `RAC_time` and `RAC_opp`.
-- `MCS`: Metropolitan Competitiveness Score, geometric mean of normalized `MAI` and `RAC`; classification only.
-- `SMCI`: Sustainable Mobility Capability Index, `NAI_norm * MAI_norm * RAC_norm`.
-- Scenario A/B deltas must use shared A+B normalization bounds for MAI, RAC subcomponents, RAC composite, and SMCI components. Do not compare separately normalized scenario scores.
+The following describes the current pilot, not immutable design requirements. The user's new direction supersedes it. Update affected implementation, tests and documentation; report what changed and request confirmation rather than reverting to this list. Mathematical facts (e.g. monotonic equivalence) and evidence limitations still apply.
 
-## Networks And Scenarios
+- Primary RAC is RAC_time; full-RAC is retained as robustness. Do not treat RAC_time as an unexecuted future contingency (DEC-022).
+- Primary SMCI uses the equal-weight geometric mean. The legacy product preserves the same ranking; comparing those operators is a scale audit, not independent robustness. Additive SMCI remains the compensatory alternative (DEC-004/033).
+- Typology uses rank-based median splits of NAI and MCS, including ties; k-means is robustness only. Four categories are a construction rule, not evidence of four natural clusters.
+- Delta_SMCI requires shared A+B normalization. Separate scenario normalization can invent declines.
+- Primary MAI uses strict source-backed magnitudes or explicit exclusions. Source-backed does not mean every magnitude is a facility census; report weak derived tiers.
+- Check collinearity using `src/validation.py`. MAI/full-RAC overlap is structural; distinguish the primary RAC_time diagnostics from legacy full-RAC results.
+- Network D uses the production calibration CSV. Road-class mapping is a modeling assumption informed by literature, not verified class-specific motorcycle speeds (DEC-030/031). Missing production calibration is a blocker.
+- Consumer-app motorcycle checks are small-sample plausibility checks. Do not depend on bulk Google TWO_WHEELER routing for Vietnam.
 
-- Network A: walking.
-- Network B: walking + existing transit.
-- Network C: walking + existing transit + VinBus.
-- Network D: motorcycle, speed-calibrated.
-- Scenario A: A + B, no VinBus.
-- Scenario B: A + C, with VinBus.
-- Delta: `SMCI(B) - SMCI(A)`.
+When a formula changes, update its implementation, meaningful tests, and the corresponding proposal methods together. Change decisions only when a methodological choice changes; regenerate affected outputs through their generators under the repository gate policy.
 
-## Classification
+## Literature and proposal checks
 
-Primary typology is median split: high/low `NAI` x high/low `MCS`.
-
-- High NAI, high MCS: Integrated Capability.
-- High NAI, low MCS: Fragmented Capability.
-- Low NAI, high MCS: Transit-Dependent.
-- Low NAI, low MCS: Motorcycle Lock-in.
-
-Use k-means only as robustness cross-check. Report disagreement; do not tune it to match.
-
-## Validation And Robustness
-
-- Additive SMCI alternative: `(NAI_norm + MAI_norm + RAC_norm) / 3`.
-- Never use `(NAI*MAI*RAC)**(1/3)` as robustness against multiplicative SMCI.
-- Run VIF for MAI/RAC before trusting typology on real data.
-- Validate motorcycle times with literature-calibrated speeds plus small manual Google Maps consumer-app spot checks.
-
-## Proposal-Code Consistency
-
-If editing formulas, edit all of:
-
-- `src/accessibility.py`
-- `tests/test_accessibility.py`
-- `docs/decisions.md` if a decision changes
-- `proposal/proposal_v6.docx` Section 3
+- Verify each substantive claim against the original paper/report where accessible, not just search snippets or an AI synthesis. Confirm title, authors, year, DOI/URL, and the supporting page/table. State whether support comes from full text or an abstract; leave unavailable details unverified.
+- Distinguish observed travel speeds from design speeds and legal limits; distinguish a walking-catchment assumption from a locally validated behavioral threshold. Record study location, population, mode, and measurement conditions before transferring evidence to Ocean Park.
+- Keep citations and source notes in existing project references; record a decision when evidence changes a methodological choice. Use the research tooling in `docs/agent_workflow.md` when available; missing optional tools do not prevent direct source verification.
+- Trace reported results to their source snapshot and operator. Historical product-scale SMCI and refreshed-source previews must not become current geometric-mean headlines through a prose edit. Describe modeled associations and scenario differences without asserting observed mode change or a causal boundary effect.

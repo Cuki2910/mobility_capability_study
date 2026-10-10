@@ -1,16 +1,124 @@
-﻿{
+{
   "schema_version": 1,
-  "integration_branches": ["development", "main", "master", "integration"],
-  "base_candidates": ["origin/development", "development", "origin/main", "main", "master"],
-  "canonical_outputs": ["CLAUDE.md", "outputs/pilot_summary.csv", "outputs/headline_metrics.json", "outputs/project_self_audit.md", "outputs/project_self_audit.json", "outputs/supervisor_memo.md"],
+  "integration_branches": [
+    "development",
+    "main",
+    "master",
+    "integration"
+  ],
+  "base_candidates": [
+    "origin/development",
+    "development",
+    "origin/main",
+    "main",
+    "master"
+  ],
+  "canonical_outputs": [
+    "CLAUDE.md",
+    "outputs/pilot_summary.csv",
+    "outputs/headline_metrics.json",
+    "outputs/project_self_audit.md",
+    "outputs/project_self_audit.json",
+    "outputs/supervisor_memo.md"
+  ],
   "groups": {
-    "core": {"prefixes": ["src/"], "files": [], "commands": [["{python}", "-m", "pytest", "tests/", "-v"]]},
-    "network": {"prefixes": [], "files": ["scripts/build_accessibility_inputs.py", "scripts/fix_vinbus_gtfs.py", "scripts/validate_travel_time.py"], "commands": [["{python}", "-m", "pytest", "tests/", "-v"]]},
-    "documents": {"prefixes": ["proposal/", "paper/", "docs/"], "files": [], "commands": [["{python}", "scripts/check_document_consistency.py"]]},
-    "headline": {"prefixes": [], "files": ["CLAUDE.md", "outputs/pilot_summary.csv", "outputs/headline_metrics.json", "outputs/project_self_audit.md", "outputs/project_self_audit.json", "outputs/supervisor_memo.md"], "commands": [["{python}", "scripts/check_document_consistency.py"], ["{python}", "scripts/project_self_audit.py"]]}
+    "core": {
+      "prefixes": [
+        "src/"
+      ],
+      "files": [
+        "config/pipeline.json",
+        "config/agent_policy.json",
+        "scripts/agent_gate.py",
+        "scripts/check_document_consistency.py",
+        "scripts/make_interactive_map.py",
+        "scripts/project_self_audit.py"
+      ],
+      "commands": [
+        [
+          "{python}",
+          "-m",
+          "pytest",
+          "tests/",
+          "-v"
+        ]
+      ]
+    },
+    "network": {
+      "prefixes": [],
+      "files": [
+        "scripts/build_accessibility_inputs.py",
+        "scripts/fix_vinbus_gtfs.py",
+        "scripts/validate_travel_time.py"
+      ],
+      "commands": [
+        [
+          "{python}",
+          "-m",
+          "pytest",
+          "tests/",
+          "-v"
+        ]
+      ]
+    },
+    "documents": {
+      "prefixes": [
+        "proposal/",
+        "paper/",
+        "docs/"
+      ],
+      "files": [],
+      "commands": [
+        [
+          "{python}",
+          "scripts/check_document_consistency.py"
+        ]
+      ]
+    },
+    "headline": {
+      "prefixes": [],
+      "files": [
+        "CLAUDE.md",
+        "outputs/pilot_summary.csv",
+        "outputs/headline_metrics.json",
+        "outputs/project_self_audit.md",
+        "outputs/project_self_audit.json",
+        "outputs/supervisor_memo.md"
+      ],
+      "commands": [
+        [
+          "{python}",
+          "scripts/check_document_consistency.py"
+        ],
+        [
+          "{python}",
+          "scripts/project_self_audit.py",
+          "--json",
+          ".agent/project_self_audit.json",
+          "--md",
+          ".agent/project_self_audit.md"
+        ]
+      ]
+    }
   },
   "couplings": [
-    {"when": "src/accessibility.py", "require_all": ["proposal/proposal_v7.md"], "require_any_prefix": ["tests/"], "message": "Accessibility formulas require proposal v7 and tests in the same change"},
-    {"when": "src/pilot.py", "require_all": [], "require_any_prefix": ["tests/"], "message": "Pilot normalization/classification changes require tests"}
+    {
+      "when": "src/accessibility.py",
+      "require_all": [
+        "proposal/proposal_v7.md"
+      ],
+      "require_any_prefix": [
+        "tests/"
+      ],
+      "message": "Accessibility formulas require proposal v7 and tests in the same change"
+    },
+    {
+      "when": "src/pilot.py",
+      "require_all": [],
+      "require_any_prefix": [
+        "tests/"
+      ],
+      "message": "Pilot normalization/classification changes require tests"
+    }
   ]
 }

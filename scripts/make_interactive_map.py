@@ -27,6 +27,7 @@ from shapely.ops import unary_union
 # ── paths ──────────────────────────────────────────────────────────────────
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+from src.site_config import load_analytical_spec
 GRID_GPKG    = os.path.join(ROOT, "data", "interim", "pilot_grid.gpkg")
 METRICS_CSV  = os.path.join(ROOT, "data", "processed", "pilot_metrics.csv")
 STRICT_INPUTS_CSV = os.path.join(ROOT, "data", "interim", "pilot_accessibility_inputs.csv")
@@ -41,12 +42,7 @@ VINBUS_STOPS = os.path.join(ROOT, "data", "raw", "vinbus_pseudo_gtfs_fixed", "st
 VINBUS_ROUTES= os.path.join(ROOT, "data", "raw", "vinbus_pseudo_gtfs_fixed", "routes.txt")
 OUT_HTML     = os.path.join(ROOT, "outputs", "maps", "ocean_park_interactive.html")
 
-ANALYTICAL_SPEC = {
-    "nai_primary_threshold_m": 800,
-    "smci_form": "geometric_mean",
-    "default_scenario": "B",
-    "default_metric": "typology",
-}
+ANALYTICAL_SPEC = load_analytical_spec()
 DELTA_EPSILON = 1e-10
 
 # ── 1. Grid + metrics ──────────────────────────────────────────────────────
@@ -594,20 +590,20 @@ density_hist, density_lo, density_hi = make_histogram(grid_features, "population
 exposure_hist, exposure_lo, exposure_hi = make_histogram(grid_features, "population_exposure", 20, include_zero=True)
 
 METRIC_META = {
-    "nai":   {"label": "NAI",        "unit": "reachable POIs",    "desc": "Walkable POIs within 800 m network distance (~10 min)",
+    "nai":   {"label": "NAI",        "unit": "reachable POIs",    "desc": f"Walkable POIs within {ANALYTICAL_SPEC['nai_primary_threshold_m']:g} m network distance",
               "long": "<b>NAI</b>: local walkability. It counts nearby everyday POIs reachable on the walking network. Higher values mean the cell has more schools, clinics, shops, parks, or daily services close enough for walking.",
               "how": "Lower value = fewer walkable nearby POIs; higher value = more walkable nearby POIs.",
               "hist": nai_hist,   "lo": nai_lo,   "hi": nai_hi},
     "smci":  {"label": "SMCI_B",     "unit": "index",    "desc": "Sustainable Mobility Capability Index (Scenario B with VinBus)",
-              "long": "<b>SMCI_B</b>: final sustainable mobility capability after adding VinBus. It combines local walking access, metropolitan opportunity access, and transit-vs-motorcycle competitiveness. Because it is multiplicative, one weak component can pull the score down.",
+              "long": f"<b>SMCI_B</b>: combines local walking access, metropolitan opportunity access, and transit-vs-motorcycle competitiveness using {ANALYTICAL_SPEC['smci_primary_operator']}.",
               "how": "Lower value = weaker sustainable mobility capability; higher value = stronger capability.",
               "hist": smci_hist,  "lo": smci_lo,  "hi": smci_hi},
     "mai":   {"label": "MAI_B",      "unit": "weighted", "desc": "Metropolitan Accessibility Index — magnitude-weighted, walk+transit, 60 min cutoff",
               "long": "<b>MAI_B</b>: metropolitan opportunity access after VinBus. It measures how many weighted opportunities can be reached by walking plus transit within the 60-minute impedance window. Destination weights use the strict source-backed MAI audit.",
               "how": "Lower value = fewer/weaker metropolitan opportunities reachable by walk+transit; higher value = more/stronger reachable opportunities.",
               "hist": mai_hist,   "lo": mai_lo,   "hi": mai_hi},
-    "rac":   {"label": "RAC_B",      "unit": "ratio",    "desc": "Relative Accessibility Competitiveness = RAC_time primary; higher = transit travel time closer to motorcycle",
-              "long": "<b>RAC_B</b>: promoted reviewer-safe time competitiveness of walking plus transit against motorcycle access after VinBus. Higher values mean transit narrows the travel-time gap with motorcycles. The previous full RAC with opportunity ratio is retained as robustness, not the primary map.",
+    "rac":   {"label": "RAC_B",      "unit": "ratio",    "desc": "Relative Accessibility Competitiveness",
+              "long": f"<b>RAC_B</b>: walking plus transit competitiveness against motorcycle access. Specification: {ANALYTICAL_SPEC['rac_primary']}.",
               "how": "Lower value = walk+transit is less competitive against motorcycle; higher value = more competitive.",
               "hist": rac_hist,   "lo": rac_lo,   "hi": rac_hi},
     "delta": {"label": "Modeled difference: Scenario B minus A", "unit": "index difference",    "desc": "Shared-scale SMCI(B) minus SMCI(A)",

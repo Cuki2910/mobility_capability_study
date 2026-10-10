@@ -96,7 +96,7 @@ def test_pilot_metrics_compute_scenarios_and_typology():
         "RAC_opp_B_raw": [2, 3, 2, 4, 3, 5],
     })
 
-    metrics = compute_pilot_metrics(inputs)
+    metrics = compute_pilot_metrics(inputs, {"smci_primary_operator": "equal_weight_geometric_mean", "rac_primary": "time"})
     summary = pilot_summary(metrics)
 
     assert {"SMCI_A", "SMCI_B", "Delta_SMCI", "typology_A", "typology_B"} <= set(metrics.columns)
@@ -561,7 +561,7 @@ def _pilot_inputs_6():
 
 
 def test_pilot_metrics_includes_rac_time_only_columns():
-    metrics = compute_pilot_metrics(_pilot_inputs_6())
+    metrics = compute_pilot_metrics(_pilot_inputs_6(), {"smci_primary_operator": "equal_weight_geometric_mean", "rac_primary": "time"})
     assert "SMCI_B_time_only" in metrics.columns
     assert "typology_B_time_only" in metrics.columns
     assert "RAC_full_B" in metrics.columns

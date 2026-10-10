@@ -82,7 +82,7 @@ def fetch_vida_buildings(
 
     try:
         import pyarrow.parquet as pq
-        fs = s3fs.S3FileSystem(anon=True)
+        fs = s3fs.S3FileSystem(anon=True, endpoint_url="https://s3.us-west-2.amazonaws.com", config_kwargs={"s3": {"addressing_style": "path"}, "connect_timeout": 15, "read_timeout": 60})
         with fs.open(s3_key, "rb") as fobj:
             pf = pq.ParquetFile(fobj)
             n_groups = pf.metadata.num_row_groups

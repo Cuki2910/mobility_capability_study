@@ -29,7 +29,7 @@ from shapely.geometry import box
 
 
 # Overture Maps Places release — update version string as newer releases appear
-OVERTURE_RELEASE = "2026-06-17.0"
+OVERTURE_RELEASE = "2026-09-23.1"
 OVERTURE_S3 = (
     f"s3://overturemaps-us-west-2/release/{OVERTURE_RELEASE}/theme=places/type=place/*"
 )
@@ -37,16 +37,16 @@ OVERTURE_S3 = (
 # Categories relevant to NAI and MAI in this study
 RELEVANT_CATEGORIES = {
     # Neighborhood (NAI) POI types
-    "food_and_beverage",
-    "retail",
-    "health_and_medical",
+    "food_and_drink",
+    "shopping",
+    "health_care",
     "education",
-    "recreation",
-    "public_service",
+    "sports_and_recreation",
+    "community_and_government",
     # Metropolitan (MAI) opportunity types
     "financial_service",
     "professional_service",
-    "transportation",
+    "travel_and_transportation",
 }
 
 FETCH_INSTRUCTIONS = """
@@ -92,7 +92,18 @@ def fetch_overture_places(
     SELECT
         id,
         names.primary AS name,
-        categories.primary AS category,
+        CASE
+            WHEN taxonomy.hierarchy[1] = 'shopping' THEN 'retail'
+            WHEN taxonomy.hierarchy[1] = 'food_and_drink' THEN 'food_and_beverage'
+            WHEN taxonomy.hierarchy[1] = 'health_care' THEN 'health_and_medical'
+            WHEN taxonomy.hierarchy[1] = 'sports_and_recreation' THEN 'recreation'
+            WHEN taxonomy.hierarchy[1] = 'community_and_government' THEN 'public_service'
+            WHEN taxonomy.hierarchy[1] = 'travel_and_transportation' THEN 'transportation'
+            WHEN list_contains(taxonomy.hierarchy, 'financial_service') THEN 'financial_service'
+            WHEN list_contains(taxonomy.hierarchy, 'professional_service') THEN 'professional_service'
+            ELSE taxonomy.hierarchy[1]
+        END AS category,
+        taxonomy.primary AS category_detail,
         confidence,
         bbox.xmin AS longitude,
         bbox.ymin AS latitude
@@ -100,7 +111,7 @@ def fetch_overture_places(
     WHERE
         bbox.xmin >= {minx} AND bbox.xmax <= {maxx}
         AND bbox.ymin >= {miny} AND bbox.ymax <= {maxy}
-        AND categories.primary IN ({cat_filter})
+        AND (basic_category IN ({cat_filter}) OR list_has_any(taxonomy.hierarchy, [{cat_filter}]))
         AND confidence >= 0.5
     """
 
@@ -136,7 +147,13 @@ def main() -> int:
     add_site_config_argument(parser)
     parser.add_argument("--grid",   type=Path, default=Path("data/interim/pilot_grid.gpkg"))
     parser.add_argument("--output", type=Path, default=Path("data/raw/overture_pois.gpkg"))
+    parser.add_argument("--release", default=OVERTURE_RELEASE, help="Published Overture release identifier")
     args = parser.parse_args()
+    global OVERTURE_S3
+    import re
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}\.\d+", args.release):
+        parser.error("--release must have the form YYYY-MM-DD.N")
+    OVERTURE_S3 = f"s3://overturemaps-us-west-2/release/{args.release}/theme=places/type=place/*"
     config = apply_site_config(args, parser, {
         "grid": "paths.grid",
         "output": "paths.overture_pois",

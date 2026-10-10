@@ -1,4 +1,4 @@
 interface:
   display_name: "Mobility Capability Study"
-  short_description: "Work on the Ocean Park mobility capability research pipeline."
-  default_prompt: "Use the Mobility Capability Study skill to continue the Ocean Park accessibility pipeline."
+  short_description: "Ocean Park analysis, data, proposal, and workspace workflow."
+  default_prompt: "Use $mobility-capability-study for this Ocean Park repository task, following its canonical code, decisions, and requested scope."

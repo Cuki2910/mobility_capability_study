@@ -3,6 +3,8 @@
   "analytical_spec": {
     "nai_primary_threshold_m": 800,
     "smci_primary_operator": "equal_weight_geometric_mean",
+    "rac_primary": "time",
+    "opportunity_basis": "observed_strict",
     "smci_legacy_operator": "product",
     "smci_robustness_operator": "additive",
     "smci_bottleneck_operator": "minimum_component",

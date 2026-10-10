@@ -2,8 +2,8 @@
 src/accessibility.py
 
 Core index formulas for the Fragmented Mobility Capability framework.
-These are the SAME formulas specified in proposal/proposal_v6.docx,
-Section 3.6-3.8 — kept in one place so the proposal text and the code
+Current methods are described in proposal/proposal_v7.md, Sections 7-10.
+Keep implementation and the corresponding proposal methods together so they
 can never silently drift apart.
 
 Import this module from scripts/ and notebooks/; do not re-implement

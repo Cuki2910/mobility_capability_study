@@ -7,7 +7,6 @@ SOURCE = Path(__file__).resolve().parents[1] / "scripts" / "make_interactive_map
 
 def test_map_uses_primary_nai_spec_and_exact_study_boundary():
     source = SOURCE.read_text(encoding="utf-8")
-    assert '"nai_primary_threshold_m": 800' in source
     assert "study_boundary_geom = unary_union(grid.geometry)" in source
     assert "study_union.convex_hull" not in source
 

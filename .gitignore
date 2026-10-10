@@ -1,5 +1,6 @@
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/external_validation_template.csv
 data/interim/*
 !data/interim/.gitkeep
 data/processed/*
@@ -18,6 +19,7 @@ __pycache__/
 *.graphml
 *.gpkg
 references/*.pdf
+!references/Graph-Engineering-Athropic-Karpathy-Loop.pdf
 references/*.txt
 outputs/lineage/*.sqlite
 .chrome-smoke-profile*/
@@ -26,6 +28,14 @@ outputs/maps/*_smoke.png
 op_stats.txt
 
 .agent/ownership.json
+.agent/change_review.md
+.agent/change_review.diff
+.agent/project_self_audit.*
 
 Graph-Engineering-Anthropic-Karpathy-Loop.pdf
 .openscience/
+.venv/
+
+# macOS metadata (including external-drive AppleDouble files)
+.DS_Store
+._*

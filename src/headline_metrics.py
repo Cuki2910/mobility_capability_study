@@ -110,6 +110,9 @@ def build_headline_metrics(root: Path = Path(".")) -> dict[str, Any]:
     )
     if metrics["cell_id"].duplicated().any():
         raise ValueError("pilot_metrics.csv contains duplicate cell_id")
+    if "smci_operator" in metrics:
+        if metrics["smci_operator"].isna().any() or metrics["smci_operator"].nunique() != 1:
+            raise ValueError("pilot_metrics.csv must identify one SMCI operator for every cell")
 
     n_cells = len(metrics)
     if int(summary["n_cells"]) != n_cells:
@@ -202,7 +205,8 @@ def build_headline_metrics(root: Path = Path(".")) -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "n_cells": n_cells,
         "smci": {
-            "operator": "equal_weight_geometric_mean",
+            # ponytail: old CSVs predate method metadata; regenerate metrics to label a new operator.
+            "operator": str(metrics["smci_operator"].iloc[0]) if "smci_operator" in metrics else "equal_weight_geometric_mean",
             "legacy_operator": "product",
             "mean_A": _finite(metrics["SMCI_A"].mean(), "smci.mean_A"),
             "mean_B": _finite(metrics["SMCI_B"].mean(), "smci.mean_B"),

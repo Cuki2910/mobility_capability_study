@@ -7,11 +7,12 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths
+from src.site_config import add_site_config_argument, apply_site_config, print_resolved_paths, load_analytical_spec
 from src.accessibility_inputs import build_network_accessibility_inputs, build_spatial_accessibility_inputs
 
 
 def main() -> int:
+    spec = load_analytical_spec()
     parser = argparse.ArgumentParser(description=__doc__)
     add_site_config_argument(parser)
     parser.add_argument("--mode", choices=["proxy", "network"], default="proxy")
@@ -30,7 +31,7 @@ def main() -> int:
     parser.add_argument("--speed-factor-csv", type=Path, default=Path("data/raw/motorcycle_speed_calibration.csv"))
     parser.add_argument("--gtfs", type=Path, default=Path("data/raw/hanoi_gtfs.zip"))
     parser.add_argument("--gtfs-status", default="stale", choices=["current", "stale", "missing", "unverified", "limited", "baseline_limited"])
-    parser.add_argument("--walking-threshold-m", type=float, default=800.0)
+    parser.add_argument("--walking-threshold-m", type=float, default=float(spec["nai_primary_threshold_m"]))
     parser.add_argument("--motorcycle-threshold-m", type=float, default=3000.0)
     parser.add_argument("--headway-min", type=float, default=15.0)
     parser.add_argument("--vinbus-mode", choices=["stops", "corridor"], default="stops")
@@ -51,8 +52,8 @@ def main() -> int:
     parser.add_argument(
         "--opportunity-basis",
         choices=["proxy", "observed", "observed_strict"],
-        default="observed_strict",
-        help="MAI opportunity weights: observed_strict (DEFAULT, the canonical primary spec, "
+        default=spec["opportunity_basis"],
+        help="MAI opportunity weights (default from config/pipeline.json): observed_strict "
         "Decision #21/#22) requires source-backed magnitudes or explicit exclusion for every "
         "included POI and needs --pois data/interim/merged_pois_observed.gpkg; observed uses "
         "the Decision #21 hybrid hierarchy; proxy reproduces the legacy regression baseline "

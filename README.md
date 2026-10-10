@@ -11,6 +11,19 @@ accessibility framework.
 - Working context: read `CLAUDE.md` first
 - Data status: `docs/data_sources.md`
 - Methodology decisions: `docs/decisions.md`
+- Proposed future work: `docs/roadmap.md` (not adopted methodology)
+
+## Workspace
+
+| Directory | Contents |
+| --- | --- |
+| `src/`, `scripts/`, `tests/` | Reusable analysis, executable commands, tests |
+| `config/` | Pipeline and analysis configuration |
+| `data/raw/`, `data/interim/`, `data/processed/` | Source, cleaned, and analysis-ready data |
+| `outputs/` | Generated reports, maps, validation, and run provenance |
+| `proposal/`, `paper/` | Single final proposal (`proposal_v7.md`) and manuscript |
+| `docs/` | Data status, decisions, methods, and agent workflow |
+| `references/` | Supporting reference documents |
 
 ## Setup
 
@@ -46,7 +59,7 @@ python scripts/agent_gate.py
 ```
 
 See `docs/agent_workflow.md` for ownership setup, gate policy, review checks,
-canonical-output locking, and integration recovery.
+change reports, user confirmation, and integration recovery.
 
 ## Current Next Step
 
@@ -56,6 +69,8 @@ maps, and the supervisor memo are generated. Overture-only POIs are confirmed an
 the merged OSM+Overture POI layer is now primary.
 
 ## Phase Commands
+
+Local data were recovered on 2026-10-10; see [source provenance and recovery limits](docs/data_recovery.md). The recovered Overture supplement is unchecked; historical promotion above does not apply to the new layers. Review the recovery report before rebuilding outputs.
 
 ```bash
 pytest tests/ -v

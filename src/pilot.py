@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 
 try:
+    from .site_config import load_analytical_spec
     from .accessibility import (
         compute_rac_shared,
         compute_smci_additive_from_normalized,
@@ -19,6 +20,7 @@ try:
         theory_first_typology,
     )
 except ImportError:  # pragma: no cover
+    from site_config import load_analytical_spec
     from accessibility import (
         compute_rac_shared,
         compute_smci_additive_from_normalized,
@@ -45,7 +47,7 @@ REQUIRED_COLUMNS = {
 }
 
 
-def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
+def compute_pilot_metrics(inputs: pd.DataFrame, analytical_spec: dict | None = None) -> pd.DataFrame:
     """
     Compute Scenario A/B NAI, MAI, RAC, MCS, SMCI, Delta_SMCI, typology.
 
@@ -56,6 +58,19 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
     if missing:
         raise ValueError(f"Pilot input missing columns: {sorted(missing)}")
 
+    spec = load_analytical_spec() if analytical_spec is None else analytical_spec
+    # ponytail: selects existing operators; new mathematics requires an implementation and checks.
+    operators = {
+        "equal_weight_geometric_mean": compute_smci_geometric_from_normalized,
+        "product": compute_smci_product_from_normalized,
+        "additive": compute_smci_additive_from_normalized,
+        "minimum_component": compute_smci_min_from_normalized,
+    }
+    operator = spec["smci_primary_operator"]
+    rac_primary = spec.get("rac_primary", "time")
+    if operator not in operators or rac_primary not in {"time", "full"}:
+        raise ValueError(f"Method not implemented: SMCI={operator!r}, RAC={rac_primary!r}; implement and test the new method, do not restore an old one")
+    smci = operators[operator]
     out = inputs.copy()
     rac_shared = compute_rac_shared(
         out["RAC_time_A_raw"].to_numpy(),
@@ -73,8 +88,8 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
 
     out["RAC_full_A"] = out["RAC_A"]
     out["RAC_full_B"] = out["RAC_B"]
-    out["RAC_A"] = out["RAC_time_A"]
-    out["RAC_B"] = out["RAC_time_B"]
+    out["RAC_A"] = out[f"RAC_{rac_primary}_A"]
+    out["RAC_B"] = out[f"RAC_{rac_primary}_B"]
 
     mai_lo, mai_hi = shared_minmax(out["MAI_A"].to_numpy(), out["MAI_B"].to_numpy())
     rac_lo, rac_hi = shared_minmax(out["RAC_A"].to_numpy(), out["RAC_B"].to_numpy())
@@ -87,9 +102,9 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
 
     out["MCS_A"] = metropolitan_competitiveness_score_from_normalized(out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
     out["MCS_B"] = metropolitan_competitiveness_score_from_normalized(out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
-    # Canonical SMCI uses a per-cell geometric mean; the product remains auditable.
-    out["SMCI_A"] = compute_smci_geometric_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
-    out["SMCI_B"] = compute_smci_geometric_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
+    out["SMCI_A"] = smci(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
+    out["SMCI_B"] = smci(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
+    out["smci_operator"] = operator
     out["SMCI_product_A"] = compute_smci_product_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
     out["SMCI_product_B"] = compute_smci_product_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), out["RAC_B_norm"].to_numpy())
     out["SMCI_additive_A"] = compute_smci_additive_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_A_norm"].to_numpy(), out["RAC_A_norm"].to_numpy())
@@ -110,11 +125,11 @@ def compute_pilot_metrics(inputs: pd.DataFrame) -> pd.DataFrame:
     rt_a_norm = norm01_with_bounds(rt_a_only, rac_a_lo, rac_a_hi)
     rt_b_norm = norm01_with_bounds(rt_b_only, rac_a_lo, rac_a_hi)
     mcs_b_time_only = metropolitan_competitiveness_score_from_normalized(out["MAI_B_norm"].to_numpy(), rt_b_norm)
-    out["SMCI_B_time_only"] = compute_smci_geometric_from_normalized(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), rt_b_norm)
+    out["SMCI_B_time_only"] = smci(out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), rt_b_norm)
     out["typology_B_time_only"] = theory_first_typology(out["NAI"].to_numpy(), mcs_b_time_only)
     full_lo, full_hi = shared_minmax(out["RAC_full_A"].to_numpy(), out["RAC_full_B"].to_numpy())
     full_b_norm = norm01_with_bounds(out["RAC_full_B"].to_numpy(), full_lo, full_hi)
-    out["SMCI_B_full_rac_legacy"] = compute_smci_geometric_from_normalized(
+    out["SMCI_B_full_rac_legacy"] = smci(
         out["NAI_norm"].to_numpy(), out["MAI_B_norm"].to_numpy(), full_b_norm
     )
 

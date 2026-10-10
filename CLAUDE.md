@@ -3,6 +3,10 @@
 Context file for Claude Code (or any future session) working in this repo.
 Read this fully before writing or changing code or the proposal.
 
+## Authority and change review
+
+This file describes the working/published baseline, not constraints on future ideas. The user's latest direction supersedes older methodology instructions and plans. Old prompts and plans are retained in Git history; proposed unfinished work lives in `docs/roadmap.md` and is not adopted methodology. Prepare requested changes, update affected implementation and tests, then present `.agent/change_review.md` and request confirmation after each batch. Keep status `PENDING_USER_CONFIRMATION` until the user replies; passing checks does not ratify a design. Never revert to an old idea just to satisfy stale instructions. Separate draft methods, published results, and dated history.
+
 ## What this project is
 
 Research proposal + analysis pipeline for: *"Fragmented Mobility Capability
@@ -15,8 +19,8 @@ to generate integrated sustainable mobility capability when Relative
 Accessibility Competitiveness (RAC) — walking-and-transit accessibility
 relative to motorcycle accessibility â€” remains low.
 
-Full methodology: `proposal/proposal_v7.md` (Markdown, current). `proposal/proposal_v6.docx` is the prior Word version kept for reference. This CLAUDE.md is a map to
-the repo and a record of decisions, not a replacement for reading Section 3
+Full methodology: `proposal/proposal_v7.md` (Markdown, the only retained proposal). This CLAUDE.md is a map to
+the repo and a record of decisions, not a replacement for reading Sections 7-10
 of the proposal before touching the analysis code.
 
 ## Glossary (used everywhere in code â€” match these names exactly)
@@ -27,14 +31,14 @@ of the proposal before touching the analysis code.
 | **MAI** | Metropolitan Accessibility Index â€” magnitude-weighted, walk+transit threshold |
 | **RAC** | Relative Accessibility Competitiveness - primary uses RAC_time; legacy full-RAC = geometric mean of RAC_time and RAC_opp retained as robustness |
 | **MCS** | Metropolitan Competitiveness Score â€” geometric mean of normalized MAI and RAC; used for classification only |
-| **SMCI** | Sustainable Mobility Capability Index = NAI_norm × MAI_norm × RAC_norm |
+| **SMCI** | Sustainable Mobility Capability Index = (NAI_norm × MAI_norm × RAC_norm)^(1/3), the primary equal-weight geometric mean; legacy product retained for audit |
 | **Network A/B/C/D** | Walking / Walking+existing transit / Walking+existing transit+VinBus / Motorcycle |
 | **Scenario A/B** | A = Networks A+B (no VinBus). B = Networks A+C (with VinBus). ΔSMCI = SMCI(B) − SMCI(A) |
 | Four typologies | Integrated Capability, Fragmented Capability, Transit-Dependent, Motorcycle Lock-in |
 
 Exact formulas: `src/accessibility.py` (implemented, tested) â€” this is the
-single source of truth for these formulas, not the prose in the .docx.
-If you change a formula, update both the code and Section 3 of the
+single source of truth for these formulas, not the proposal prose.
+If you change a formula, update both the code and corresponding methods of the
 proposal in the same commit.
 
 Scenario A/B comparisons use shared A+B normalization bounds in `src/pilot.py`.
@@ -60,7 +64,7 @@ update **every** place it appears in the same change — do not leave stale copi
 ## Repo structure
 
 ```
-proposal/              proposal_v7.md is current (Markdown). proposal_v6.docx is prior Word version. archive/ has v3, v5 for reference.
+proposal/              proposal_v7.md is the only retained proposal (Markdown).
 data/raw/               immutable, as-downloaded. Nothing in here is hand-edited.
 data/interim/           cleaned/aligned data (calibrated networks, built grid).
 data/processed/         analysis-ready per-grid-cell table (NAI, MAI, RAC, SMCI, typology).
@@ -103,7 +107,7 @@ python scripts/check_mobility_database.py --query Hanoi
 # Pipeline (run in order):
 # build defaults are now the canonical primary spec: --opportunity-basis observed_strict
 # + --pois data/interim/merged_pois_observed.gpkg + --walking-threshold-m 800 (no need to
-# pass them). This reproduces SMCI_A=0.0070 / SMCI_B=0.0133. For the legacy proxy baseline
+# pass them). Published results use the scale recorded in the headline snapshot. For the legacy proxy baseline
 # pass BOTH `--opportunity-basis proxy --pois data/interim/merged_pois.gpkg`.
 python scripts/build_accessibility_inputs.py --mode network --gtfs-status baseline_limited
 python scripts/run_pilot_metrics.py
@@ -125,7 +129,7 @@ python scripts/fetch_overture_pois.py
 python scripts/merge_poi_sources.py   # after fetch_overture_pois.py
 
 # Anywhere:
-pytest tests/ -v   # current baseline: 169 passed
+pytest tests/ -v   # report the actual result in the current change review
 ```
 
 ## Known constraints / gotchas
@@ -172,12 +176,14 @@ pytest tests/ -v   # current baseline: 169 passed
 
 ## Current status (update this section as the project progresses)
 
+**Local data recovery (2026-10-10):** Lost local inputs were downloaded again; see `docs/data_recovery.md`. Fresh OSM/VinBus/Overture layers differ from the historical pilot. Overture release 2026-09-23.1 has 1,707 unchecked supplement POIs; historical review completion below does not transfer. WorldPop is a valid Ocean Park subset. Published headline outputs remain historical; recovered metrics use published accessibility exports, not the new sources.
+
 **SMCI scale migration (2026-08-11):** The canonical cell-level primary is the equal-weight geometric mean: mean SMCI_A=0.1470, SMCI_B=0.1711, and Delta_SMCI=+0.0242. Product-scale values retained elsewhere in dated history or unrerun sensitivity prose are legacy audit values, not current headlines. See `outputs/validation/smci_scale_transition.md` and `outputs/validation/scenario_uncertainty_envelope_status.md`.
 
 - [x] Proposal text finalized at v7 (`proposal/proposal_v7.md`): theory-RAC consistency,
   classification logic, collinearity check, VIF contingency executed, RAC scaling sensitivity,
   additive robustness robustness (ρ=0.803), Section 3.8 additive fix, validation hierarchy resolved.
-- [x] Analysis formulas (`src/accessibility.py`) implemented and tested. 169 pytest tests pass.
+- [x] Analysis formulas (`src/accessibility.py`) implemented and tested; report current test results in the change review.
 - [x] Deterministic core DAG + JSON/SQLite provenance implemented (`config/pipeline.json`,
   `scripts/run_research_pipeline.py`, `src/provenance.py`). Current graph covers core inputs,
   pilot metrics, VIF, population weighting, headline snapshot, and self-audit. Publication
@@ -266,7 +272,7 @@ pytest tests/ -v   # current baseline: 169 passed
 - [x] Proposal v7 (`proposal/proposal_v7.md`): additive robustness, shared-scale Delta_SMCI,
   VIF contingency executed, RAC scaling sensitivity, Section 3.8 fix, current pilot caveats.
   Updated 2026-06-25: MAI proxy-escaped using building footprint matching (150/161 POIs, 93% matched).
-  Current numbers (800 m NAI primary, Decision #27): SMCI_A=0.0070, SMCI_B=0.0133, 60.8% improved,
+  Historical product-scale numbers (Decision #27): SMCI_A=0.0070, SMCI_B=0.0133, 60.8% improved,
   pop-weighted SMCI_B=0.0129 (bias −3.2%), 33.9% population in Motorcycle Lock-in. Pytest: 85 tests pass.
 - [x] Travel time validation and sensitivity analysis scripts implemented and reports generated:
   - Travel time MAE is 1.90 minutes against Google Maps checks (PASS < 3.0 min).

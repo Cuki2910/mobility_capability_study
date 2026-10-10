@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
@@ -74,19 +75,15 @@ def build_plan(paths: Iterable[str], branch: str = "", policy: dict | None = Non
         missing = [path for path in coupling["require_all"] if path not in files]
         any_ok = not coupling["require_any_prefix"] or any(any(path.startswith(prefix) for prefix in coupling["require_any_prefix"]) for path in changed)
         if missing or not any_ok:
-            errors.append(coupling["message"] + (f"; missing: {', '.join(missing)}" if missing else ""))
+            warnings.append(coupling["message"] + (f"; missing: {', '.join(missing)}" if missing else "") + "; review and request user confirmation")
     canonical = sorted(files & set(policy["canonical_outputs"]))
-    feature_branch = branch and branch not in policy["integration_branches"]
-    if canonical and feature_branch:
-        message = f"Canonical outputs/status changed on feature branch {branch!r}: {', '.join(canonical)}"
-        if allow_canonical and reason.strip(): warnings.append(message + f"; override reason: {reason.strip()}")
-        else: errors.append(message + "; use integration branch or explicit override with reason")
-    if allow_canonical and not reason.strip(): errors.append("Canonical-output override requires --reason")
+    if canonical:
+        warnings.append(f"Published outputs/status changed: {', '.join(canonical)}; request user confirmation")
     return GatePlan(changed, groups, tuple(commands), tuple(errors), tuple(warnings))
 
 
 def _git(*args: str, check: bool = True) -> str:
-    result = subprocess.run(("git", *args), cwd=ROOT, text=True, capture_output=True, check=False)
+    result = subprocess.run(("git", *args), cwd=ROOT, text=True, errors="replace", capture_output=True, check=False)
     if check and result.returncode:
         raise RuntimeError(result.stderr.strip() or result.stdout.strip())
     return result.stdout.strip()
@@ -108,7 +105,39 @@ def changed_files(base: str) -> tuple[str, ...]:
 
 
 def report(plan: GatePlan, base: str, branch: str) -> dict:
-    return {"base": base, "branch": branch, **asdict(plan)}
+    return {"base": base, "branch": branch, "confirmation": "required" if plan.changed else "not_required", **asdict(plan)}
+
+
+def write_review(plan: GatePlan, base: str, branch: str, outcome: str, reason: str = "") -> Path:
+    """Replace the batch report; a successful check never constitutes user approval."""
+    output = ROOT / ".agent/change_review.md"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    previous = _git("show", f"{base}:config/pipeline.json", check=False)
+    before = json.loads(previous.lstrip("\ufeff")).get("analytical_spec", {}) if previous else {}
+    current = ROOT / "config/pipeline.json"
+    after = json.loads(current.read_text(encoding="utf-8-sig")).get("analytical_spec", {}) if current.exists() else {}
+    diff = _git("diff", "--no-ext-diff", "--no-textconv", base, "--", *plan.changed) if plan.changed else ""
+    output.with_suffix(".diff").write_text(diff, encoding="utf-8")
+    fingerprint = hashlib.sha256(diff.encode())
+    for name in plan.changed:
+        path = ROOT / name
+        fingerprint.update(name.encode())
+        if path.is_file(): fingerprint.update(path.read_bytes())
+    lines = ["# Change review", "", f"Status: {'PENDING_USER_CONFIRMATION' if plan.changed else 'NO_CHANGES'}", "",
+             f"Change ID: `{fingerprint.hexdigest()}`", "",
+             f"Git baseline: `{base}`; branch: `{branch or '(detached)'}`. This comparison covers the current Git diff, not an inferred approval history.",
+             f"Checks: {outcome}", "", "## Files", "", *[f"- `{p}`" for p in plan.changed],
+             "", "## Analytical configuration before / after", "", "| Setting | Before | After |", "| --- | --- | --- |"]
+    for key in sorted(before.keys() | after.keys()):
+        lines.append(f"| {key} | {before.get(key, '(absent)')} | {after.get(key, '(absent)')} |")
+    lines += ["", "## Purpose, impact and limitations", "", reason or "See the agent's user-facing explanation; no approval is inferred."]
+    lines += ["", "## Review notes", "", *[f"- {note}" for note in (*plan.warnings, *plan.errors)],
+              "", "## Checks selected", "", *[f"- `{subprocess.list2cmdline(command)}`" for command in plan.commands],
+              "", "Review the actual file diff and the agent's explanation of intent, effects, risks, and data blockers. Confirm or request revisions in the conversation. Do not restore historical methods merely to pass checks; do not mark this batch accepted without the user's reply.",
+              "", "## Tracked file diff", "", "[Open the full diff](change_review.diff)", "",
+              "New untracked files are listed above; review their actual contents separately.", ""]
+    output.write_text("\n".join(lines), encoding="utf-8")
+    return output
 
 
 def main() -> int:
@@ -138,12 +167,19 @@ def main() -> int:
         for error in plan.errors: print(f"ERROR: {error}", file=sys.stderr)
         print("Checks:")
         for command in plan.commands: print("  " + subprocess.list2cmdline(command))
-    if plan.errors: return 1
     if args.dry_run: return 0
+    if plan.errors:
+        write_review(plan, base, branch, "FAIL: " + "; ".join(plan.errors), args.reason)
+        return 1
     for command in plan.commands:
         result = subprocess.run(command, cwd=ROOT, check=False)
-        if result.returncode: return result.returncode
+        if result.returncode:
+            write_review(plan, base, branch, f"FAIL ({result.returncode}): {subprocess.list2cmdline(command)}", args.reason)
+            return result.returncode
+    output = write_review(plan, base, branch, "PASS", args.reason)
     print("Agent gate PASS")
+    if plan.changed:
+        print(f"Confirmation required: {output}")
     return 0
 
 

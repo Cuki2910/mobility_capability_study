@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 try:
+    from .site_config import load_analytical_spec
     from .routing import (
         composite_mai_from_graph,
         corridor_accessibility,
@@ -25,6 +26,7 @@ try:
         weighted_decay_sum,
     )
 except ImportError:  # pragma: no cover
+    from site_config import load_analytical_spec
     from routing import (
         composite_mai_from_graph,
         corridor_accessibility,
@@ -593,7 +595,7 @@ def build_network_accessibility_inputs(
     vinbus_geometry_json: str | Path | None = None,
     gtfs_zip: str | Path | None = None,
     gtfs_status: str | None = "baseline_limited",
-    walk_cutoff_min: float = 15.0,
+    walk_cutoff_min: float | None = None,
     motorcycle_cutoff_min: float = 20.0,
     transit_access_m: float = 800.0,
     transit_opportunity_m: float = 800.0,
@@ -610,7 +612,7 @@ def build_network_accessibility_inputs(
     pop_weighting: bool = True,
     worldpop_csv: str | Path | None = "data/interim/grid_worldpop.csv",
     pop_mult_bounds: tuple[float, float] = (0.5, 2.0),
-    opportunity_basis: str = "proxy",
+    opportunity_basis: str | None = None,
     drop_top_opportunity_pct: float = 0.0,
 ) -> pd.DataFrame:
     """
@@ -630,6 +632,11 @@ def build_network_accessibility_inputs(
     """
     import geopandas as gpd
 
+    spec = load_analytical_spec()
+    if walk_cutoff_min is None:
+        walk_cutoff_min = float(spec["nai_primary_threshold_m"]) / 80.0
+    if opportunity_basis is None:
+        opportunity_basis = spec["opportunity_basis"]
     grid = gpd.read_file(grid_path)
     pois = gpd.read_file(pois_path)
 

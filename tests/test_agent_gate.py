@@ -9,13 +9,13 @@ def test_docs_select_consistency_only():
     assert any("check_document_consistency.py" in command for command in commands)
     assert not any("pytest" in command for command in commands)
 def test_core_selects_full_tests(): assert any("pytest tests/ -v" in command for command in names(build_plan(["src/routing.py"])))
-def test_formula_requires_proposal_and_tests():
-    assert build_plan(["src/accessibility.py"]).errors
+def test_formula_missing_coupled_files_requests_review():
+    assert not build_plan(["src/accessibility.py"]).errors
+    assert build_plan(["src/accessibility.py"]).warnings
     assert not build_plan(["src/accessibility.py", "proposal/proposal_v7.md", "tests/test_accessibility.py"]).errors
-def test_pilot_requires_tests(): assert build_plan(["src/pilot.py"]).errors
-def test_canonical_fails_on_feature_branch_and_override_requires_reason():
-    assert build_plan(["outputs/pilot_summary.csv"], "agent/x").errors
-    assert build_plan(["outputs/pilot_summary.csv"], "agent/x", allow_canonical=True).errors
+def test_pilot_missing_tests_requests_review(): assert build_plan(["src/pilot.py"]).warnings
+def test_canonical_change_requests_confirmation_without_branch_lock():
+    assert not build_plan(["outputs/pilot_summary.csv"], "agent/x").errors
     plan = build_plan(["outputs/pilot_summary.csv"], "agent/x", allow_canonical=True, reason="integration regeneration")
     assert not plan.errors and plan.warnings
 def test_canonical_allowed_on_integration_branch(): assert not build_plan(["outputs/pilot_summary.csv"], "main").errors
@@ -36,3 +36,25 @@ def test_policy_and_json_report_shape():
     policy = load_policy(); plan = build_plan(["README.md"], "main", policy)
     payload = report(plan, "main", "main")
     assert json.loads(json.dumps(payload))["changed"] == ["README.md"]
+    assert payload["confirmation"] == "required"
+
+def test_review_records_new_spec_without_approving_it(tmp_path, monkeypatch):
+    monkeypatch.setattr(agent_gate, "ROOT", tmp_path)
+    monkeypatch.setattr(agent_gate, "_git", lambda *args, **kwargs: '{"analytical_spec":{"nai_primary_threshold_m":800}}')
+    (tmp_path / "config").mkdir()
+    (tmp_path / "config/pipeline.json").write_text('{"analytical_spec":{"nai_primary_threshold_m":1000}}')
+    path = agent_gate.write_review(build_plan(["config/pipeline.json"]), "main", "agent/new", "PASS")
+    text = path.read_text()
+    assert "PENDING_USER_CONFIRMATION" in text and "| nai_primary_threshold_m | 800 | 1000 |" in text
+    assert "Checks: PASS" in text
+    assert path.with_suffix(".diff").is_file()
+
+def test_failed_check_still_writes_pending_review(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    monkeypatch.setattr(agent_gate, "ROOT", tmp_path)
+    monkeypatch.setattr(agent_gate, "_git", lambda *args, **kwargs: "{}" if args[0] == "show" else "")
+    monkeypatch.setattr(agent_gate.subprocess, "run", lambda *args, **kwargs: SimpleNamespace(returncode=7))
+    monkeypatch.setattr(agent_gate.sys, "argv", ["agent_gate.py", "--base", "main", "--changed-file", "README.md"])
+    assert agent_gate.main() == 7
+    text = (tmp_path / ".agent/change_review.md").read_text()
+    assert "PENDING_USER_CONFIRMATION" in text and "Checks: FAIL (7)" in text

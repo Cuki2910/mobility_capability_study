@@ -1,42 +1,32 @@
 ---
 name: mobility-capability-study
-description: 'Project-specific workflow for the GREEN-X mobility-capability-study repo: Vinhomes Ocean Park accessibility research, OSM/osmnx/geopandas/networkx pipelines, VinBus/Overpass/GTFS data checks, NAI/MAI/RAC/SMCI formulas, typology validation, proposal-method consistency, and paper outputs. Use when working in or discussing D:\GREEN-X\mobility-capability-study, the Fragmented Mobility Capability/Ocean Park study, VinBus route data, Hanoi motorcycle/transit accessibility, proposal_v6.docx, or the repo''s Python analysis code/tests/docs.'
+description: "Work on the Ocean Park mobility-capability-study repository: analysis, research data, proposal/paper consistency, and workspace maintenance. Use for tasks in this project or explicitly about its methodology; not unrelated Hanoi transport research."
 ---
 
 # Mobility Capability Study
 
-## First Moves
+The user's latest direction supersedes historical designs. Prepare the requested draft, update affected implementation/tests/guidance, and present the batch report before asking for confirmation. Never revert an authorized new idea to satisfy an old method assertion. Until the user replies, label the batch `PENDING_USER_CONFIRMATION`; do not claim research adoption or publish/merge it.
 
-1. Read repo context before edits: `CLAUDE.md`, `docs/data_sources.md`, `docs/decisions.md`.
-2. Treat `src/accessibility.py` as formula source of truth. If formulas change, update proposal Section 3 too.
-3. Check current blocker before broad work: VinBus OSM route relations via Overpass.
-4. Run `pytest tests/ -v` after code changes touching formulas, validation, network construction, or calibration.
+## Sources and scope
 
-## Project Guardrails
+- Follow the repository's `AGENTS.md`. Read `CLAUDE.md`, `docs/data_sources.md`, `docs/decisions.md`, and `proposal/proposal_v7.md` in that order before changes; reuse context already read this session unless it changed.
+- Formulas live in `src/accessibility.py`; Scenario A/B normalization and primary RAC selection live in `src/pilot.py`; analytical defaults live in `config/pipeline.json`. If prose conflicts, inspect these sources and the latest applicable decision; identify the stale guidance before correcting it. Preserve dated history.
+- `proposal/proposal_v7.md` is the only retained proposal. Methods are in Sections 7-10; Section 3 contains research questions.
+- Derive current status from repository artifacts and actual local files. A recorded download does not prove the dataset exists in this checkout. Do not hard-code a current blocker or headline number in this skill.
+- Keep the requested scope. Workspace cleanup does not require data acquisition or pipeline regeneration. Ocean Park is the current study; extend it when the user requests that change.
 
-- Preserve exact terms: `NAI`, `MAI`, `RAC`, `MCS`, `SMCI`, Network `A/B/C/D`, Scenario `A/B`.
-- Do not replace theory-first median-split typology with k-means; k-means is robustness only.
-- Do not reintroduce geometric-mean SMCI robustness; it is vacuous. Use additive alternative.
-- Expect MAI/RAC collinearity. Run `validation.collinearity_check` once real data exists; consider RAC_time-only contingency if VIF remains high.
-- Do not use raw OSM driving speeds for motorcycle Network D. Implement literature-derived speed multipliers.
-- Do not depend on Google TWO_WHEELER API for Vietnam bulk routing. Manual consumer-app spot checks only unless official coverage is verified.
-- Keep single-site scope: Vinhomes Ocean Park only.
+## Choose the relevant workflow
 
-## Workflow Selection
+- **Formulas, validation, or analysis:** read [methodology guidance](references/methodology-cheatsheet.md).
+- **Proposal, paper, or literature review:** read the same guidance, including its citation checks; match code, config, and decisions rather than dated prose.
+- **Data acquisition, VinBus, or OSM:** read [data workflow](references/osm-vinbus-workflow.md).
+- **Workspace maintenance:** preserve user changes, data, canonical outputs, and referenced paths. Follow explicit retention/deletion choices; update affected guidance.
+- **Explanation or status review:** inspect the relevant files and report evidence. A read-only request does not require downloads, regeneration, or gates.
 
-- **Data acquisition / VinBus / OSM:** read `references/osm-vinbus-workflow.md`; use `scripts/vinbus_overpass_query.py` to generate/check the Overpass query.
-- **Formula or analysis code:** read `references/methodology-cheatsheet.md`; update tests with the same conceptual invariant.
-- **Proposal/paper edits:** read `references/methodology-cheatsheet.md`; ensure wording matches code and decision log.
-- **New route/network/calibration code:** keep functions in `src/`, scripts thin in `scripts/`, notebooks exploratory only.
+## Verification and handoff
 
-## Useful Commands
-
-```powershell
-pip install -r requirements.txt
-pytest tests/ -v
-python .codex\skills\mobility-capability-study\scripts\vinbus_overpass_query.py --bbox 20.85 105.75 21.15 106.05
-```
-
-## Output Discipline
-
-When finishing work, report: files changed, tests run, remaining data blockers. If a data claim is current or external, verify it with live sources before relying on it.
+- Use the project's Python environment and paths appropriate to the current OS. Inspect acquisition scripts for top-level side effects before invoking `--help` or importing them; `scripts/scrape_vinbus.py` performs acquisition at top level. Do not assume legacy Windows commands work on macOS.
+- Formula changes require proposal index-construction/validation updates and meaningful tests in the same change. Keep reusable logic in `src/` and command wrappers in `scripts/`.
+- After changes, run `python scripts/agent_gate.py`; full tests apply to formula, validation, network, or calibration changes under `AGENTS.md`. Documentation-only work needs no extra full test run beyond checks selected by the gate. Follow `docs/agent_workflow.md` and `config/agent_policy.json` for change review and coordination.
+- Gate self-audits write under `.agent/`, preserving published outputs. Read `.agent/change_review.md`, add the purpose, impact and limitations in the user-facing report, then ask for confirmation after each batch. Method/status transitions and missing coupled edits are review notes, not orders to restore the baseline. Genuine calculation, schema, or data errors still require correction. A gate PASS does not certify review, freshness, or user approval.
+- Report files changed, checks that passed or could not run, and remaining data blockers. Verify live external claims when needed; report local availability separately from historical acquisition status.

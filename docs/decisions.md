@@ -722,3 +722,15 @@ so settled debates don't get silently re-opened.
     not a robustness test. Additive SMCI remains the compensatory robustness specification and
     the minimum component remains an extreme bottleneck diagnostic. Typology remains based on
     rank-split NAI and MCS, so it is independent of the SMCI reporting operator.
+
+34. **DEC-034 — User-directed change reports replace historical design locks (2026-10-10).**
+    The user requested review and confirmation after each change batch rather than enforcement
+    of old ideas. Historical plans and current defaults describe a baseline, not a veto on new
+    methods, scope or improved data status. Gates report changed files, before/after specification,
+    review notes, checks and a diff in `.agent/change_review.md`; the batch remains
+    `PENDING_USER_CONFIRMATION` until an explicit user reply. PASS is not approval.
+    Branch/output restrictions and missing coupled edits become review notes. Calculation,
+    data/schema and numeric publication consistency checks remain. Self-audits run under `.agent/`
+    without overwriting published outputs. Current NAI/SMCI/RAC behavior remains the baseline;
+    existing alternatives can be selected through the working analytical config. New mathematics
+    still needs implementation and verification, not a return to the previous method.

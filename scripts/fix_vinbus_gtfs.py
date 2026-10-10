@@ -304,6 +304,8 @@ def main() -> int:
 
     # Copy files we don't rewrite
     for fname in SRC_DIR.iterdir():
+        if fname.name.startswith("._"):
+            continue
         if fname.name not in REWRITE_FILES:
             shutil.copy2(fname, DST_DIR / fname.name)
             print(f"\n[COPY]  {fname.name}")

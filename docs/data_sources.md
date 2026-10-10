@@ -1,6 +1,14 @@
 # Data Source Status
 
-Last updated: 2026-06-28. Update this table as data is actually obtained; do not trust the proposal text's data-source list as confirmation that data exists.
+Last updated: 2026-10-10. Update this table as data is actually obtained; do not trust the proposal text's data-source list as confirmation that data exists.
+
+## Local recovery — 2026-10-10
+
+Lost machine-local data were re-acquired: OSM networks/POIs/grid/land use, World Bank 2018 GTFS, VinBus API pseudo-GTFS and OSM relations, VIDA buildings, and WorldPop Ocean Park raster subset. Overture now uses release **2026-09-23.1**: 2,137 candidates, 1,868 merged POIs, **1,707 Overture-only rows unchecked**. New POI layers are not approved primary inputs; the historical 55/55 gate below does not apply. VinBus calendar dates are synthetic legacy placeholders, not verified current service. Historical population/accessibility exports were recovered separately from published maps; headline outputs remain unchanged. See [recovery provenance](data_recovery.md) and `data/interim/data_recovery_manifest.json` for local inventory and limits.
+
+## Historical pilot acquisition status
+
+The following table records the historical pilot. Counts and completed manual reviews describe that snapshot, not the newly downloaded layers.
 
 | Source | Needed for | Status | Notes |
 | --- | --- | --- | --- |

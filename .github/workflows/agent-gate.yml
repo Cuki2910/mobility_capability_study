@@ -28,5 +28,10 @@ jobs:
         if: always()
         with:
           name: agent-gate-report
-          path: agent-gate-report.json
+          path: |
+            agent-gate-report.json
+            .agent/change_review.md
+            .agent/change_review.diff
+            .agent/project_self_audit.*
+          include-hidden-files: true
           if-no-files-found: ignore

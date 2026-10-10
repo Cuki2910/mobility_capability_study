@@ -1,5 +1,7 @@
 # Fragmented Mobility Capability in Motorcycle-Dependent Green Megaprojects
 
+*This document records the published pilot specification. New user-directed designs are prepared as drafts, compared in `.agent/change_review.md`, and adopted only after explicit confirmation; historical specifications do not veto new ideas.*
+
 ## A Dual-Scale and Mode-Competitive Accessibility Framework from Vinhomes Ocean Park, Hanoi
 
 Proposal v7. Last updated: 2026-08-11.
@@ -387,7 +389,7 @@ python scripts/make_pilot_maps.py
 pytest tests/ -q
 ```
 
-Current test baseline: 169 tests pass.
+Current test results are reported in `.agent/change_review.md` after each change batch.
 
 ## 16. Ethics and Data Statement
 

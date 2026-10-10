@@ -1,4 +1,4 @@
-"""Write an evidence-led upgrade status matrix; never promote unavailable data work."""
+"""Write an upgrade status matrix; historical source labels refer to Git, see docs/roadmap.md."""
 from __future__ import annotations
 
 import json

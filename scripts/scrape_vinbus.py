@@ -1,21 +1,23 @@
 """
 fetch_all_routes.py
 ===================
-Batch fetch all VinBus route details using the read_url_content approach.
-Since the API can only be reached from the cloud, this script:
-1. Reads the detail_urls.txt 
-2. Fetches each URL via requests (if reachable) OR prints for manual fetching
-3. Decrypts and saves all route details
-4. Builds the complete GTFS output
+Fetch public VinBus route-list/detail responses, retain raw JSON, and build pseudo-GTFS.
+Existing JSON files are reused so an interrupted acquisition can resume.
 """
 import binascii, json, os, sys, csv, time
+from pathlib import Path
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
 KEY = b'ViNbus2o21#K3(y)th3BUSNiElectric'
 BASE = "https://vbcore-api.vinbus.vn"
-RAW_DIR = r"d:\GREEN-X\mobility-capability-study\data\raw\vinbus_raw_json"
-GTFS_DIR = r"d:\GREEN-X\mobility-capability-study\data\raw\vinbus_pseudo_gtfs"
+SESSION = requests.Session()
+SESSION.mount("https://", HTTPAdapter(max_retries=Retry(total=3, backoff_factor=2, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"])))
+RAW_DIR = str(Path(__file__).resolve().parents[1] / "data/raw/vinbus_raw_json")
+GTFS_DIR = str(Path(__file__).resolve().parents[1] / "data/raw/vinbus_pseudo_gtfs")
 DETAIL_DIR = os.path.join(RAW_DIR, 'details')
 os.makedirs(DETAIL_DIR, exist_ok=True)
 os.makedirs(GTFS_DIR, exist_ok=True)
@@ -25,46 +27,34 @@ def decrypt(hex_str):
     iv, ct = raw[:16], raw[16:]
     return json.loads(unpad(AES.new(KEY, AES.MODE_CBC, iv).decrypt(ct), AES.block_size).decode('utf-8'))
 
-def decrypt_step_file(path):
-    """Extract and decrypt hex payload from a step content.md file."""
-    with open(path, encoding='utf-8') as f:
-        content = f.read()
-    for line in content.splitlines():
-        line = line.strip()
-        if len(line) > 200 and line.startswith('"') and line.endswith('"'):
-            hex_str = line[1:-1]
-            if all(c in '0123456789abcdefABCDEF' for c in hex_str[:40]):
-                return decrypt(hex_str)
-    return None
-
-# ─────────────────────────────────────────────────────────────
-# Load route list
-# ─────────────────────────────────────────────────────────────
-with open(os.path.join(RAW_DIR, 'route_list_hn.json'), encoding='utf-8') as f:
-    routes_raw = json.load(f)
+# Save validated responses atomically; incomplete downloads remain resumable.
+route_list_path = Path(RAW_DIR) / 'route_list_hn.json'
+if not route_list_path.exists():
+    response = SESSION.get(f'{BASE}/client/route/list', params={'regionCode': 'hn'}, timeout=45)
+    response.raise_for_status()
+    routes_raw = decrypt(response.json())
+    if not isinstance(routes_raw, list) or not routes_raw or any(not r.get('routeId') for r in routes_raw):
+        raise ValueError('VinBus API returned an invalid route list')
+    route_list_path.with_suffix('.part').write_text(json.dumps(routes_raw, ensure_ascii=False), encoding='utf-8')
+    route_list_path.with_suffix('.part').replace(route_list_path)
+else:
+    routes_raw = json.loads(route_list_path.read_text(encoding='utf-8'))
 
 print(f"Loaded {len(routes_raw)} routes", file=sys.stderr)
-
-# ─────────────────────────────────────────────────────────────
-# Process already-fetched route details from step files
-# ─────────────────────────────────────────────────────────────
-STEPS_BASE = r"C:\Users\Admin\.gemini\antigravity-ide\brain\237c360b-4b95-4769-9ab6-13c1b2be2d06\.system_generated\steps"
-
-# Map step files that contain route detail data
-# We'll scan step files for route detail payloads
-route_step_map = {
-    '10974': '156',  # already fetched
-}
-
-for route_id, step_num in route_step_map.items():
-    step_path = os.path.join(STEPS_BASE, step_num, 'content.md')
-    if os.path.exists(step_path):
-        data = decrypt_step_file(step_path)
-        if data:
-            out_path = os.path.join(DETAIL_DIR, f'detail_{route_id}.json')
-            with open(out_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            print(f"Saved detail for route {route_id}", file=sys.stderr)
+for index, route in enumerate(routes_raw, 1):
+    route_id = route['routeId']
+    output = Path(DETAIL_DIR) / f'detail_{route_id}.json'
+    if output.exists():
+        continue
+    response = SESSION.get(f'{BASE}/client/route/detail', params={'routeId': route_id, 'regionCode': 'hn'}, timeout=45)
+    response.raise_for_status()
+    detail = decrypt(response.json())
+    if not isinstance(detail, dict) or not isinstance(detail.get('stations'), list):
+        raise ValueError(f'VinBus API returned invalid detail for route {route_id}')
+    output.with_suffix('.part').write_text(json.dumps(detail, ensure_ascii=False), encoding='utf-8')
+    output.with_suffix('.part').replace(output)
+    print(f'Fetched {index}/{len(routes_raw)} route details', file=sys.stderr, flush=True)
+    time.sleep(1.0)
 
 # ─────────────────────────────────────────────────────────────
 # Build GTFS from what we have
@@ -109,7 +99,7 @@ all_stops = {}
 all_stop_times = []
 all_frequencies = []
 
-detail_files = [f for f in os.listdir(DETAIL_DIR) if f.endswith('.json')]
+detail_files = [f for f in os.listdir(DETAIL_DIR) if f.startswith('detail_') and f.endswith('.json')]
 print(f"Processing {len(detail_files)} detail files...", file=sys.stderr)
 
 for fname in detail_files:
@@ -120,21 +110,13 @@ for fname in detail_files:
     
     # Stops
     stations = detail.get('stations') or []
-    # Separate by direction
-    fwd = [s for s in stations if s.get('stationDirection') in (0, 1, None, 'GO', 'go')]
-    ret = [s for s in stations if s.get('stationDirection') in (1, 2, 'BACK', 'back')]
-    
-    # If all have direction mixed, use stationOrder
-    if not ret and stations:
-        # might be all forward, or use stationDirection field
-        unique_dirs = set(s.get('stationDirection') for s in stations)
-        if len(unique_dirs) == 2:
-            dirs = sorted(unique_dirs)
-            fwd = [s for s in stations if s.get('stationDirection') == dirs[0]]
-            ret = [s for s in stations if s.get('stationDirection') == dirs[1]]
-        else:
-            fwd = stations; ret = []
-    
+    # The public API encodes forward/return as 0/1 (some routes use 1/2).
+    directions = sorted({s.get('stationDirection') for s in stations}, key=str)
+    if len(directions) > 2:
+        raise ValueError(f'Unexpected station directions for route {route_id}: {directions}')
+    fwd = [s for s in stations if s.get('stationDirection') == directions[0]] if directions else []
+    ret = [s for s in stations if s.get('stationDirection') == directions[1]] if len(directions) == 2 else []
+
     for direction_id, stop_list in [(0, fwd), (1, ret)]:
         sorted_stops = sorted(stop_list, key=lambda x: x.get('stationOrder', 0))
         for seq, s in enumerate(sorted_stops):
@@ -224,6 +206,7 @@ summary = {
     'n_stop_times': len(all_stop_times),
     'n_frequencies': len(all_frequencies),
     'n_route_details_fetched': len(detail_files),
+    'calendar_status': 'synthetic_legacy_2025_not_verified_service_dates',
     'coverage_pct': round(len(detail_files)/len(routes_gtfs)*100, 1),
     'api_base': BASE,
     'decrypt_algo': 'AES-256-CBC',
@@ -240,6 +223,7 @@ summary = {
         'Pseudo-GTFS constructed from VinBus public web API. '
         'No official GTFS feed is published by VinBus. '
         'Headway from published field in route list/detail API response. '
+        'calendar.txt is a synthetic legacy 2025 placeholder, not verified service dates. '
     ),
 }
 with open(os.path.join(RAW_DIR, 'scrape_summary.json'), 'w', encoding='utf-8') as f:

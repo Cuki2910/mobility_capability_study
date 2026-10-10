@@ -27,11 +27,22 @@ def test_missing_required_marker_fails(tmp_path):
     ]
 
 
-def test_semantic_check_rejects_non_geometric_primary_operator(tmp_path):
+def test_semantic_check_allows_new_method_and_improved_status(tmp_path):
     (tmp_path / "config").mkdir()
     (tmp_path / "config/pipeline.json").write_text(
-        json.dumps({"analytical_spec": {"smci_primary_operator": "product", "nai_primary_threshold_m": 800}}),
+        json.dumps({"analytical_spec": {"smci_primary_operator": "additive", "nai_primary_threshold_m": 1000}}),
         encoding="utf-8",
     )
-    errors = check_semantic_consistency(tmp_path, [])
-    assert "unsupported primary SMCI operator 'product'" in errors[0]
+    status = tmp_path / "outputs/west_taymo/readiness_status.md"
+    status.parent.mkdir(parents=True)
+    status.write_text("Status: `READY`\n")
+    assert check_semantic_consistency(tmp_path, []) == []
+
+
+def test_method_transition_allows_historical_snapshot_pending_review(tmp_path):
+    (tmp_path / "config").mkdir()
+    (tmp_path / "outputs").mkdir()
+    (tmp_path / "config/pipeline.json").write_text(json.dumps({"analytical_spec": {"smci_primary_operator": "additive"}}))
+    from src.headline_metrics import SCHEMA_VERSION
+    (tmp_path / "outputs/headline_metrics.json").write_text(json.dumps({"schema_version": SCHEMA_VERSION, "smci": {"operator": "product"}}))
+    assert check_semantic_consistency(tmp_path, []) == []

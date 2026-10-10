@@ -2,8 +2,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
+import math
 from pathlib import Path
 from typing import Any
+
+
+def load_analytical_spec(path: Path | str | None = None) -> dict[str, Any]:
+    """Read the working specification; historical instructions do not override it."""
+    source = Path(path) if path is not None else Path(__file__).resolve().parents[1] / "config/pipeline.json"
+    spec = json.loads(source.read_text(encoding="utf-8-sig"))["analytical_spec"]
+    threshold = float(spec["nai_primary_threshold_m"])
+    if not math.isfinite(threshold) or threshold <= 0:
+        raise ValueError("nai_primary_threshold_m must be finite and positive")
+    spec["nai_primary_threshold_m"] = threshold
+    return spec
 
 
 def _parse_scalar(value: str) -> Any:

@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src.headline_metrics import SCHEMA_VERSION, load_headline_metrics
 from scripts.check_document_consistency import DEFAULT_DOCUMENTS, check_documents
+from scripts.evaluate_overture_gate import evaluate_gate
 
 
 STATUS_PATTERN = re.compile(r"Status:\s*`(?P<status>[A-Z_]+)`")
@@ -166,9 +167,24 @@ def build_audit() -> dict:
         )
     building_ready = Path("data/interim/grid_building_footprints.gpkg").exists()
     overture_ready = Path("data/interim/merged_pois.gpkg").exists() and Path("outputs/poi_merge_summary.md").exists()
-    gate_path = Path("outputs/validation/overture_gate_result.md")
-    gate_text = gate_path.read_text(encoding="utf-8") if gate_path.exists() else ""
-    overture_gate_pass = "Verdict: **PASS**" in gate_text
+    spot_check = Path("data/interim/overture_only_spot_check.csv")
+    merged = Path("data/interim/merged_pois.gpkg")
+    overture_gate_pass = False
+    if spot_check.exists() and merged.exists():
+        import geopandas as gpd
+        review = pd.read_csv(spot_check)
+        layer = gpd.read_file(merged)
+        candidates = layer[layer["source"] == "overture_only"].to_crs("EPSG:4326")
+        candidates["latitude"] = candidates.geometry.y
+        candidates["longitude"] = candidates.geometry.x
+        keys = ["name", "category", "latitude", "longitude"]
+        def identities(frame):
+            values = frame[keys].copy()
+            values[["latitude", "longitude"]] = values[["latitude", "longitude"]].round(7)
+            return values.fillna("").astype(str).value_counts().sort_index()
+        ids_match = set(keys) <= set(review.columns) and identities(review).equals(identities(candidates))
+        current_review = spot_check.stat().st_mtime >= merged.stat().st_mtime
+        overture_gate_pass = bool(ids_match and current_review and not review.empty and evaluate_gate(review)["verdict"] == "PASS")
     if building_ready:
         strengths.append("Building footprints are fetched and aggregated by grid cell for built-cell masking and WorldPop cross-checks.")
     if overture_ready:
@@ -209,7 +225,7 @@ def build_audit() -> dict:
             f"Headline schema is {headline.get('schema_version')}; expected {SCHEMA_VERSION}."
         )
     if analytical_spec.get("smci_primary_operator") != headline.get("smci", {}).get("operator"):
-        blockers.append("Configured primary SMCI operator disagrees with the headline snapshot.")
+        warnings.append("Working SMCI method differs from the published snapshot; report the transition and request confirmation before replacing published results.")
     if document_errors:
         blockers.append("Document consistency or semantic methodology checks failed.")
     if missing_generated_artifacts:
@@ -225,7 +241,7 @@ def build_audit() -> dict:
     next_actions = [
         "Preserve strict observed MAI audit trail and upgrade weak derived tiers with named facility sources where possible.",
         "Report Network B as a 2018 pre-VinBus baseline and keep post-2021 GTFS as a sensitivity target if found.",
-        "Proceed to supervisor review with promoted RAC_time primary, full-RAC robustness, and explicit source-tier limitations.",
+        "Review the working analytical specification, evidence, and change report; request user confirmation before adopting changed methods.",
     ]
     if not building_ready:
         next_actions.insert(0, "Fetch and aggregate building footprints by grid cell; use them as built-cell mask and WorldPop cross-check.")

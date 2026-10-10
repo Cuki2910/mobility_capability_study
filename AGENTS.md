@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## Change authority and confirmation
+
+The user's latest explicit direction takes precedence over the working baseline below and historical plans. Methodology, study scope, input sources, thresholds, and classification may change. Implement the requested change as a reviewable draft; never restore an old design merely to satisfy old prose or tests. Update affected code, evidence, tests, and guidance to the new intent.
+
+After each change batch, present `.agent/change_review.md` with before/after, purpose, effects, checks, and remaining data limitations; ask the user to confirm or request revisions. Until an explicit reply, status is `PENDING_USER_CONFIRMATION`. Passing tests is not approval. Do not present the draft as an accepted research decision or publish/merge it before confirmation. Existing authorization permits preparing and checking the complete draft.
+
 Guidance for any AI coding agent (Codex, Cursor, etc.) working in this repo.
 Claude Code reads `CLAUDE.md`; this file points everyone to the same sources of
 truth so the two agents do not drift.
@@ -15,14 +21,13 @@ truth so the two agents do not drift.
 3. **`docs/decisions.md`** — *why* things are the way they are. Several choices
    that look "simplifiable" were made deliberately. Do not revert without
    re-reading.
-4. **`proposal/proposal_v7.md`** — current methodology (Section 3). `proposal_v6.docx`
-   is the prior Word version, reference only.
+4. **`proposal/proposal_v7.md`** — the only retained proposal; methodology in Sections 7-10, limitations in Section 13. Section 3 contains research questions.
 
 ## Sources of truth (do not duplicate; import / cite)
 
 - **Formulas (NAI/MAI/RAC/MCS/SMCI/typology):** `src/accessibility.py` — the
   single source of truth, NOT the prose. If you change a formula, update both
-  the code and proposal Section 3 in the same commit, and update the tests.
+  the code and corresponding proposal methods in the same commit, and update the tests.
 - **Glossary terms:** match exactly — `NAI`, `MAI`, `RAC`, `MCS`, `SMCI`,
   Network `A/B/C/D`, Scenario `A/B`. Definitions live in `CLAUDE.md`.
 - **Headline numbers / current status:** the status section of `CLAUDE.md` and
@@ -36,16 +41,18 @@ truth so the two agents do not drift.
 - **Network C** = `data/raw/vinbus_pseudo_gtfs_fixed/` (no official VinBus GTFS;
   scraped via `scripts/scrape_vinbus.py`, QC'd via `scripts/fix_vinbus_gtfs.py`).
 
-## Guardrails
+## Working baseline (changeable, not a design lock)
 
-- Single-site scope: Vinhomes Ocean Park only.
+- Current scope: Vinhomes Ocean Park. Expand when the user requests it.
 - Theory-first rank-based median-split typology; k-means is robustness only.
-- Additive SMCI robustness, not geometric (geometric is vacuous — see decisions).
+- Primary SMCI is the equal-weight geometric mean; additive is compensatory robustness.
+  Comparing the legacy product with the geometric mean is a scale audit, not independent robustness (DEC-033).
 - Delta_SMCI must use shared A+B normalization bounds (see `src/pilot.py`).
-- Expect MAI/RAC collinearity by construction; run `validation.collinearity_check`
-  and report RAC_time-only sensitivity when VIF is high.
-- No raw OSM driving speeds for motorcycle Network D — use literature-derived
-  speed multipliers (`src/calibration.py`).
+- RAC_time is primary; full-RAC is robustness (DEC-022). MAI/full-RAC overlap is
+  structural; run `validation.collinearity_check` and distinguish primary from legacy diagnostics.
+- Network D requires the production `data/raw/motorcycle_speed_calibration.csv`;
+  road-class speeds are modeling assumptions informed by literature, not verified
+  class-specific observations (DEC-030/031; `src/calibration.py`).
 - No dependence on Google TWO_WHEELER bulk API for Vietnam; manual consumer-app
   spot-checks only.
 - Keep functions in `src/`, scripts thin in `scripts/`, notebooks exploratory only.
@@ -54,9 +61,10 @@ truth so the two agents do not drift.
 
 - With multiple agents, create `.agent/ownership.json` from the tracked example and
   run `python scripts/check_agent_ownership.py` before handoff.
-- Run `python scripts/agent_gate.py` before handoff. The tracked policy at
-  `config/agent_policy.json` enforces coupled changes and canonical-output locking;
-  see `docs/agent_workflow.md` for override and integration rules.
+- After changes, run `python scripts/agent_gate.py` before handoff; read-only explanations
+  need no gate. The tracked policy at
+  `config/agent_policy.json` selects checks and reports coupled/output changes for confirmation;
+  see `docs/agent_workflow.md`. Historical method/status assertions are not acceptance criteria.
 - Run `pytest tests/ -v` (the full current suite must pass) after touching
   `src/accessibility.py`, validation, network construction, or calibration.
 - Report: files changed, tests run, remaining data blockers.
